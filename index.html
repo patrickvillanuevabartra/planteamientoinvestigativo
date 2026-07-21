@@ -267,13 +267,13 @@ function render(){
   var c=document.getElementById('pasos'), h='';
   if(S.paso===1){
     var n=aspectosCompletos();
-    function campoProb(num,titulo,ejKey,hint,fid,stateKey,ph){
+    function campoProb(num,titulo,ejKey,hint,fid,stateKey){
       return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:16px;">'+
              '<label style="margin:0;">'+num+' · '+titulo+'</label>'+
              '<button type="button" class="ejBtn" onclick="toggleEj(\''+ejKey+'\')">ver ejemplo</button></div>'+
              '<p class="note" style="margin:4px 0 6px;">'+hint+'</p>'+
              '<div class="ejBox" id="ej_'+ejKey+'" style="display:none;">'+esc(EJEMPLO_PROB[ejKey])+'</div>'+
-             '<textarea rows="2" id="'+fid+'" oninput="S.'+stateKey+'=this.value;refreshCont1()" placeholder="'+ph+'">'+esc(S[stateKey])+'</textarea>';
+             '<textarea rows="2" id="'+fid+'" oninput="S.'+stateKey+'=this.value;refreshCont1()" placeholder="Escribe aquí…">'+esc(S[stateKey])+'</textarea>';
     }
     h='<div class="card"><h2>01 · Descripción del problema</h2>'+
       '<div class="coordsBox" style="background:#fbf4ee;border-left:3px solid var(--amber);margin-bottom:18px;">'+
@@ -281,11 +281,11 @@ function render(){
       'Debe precisar la población afectada, las posibles causas raíz, las consecuencias, dónde/cómo/cuándo se manifiesta '+
       'y su magnitud, respaldados en cifras, datos o evidencias.</div>'+
 
-      campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion','Ej. el personal del área de… y las áreas usuarias que dependen de…')+
-      campoProb('2','Posibles causas raíz','cau','¿Qué causas raíz lo provocan? (aún sin analizarlas a fondo; el Ishikawa del paso 7 las desarrollará)','f_cau','probCausas','Ej. falta de un procedimiento documentado; ausencia de un sistema que centralice…')+
-      campoProb('3','Consecuencias','con','¿Cuál o cuáles son las consecuencias del problema?','f_con','probConsecuencias','Ej. retrasos recurrentes en la entrega, sobrecostos, pérdida de trazabilidad…')+
-      campoProb('4','Dónde, cómo, cuándo y bajo qué condiciones se manifiesta','ctx','Describe el escenario concreto en que ocurre el problema.','f_ctx','probContexto','Ej. de forma continua en la sede…, con mayor incidencia en los cierres de mes…')+
-      campoProb('5','Magnitud del problema','mag','¿Cuál es su impacto económico, productivo, en el servicio al cliente, etc.? Usa cifras siempre que puedas.','f_mag','probMagnitud','Ej. en el último semestre el 38% de las órdenes tuvo un retraso mayor a 5 días…')+
+      campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion')+
+      campoProb('2','Posibles causas raíz','cau','¿Qué causas raíz lo provocan? (aún sin analizarlas a fondo; el Ishikawa del paso 7 las desarrollará)','f_cau','probCausas')+
+      campoProb('3','Consecuencias','con','¿Cuál o cuáles son las consecuencias del problema?','f_con','probConsecuencias')+
+      campoProb('4','Dónde, cómo, cuándo y bajo qué condiciones se manifiesta','ctx','Describe el escenario concreto en que ocurre el problema.','f_ctx','probContexto')+
+      campoProb('5','Magnitud del problema','mag','¿Cuál es su impacto económico, productivo, en el servicio al cliente, etc.? Usa cifras siempre que puedas.','f_mag','probMagnitud')+
 
       '<div id="cont1" class="listMeta" style="margin-top:16px;align-items:center;">'+contadorTxt(n)+'</div>'+
       '<div class="actions"><span></span><button class="btn" onclick="p1next()">Continuar →</button></div></div>';
