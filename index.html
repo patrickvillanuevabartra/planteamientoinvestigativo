@@ -1,492 +1,510 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Planteamiento Investigativo — Ingeniería URP</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#1c2a33; --paper:#eef1ec; --amber:#c8743b; --teal:#2f6d6a; --line:#c9cfc6;
-  }
-  *{box-sizing:border-box;}
-  body{font-family:'Poppins',system-ui,sans-serif;background:var(--paper);color:var(--ink);
-       margin:0;line-height:1.5;}
-  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px;}
-  .kicker{font-family:'Poppins',sans-serif;font-weight:600;font-size:12px;letter-spacing:.12em;color:var(--amber);margin-bottom:10px;}
-  h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:32px;line-height:1.15;margin:0 0 10px;}
-  .sub{max-width:620px;color:#4a5a60;margin:0 0 24px;}
-  /* stepper */
-  .stepper{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px;}
-  .step{display:flex;align-items:center;gap:6px;flex:1;min-width:84px;}
-  .dot{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-family:'Poppins',sans-serif;background:#fff;flex-shrink:0;}
-  .dot.on{border-color:var(--ink);background:var(--ink);color:#fff;}
-  .step span{font-size:11.5px;color:#8a948f;}
-  .step span.on{color:var(--ink);font-weight:600;}
-  /* card */
-  .card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:26px;margin-bottom:18px;box-shadow:0 1px 0 rgba(0,0,0,.03);}
-  h2{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;margin:0 0 16px;}
-  label{display:block;font-family:'Poppins',sans-serif;font-size:12px;letter-spacing:.06em;color:#6a746f;margin:10px 0 6px;text-transform:uppercase;}
-  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:4px;padding:10px 11px;font-size:15px;color:var(--ink);font-family:'Poppins',sans-serif;}
-  textarea{resize:vertical;}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-  .note{font-size:13px;color:#6a746f;margin:0 0 14px;}
-  .blockLbl{font-family:'Poppins',sans-serif;font-size:13px;color:var(--teal);font-weight:500;margin:0 0 4px;}
-  .actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px;align-items:center;}
-  button{cursor:pointer;transition:transform .08s,opacity .15s;font-family:'Poppins',sans-serif;}
-  button:hover:not(:disabled){transform:translateY(-1px);}
-  button:disabled{opacity:.4;cursor:not-allowed;}
-  .btn{background:var(--ink);color:#fff;border:none;border-radius:4px;padding:11px 20px;font-size:14px;font-weight:600;}
-  .btnGhost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:11px 18px;font-size:14px;font-weight:500;}
-  .lineList{display:flex;flex-direction:column;gap:6px;}
-  .lineOpt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:4px;padding:10px 12px;font-size:14px;color:var(--ink);width:100%;}
-  .lineOpt.sel{border-color:var(--teal);background:#eef5f4;box-shadow:inset 3px 0 0 var(--teal);}
-  .lineNum{font-family:'Poppins',sans-serif;color:var(--amber);font-size:13px;min-width:18px;}
-  .coordsBox{margin-top:8px;padding:8px 12px;background:#eef5f4;border-radius:4px;font-size:13px;}
-  .coordsBox b{font-family:'Poppins',sans-serif;}
-  .hintWarn{font-size:12px;color:#9a3b2c;margin-top:6px;}
-  .mapLink{color:var(--teal);font-size:13px;margin-left:10px;}
-  .temaResult{background:var(--ink);color:#fff;border-radius:4px;padding:16px 18px;font-size:16px;font-family:'Poppins',sans-serif;line-height:1.4;margin-top:8px;}
-  .temaResLbl{font-family:'Poppins',sans-serif;font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-  .fishCenter{background:var(--ink);color:#fff;border-radius:4px;padding:12px 16px;font-style:italic;margin-bottom:16px;font-size:14px;}
-  .fishLabel{font-family:'Poppins',sans-serif;font-size:11px;color:var(--amber);font-style:normal;letter-spacing:.04em;display:block;margin-bottom:4px;}
-  .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  .catBox{border:1px solid var(--line);border-radius:4px;padding:12px;background:#fafbf9;}
-  .catTitle{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);margin-bottom:8px;}
-  .causa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:3px;padding:5px 8px;margin-bottom:5px;}
-  .causa button{border:none;background:transparent;color:#b04a3a;font-size:16px;line-height:1;padding:0;}
-  .addInput{border:1px dashed var(--line);border-radius:3px;padding:6px 8px;font-size:13px;background:transparent;}
-  .peItem{border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:4px;padding:14px;margin-bottom:12px;}
-  .peHead{display:flex;gap:10px;align-items:center;margin-bottom:6px;}
-  .peTag{font-family:'Poppins',sans-serif;background:var(--ink);color:#fff;font-size:12px;padding:2px 8px;border-radius:3px;}
-  .peCat{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);}
-  .peProblem{font-size:15px;font-weight:500;margin-bottom:8px;}
-  .peTool{font-size:13px;color:var(--teal);background:#eef5f4;padding:6px 10px;border-radius:4px;}
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
-  .toast.show{opacity:1;}
-  .toast.err{background:#9a3b2c;}
-  /* tabs */
-  .tabs{display:flex;gap:8px;margin-bottom:20px;}
-  .tab{padding:8px 16px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:14px;font-weight:500;}
-  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink);}
-  /* lista */
-  .listItem{border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:12px;background:#fff;}
-  .listMeta{font-family:'Poppins',sans-serif;font-size:12px;color:#8a948f;margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap;}
-  .listTema{font-family:'Poppins',sans-serif;font-size:15px;margin-bottom:6px;}
-  .listPg{font-size:13px;color:#4a5a60;}
-  .badge{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:11px;}
-  @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="kicker">URP · INGENIERÍA · LÍNEAS DE INVESTIGACIÓN 2026–2030</div>
-  <h1>Del problema empresarial al planteamiento</h1>
-  <p class="sub">Define problema y delimitaciones, fija el propósito, ancla en una línea oficial, arma el tema, formula el problema general y derívalo en un Ishikawa.</p>
+import React, { useState, useMemo } from "react";
 
-  <div class="tabs">
-    <button class="tab on" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
-    <button class="tab" id="tabLista" onclick="mostrarTab('lista')">Planteamientos guardados</button>
-  </div>
+// ============================================================================
+//  PLANTEAMIENTO INVESTIGATIVO — Escuela Profesional de Ingeniería Industrial
+//  Universidad Ricardo Palma
+//
+//  Flujo encadenado de 8 pasos. El Paso 1 (Descripción del problema) sigue
+//  literalmente la guía del "Manual para la elaboración del proyecto de
+//  tesis" (URP, 2020, p. 8): el problema debe documentar (a) la población
+//  afectada, (b) las posibles causas raíz, (c) las consecuencias,
+//  (d) dónde/cómo/cuándo/bajo qué condiciones se manifiesta, y
+//  (e) la magnitud o impacto (económico, productivo, en el servicio, etc.).
+//
+//  Los ejemplos ilustrativos que aparecen dentro de cada recuadro provienen
+//  de un trabajo real del curso Taller de Investigación en Ingeniería I
+//  (gestión por procesos aplicada al proceso de adquisición). El nombre de
+//  la empresa se mantiene reservado como [Empresa reservada], a pedido de
+//  la estudiante.
+// ============================================================================
 
-  <!-- ============ VISTA FLUJO ============ -->
-  <div id="vistaFlujo">
-    <div class="stepper" id="stepper"></div>
-    <div id="pasos"></div>
-  </div>
-
-  <!-- ============ VISTA LISTA ============ -->
-  <div id="vistaLista" style="display:none;">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-        <h2 style="margin:0;">Planteamientos guardados</h2>
-        <button class="btnGhost" onclick="cargarLista()">↻ Actualizar</button>
-      </div>
-      <div id="listaCont" style="margin-top:16px;"><p class="note">Cargando…</p></div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ============================================================
-//  CONFIGURACIÓN
-// ============================================================
-var PROXY_URL = "https://script.google.com/macros/s/AKfycbyeMZERRsQNsSUsdKet60IqndE2QWc_rORm0n6dFml7Gnf9-8ZEp71ZSuuWKurQM2JV/exec";
-
-// Habilitar cuando actives la IA en el proxy (ruta action=ia).
-var IA_ACTIVA = false;
-
-// Field IDs de QuintaDB (para leer registros en la vista de lista)
-var FIELD = {
-  problema_empresarial : 'a2lZZdKmjctPLGBfJcGJWS',
-  empresa              : 'cCDSkvW6TcNyo-WRq7bCk4',
-  ubicacion            : 'b7cmoanCjfW6BcNsjrkSo7',
-  mapa                 : 'ddOSoOo8jjW50fWOaWntGQ',
-  pretest              : 'btW4hdNYbeW4pcHwWpzmkV',
-  test                 : 'ddVHFdTCjndOoRW6ScWOfV',
-  postest              : 'cqj8oCqYnnxldcNGGvW6SU',
-  proposito            : 'bWD8o5W4bbx7r6W7fydmoA',
-  linea                : 'ddLIhdOmjnuOoTnCkAW6jz',
-  origen_linea         : 'ddLSkDn8nab6JcSXT8xmkE',
-  tema                 : 'cUfSonW7DoW7BcRJhcNxjP',
-  problema_general     : 'dcPuBdImjkW4FdHrRdGSoE',
-  problemas_especificos: 'ddTbpdUCjiW6flW5W0WPvR',
-  estudiante_grupo     : 'cuW51jWQTpWRyjbmkWmmoQ',
-  curso                : 'cZlIbGW6jiaOoZW4hcL8oR',
-  fecha_registro       : 'ddKCoGv8nkdikTW7n-m8ot'
+// ---- Paleta: "expediente técnico" — papel kraft, folios, sello institucional
+const T = {
+  paper: "#F6F3EC",      // fondo papel
+  paperDeep: "#EDE8DA",  // panel secundario
+  ink: "#26241E",         // texto principal, casi negro cálido
+  inkSoft: "#5C584C",     // texto secundario
+  line: "#D8D2C0",        // hairlines
+  rule: "#B9B192",        // reglas más marcadas
+  urp: "#1F5C3F",         // verde institucional URP
+  urpDeep: "#123A28",
+  clay: "#A85C32",        // sello / acento cálido para alertas suaves
+  gold: "#8C7530",        // folios / numeración
+  ok: "#2E6B4F",
 };
 
-// ============================================================
-//  DATOS: 14 líneas de Ingeniería URP 2026-2030
-// ============================================================
-var LINEAS = [
-  "Ingeniería estructural y de materiales",
-  "Ingeniería hidráulica y gestión de recursos hídricos",
-  "Mecánica de suelos, geotecnia y pavimentos",
-  "Planeamiento y optimización de procesos (T)",
-  "Sostenibilidad, eficiencia energética y evaluación del impacto ambiental (T)",
-  "Ingeniería vial y gestión del transporte",
-  "Planeamiento, gestión de operaciones, cadena de suministro y excelencia operacional",
-  "Procesamiento digital, visión artificial y sistemas embebidos",
-  "Control y automatización de procesos",
-  "Diseño, manufactura e ingeniería asistida por computadora, CAD/CAM/CAE",
-  "Robótica, sistemas mecatrónicos, biomecatrónicos y dispositivos médicos",
-  "Inteligencia artificial, ciencia de datos y sistemas inteligentes (T)",
-  "Ingeniería de software (T)",
-  "Sistemas de información y tecnologías de información"
+const FONT_DISPLAY = "'Source Serif 4', 'Georgia', serif";
+const FONT_BODY = "'Source Serif 4', Georgia, serif";
+const FONT_MONO = "'IBM Plex Mono', 'Courier New', monospace";
+
+// ----------------------------------------------------------------------------
+// Datos institucionales: 8 áreas / 60 líneas de investigación (resumen guía)
+// ----------------------------------------------------------------------------
+const AREAS = [
+  {
+    id: 1,
+    nombre: "Gestión de la Producción y Operaciones",
+    lineas: [
+      "Planeamiento y control de la producción",
+      "Gestión de la calidad y mejora continua",
+      "Diseño y distribución de plantas",
+      "Estudio del trabajo y productividad",
+      "Automatización y sistemas de manufactura",
+      "Mantenimiento industrial",
+      "Gestión de procesos (BPM)",
+      "Manufactura esbelta (Lean Manufacturing)",
+    ],
+  },
+  {
+    id: 2,
+    nombre: "Logística y Cadena de Suministro",
+    lineas: [
+      "Gestión de inventarios y almacenes",
+      "Gestión de compras y abastecimiento",
+      "Distribución y transporte",
+      "Diseño de cadenas de suministro",
+      "Logística inversa",
+      "Gestión de proveedores",
+      "Comercio exterior y aduanas",
+    ],
+  },
+  {
+    id: 3,
+    nombre: "Gestión de la Calidad",
+    lineas: [
+      "Sistemas de gestión de calidad (ISO 9001)",
+      "Control estadístico de procesos",
+      "Six Sigma",
+      "Auditoría de calidad",
+      "Gestión por procesos",
+      "Metrología y calibración",
+      "Aseguramiento de la calidad",
+    ],
+  },
+  {
+    id: 4,
+    nombre: "Investigación de Operaciones y Optimización",
+    lineas: [
+      "Modelos de programación lineal y entera",
+      "Simulación de sistemas",
+      "Teoría de colas",
+      "Optimización de rutas y distribución",
+      "Programación de operaciones (scheduling)",
+      "Modelos de decisión multicriterio",
+    ],
+  },
+  {
+    id: 5,
+    nombre: "Seguridad y Salud Ocupacional / Ambiental",
+    lineas: [
+      "Sistemas de gestión de SST (ISO 45001)",
+      "Gestión ambiental (ISO 14001)",
+      "Evaluación de riesgos laborales",
+      "Ergonomía",
+      "Gestión de residuos industriales",
+      "Producción más limpia",
+    ],
+  },
+  {
+    id: 6,
+    nombre: "Gestión Financiera y Proyectos de Inversión",
+    lineas: [
+      "Evaluación de proyectos de inversión",
+      "Análisis de costos industriales",
+      "Gestión de riesgo financiero",
+      "Formulación de planes de negocio",
+      "Indicadores de gestión (KPI)",
+    ],
+  },
+  {
+    id: 7,
+    nombre: "Tecnologías de la Información Aplicadas",
+    lineas: [
+      "Sistemas de información gerencial",
+      "Automatización robótica de procesos (RPA)",
+      "Business Intelligence aplicado a operaciones",
+      "Transformación digital industrial",
+      "Internet de las cosas (IoT) en manufactura",
+      "ERP y sistemas integrados de gestión",
+    ],
+  },
+  {
+    id: 8,
+    nombre: "Gestión Estratégica y Organizacional",
+    lineas: [
+      "Planeamiento estratégico",
+      "Gestión del talento humano",
+      "Responsabilidad social empresarial",
+      "Cultura organizacional y cambio",
+      "Gestión del conocimiento",
+      "Modelos de negocio (Canvas)",
+    ],
+  },
 ];
-var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","General","Ishikawa","Específicos"];
 
-function limpiarLinea(l){ return l.replace(/\s*\(T\)\s*$/,'').trim(); }
-function extraerCoords(url){
-  if(!url) return '';
-  var t=url.trim();
-  var m = t.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || t.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/) || t.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if(m) return m[1]+','+m[2];
-  var d=t.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);
-  if(d) return d[1]+','+d[2];
-  return '';
-}
-
-// ============================================================
-//  ESTADO
-// ============================================================
-var S = {
-  paso:1,
-  problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
-  pretest:'', test:'', postest:'',
-  proposito:'', lineaIdx:null, adoptada:null,
-  tema:'', problemaGeneral:'',
-  causas:{}, especificos:[],
-  estudiante:'', curso:''
+// ----------------------------------------------------------------------------
+// Ejemplo guía (empresa reservada) — usado como referencia dentro de cada paso
+// ----------------------------------------------------------------------------
+const EJ = {
+  poblacion:
+    "El personal del área de adquisiciones (3 analistas y 1 jefatura) y las áreas usuarias internas de [Empresa reservada], que dependen de estas compras para sostener sus operaciones.",
+  causas:
+    "Falta de un procedimiento documentado de compras; ausencia de un sistema que centralice órdenes y proveedores; dependencia de hojas de cálculo dispersas; falta de indicadores de seguimiento a tiempos de entrega.",
+  consecuencias:
+    "Retrasos recurrentes en la entrega de materiales a las áreas usuarias, sobrecostos por compras urgentes fuera de negociación y pérdida de trazabilidad de las órdenes emitidas.",
+  contexto:
+    "Se manifiesta de forma continua en la sede principal de [Empresa reservada], con mayor incidencia en los cierres de mes, cuando confluyen varias solicitudes de compra simultáneas sin un orden de prioridad definido.",
+  magnitud:
+    "En el último semestre, el 38% de las órdenes de compra registraron un retraso mayor a 5 días hábiles respecto a la fecha comprometida, generando un sobrecosto estimado de compras urgentes.",
 };
-CATEGORIAS.forEach(function(c){ S.causas[c]=[]; });
 
-function lineaTexto(){
-  var l = S.adoptada ? S.adoptada.texto : (S.lineaIdx!==null?LINEAS[S.lineaIdx]:null);
-  return l ? limpiarLinea(l) : null;
-}
-function periodo(){
-  if(S.pretest && S.postest) return S.pretest+' – '+S.postest;
-  return S.pretest||S.postest||'[periodo]';
-}
-function anio(){
-  var t=(S.pretest||S.test||S.postest||'');
-  var m=t.match(/(20\d{2}|19\d{2})/); return m?m[1]:'[año]';
-}
-function armarTema(){
-  if(!S.proposito || !lineaTexto()) return '';
-  var p = S.proposito.trim().replace(/\.?\s*$/,'');
-  return p+' mediante '+lineaTexto()+' en la empresa '+(S.empresa||'[Empresa]')+' en el periodo '+periodo();
-}
+const STEP_DEFS = [
+  { id: 1, corto: "Problema", titulo: "Descripción del problema" },
+  { id: 2, corto: "Delimitación", titulo: "Delimitación del estudio" },
+  { id: 3, corto: "Propósito", titulo: "Importancia y justificación" },
+  { id: 4, corto: "Línea URP", titulo: "Área y línea de investigación" },
+  { id: 5, corto: "Tema", titulo: "Tema de investigación" },
+  { id: 6, corto: "Problema general", titulo: "Formulación del problema general" },
+  { id: 7, corto: "Ishikawa", titulo: "Causas raíz (diagrama de Ishikawa)" },
+  { id: 8, corto: "Problemas específicos", titulo: "Problemas específicos y herramientas" },
+];
 
-// ============================================================
-//  RENDER
-// ============================================================
-function mostrarTab(cual){
-  document.getElementById('vistaFlujo').style.display = cual==='flujo'?'block':'none';
-  document.getElementById('vistaLista').style.display = cual==='lista'?'block':'none';
-  document.getElementById('tabFlujo').classList.toggle('on', cual==='flujo');
-  document.getElementById('tabLista').classList.toggle('on', cual==='lista');
-  if(cual==='lista') cargarLista();
-}
-
-function renderStepper(){
-  var h='';
-  for(var i=0;i<PASOS_NOMBRES.length;i++){
-    var n=i+1;
-    h+='<div class="step"><div class="dot '+(n<=S.paso?'on':'')+'">'+n+'</div>'+
-       '<span class="'+(n===S.paso?'on':'')+'">'+PASOS_NOMBRES[i]+'</span></div>';
-  }
-  document.getElementById('stepper').innerHTML=h;
+// ----------------------------------------------------------------------------
+// Componentes de apoyo
+// ----------------------------------------------------------------------------
+function Folio({ n }) {
+  return (
+    <span
+      style={{
+        fontFamily: FONT_MONO,
+        fontSize: 11,
+        letterSpacing: "0.08em",
+        color: T.gold,
+      }}
+    >
+      FOLIO {String(n).padStart(2, "0")}
+    </span>
+  );
 }
 
-function render(){
-  renderStepper();
-  var c=document.getElementById('pasos'), h='';
-  if(S.paso===1){
-    h='<div class="card"><h2>01 · Problema identificado en la empresa</h2>'+
-      '<textarea rows="5" id="f_prob" placeholder="Describe el problema observado: contexto, síntomas, indicador afectado (p. ej. baja Exactitud de Registro de Inventarios), impacto…">'+esc(S.problemaEmpresa)+'</textarea>'+
-      '<div class="actions"><span></span><button class="btn" onclick="p1next()">Continuar →</button></div></div>';
-  }
-  else if(S.paso===2){
-    h='<div class="card"><h2>02 · Delimitación</h2>'+
-      '<div class="blockLbl">◆ Delimitación espacial</div>'+
-      '<div class="row2"><div><label>Empresa / unidad de estudio</label>'+
-      '<input id="f_emp" value="'+esc(S.empresa)+'" placeholder="Nombre de la empresa o área"></div>'+
-      '<div><label>Ubicación (distrito, ciudad)</label>'+
-      '<input id="f_ubi" value="'+esc(S.ubicacion)+'" placeholder="Ej. Ate, Lima"></div></div>'+
-      '<label>Link de Google Maps</label>'+
-      '<input id="f_map" value="'+esc(S.mapsLink)+'" oninput="onMaps()" placeholder="Pega el link de Google Maps (barra de direcciones)">'+
-      '<div id="mapInfo"></div>'+
-      '<div class="blockLbl" style="margin-top:22px;">◆ Delimitación temporal · diseño pre-post</div>'+
-      '<p class="note">Define preliminarmente los momentos del estudio (fechas o meses).</p>'+
-      '<div class="row3"><div><label>Pretest</label><input id="f_pre" value="'+esc(S.pretest)+'" placeholder="Ej. mar 2026"></div>'+
-      '<div><label>Test (intervención)</label><input id="f_tst" value="'+esc(S.test)+'" placeholder="Ej. abr–may 2026"></div>'+
-      '<div><label>Postest</label><input id="f_pos" value="'+esc(S.postest)+'" placeholder="Ej. jun 2026"></div></div>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(1)">← Atrás</button>'+
-      '<button class="btn" onclick="p2next()">Continuar →</button></div></div>';
-  }
-  else if(S.paso===3){
-    h='<div class="card"><h2>03 · Propósito de la investigación</h2>'+
-      '<p class="note">¿Qué busca lograr la investigación? Escríbelo en tus palabras (p. ej. "mejorar la exactitud del registro de inventarios reduciendo errores operativos").</p>'+
-      '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…">'+esc(S.proposito)+'</textarea>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
-      '<button class="btn" onclick="p3next()">Continuar →</button></div></div>';
-  }
-  else if(S.paso===4){
-    var lo='';
-    for(var i=0;i<LINEAS.length;i++){
-      lo+='<button class="lineOpt '+(S.lineaIdx===i?'sel':'')+'" onclick="selLinea('+i+')">'+
-          '<span class="lineNum">'+(i+1)+'</span><span>'+esc(LINEAS[i])+'</span></button>';
-    }
-    h='<div class="card"><h2>04 · Elige la línea de investigación de Ingeniería</h2>'+
-      '<div class="lineList">'+lo+'</div>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(3)">← Atrás</button>'+
-      '<button class="btn" onclick="p4next()" '+(S.lineaIdx===null?'disabled':'')+'>Continuar al tema →</button></div></div>';
-  }
-  else if(S.paso===5){
-    S.tema = S.tema || armarTema();
-    h='<div class="card"><h2>05 · Tema de investigación</h2>'+
-      '<p class="note">El tema combina tu propósito con la línea, la empresa y el periodo. Puedes editarlo.</p>'+
-      '<div class="temaResLbl">Tema</div>'+
-      '<textarea rows="3" id="f_tema" style="font-family:Poppins,sans-serif;font-size:16px;">'+esc(S.tema)+'</textarea>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(4)">← Cambiar línea</button>'+
-      '<button class="btn" onclick="p5next()">Continuar →</button></div></div>';
-  }
-  else if(S.paso===6){
-    h='<div class="card"><h2>06 · Problema general</h2>'+
-      '<p class="note">Redáctalo con la fórmula: ¿De qué manera [línea] mejora [indicador] en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
-      '<textarea rows="3" id="f_pg" style="font-style:italic;" placeholder="¿De qué manera… mejora… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(5)">← Volver al tema</button>'+
-      '<button class="btn" onclick="p6next()">Continuar al Ishikawa →</button></div></div>';
-  }
-  else if(S.paso===7){
-    var boxes='';
-    CATEGORIAS.forEach(function(cat){
-      var items='';
-      S.causas[cat].forEach(function(cz,idx){
-        items+='<div class="causa"><span>'+esc(cz)+'</span><button onclick="quitarCausa(\''+cat+'\','+idx+')">×</button></div>';
-      });
-      boxes+='<div class="catBox"><div class="catTitle">'+cat+'</div>'+items+
-             '<input class="addInput" style="width:100%;" placeholder="+ causa" onkeydown="if(event.key===\'Enter\'){agregarCausa(\''+cat+'\',this.value);this.value=\'\';}"></div>';
-    });
-    h='<div class="card"><h2>07 · Diagrama de Ishikawa (6M)</h2>'+
-      '<p class="note">El problema central es el problema identificado en la empresa. Agrega o edita las causas por categoría.</p>'+
-      '<div class="fishCenter"><span class="fishLabel">Problema central (empresa):</span>'+esc(S.problemaEmpresa||'—')+'</div>'+
-      '<div class="grid6">'+boxes+'</div>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
-      '<button class="btn" onclick="p7next()">Continuar →</button></div></div>';
-  }
-  else if(S.paso===8){
-    var pe='';
-    S.especificos.forEach(function(e,i){
-      pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+e.categoria+'</span></div>'+
-          '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
-          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema específico derivado de esta causa…">'+esc(e.problema)+'</textarea>'+
-          '<label>Herramienta enmarcada en la línea</label>'+
-          '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
-    });
-    if(!pe) pe='<p class="note">No hay causas en el Ishikawa. Vuelve al paso anterior y agrega causas.</p>';
-    h='<div class="card"><h2>08 · Problemas específicos y herramientas</h2>'+
-      '<p class="note">Cada causa del Ishikawa genera un problema específico. Complétalo con su herramienta enmarcada en la línea.</p>'+
-      pe+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (para guardar)</div>'+
-      '<div class="row2"><div><label>Estudiante / grupo</label><input id="f_est" value="'+esc(S.estudiante)+'" placeholder="Ej. Grupo 3 - Apellidos"></div>'+
-      '<div><label>Curso</label><input id="f_curso" value="'+esc(S.curso)+'" placeholder="Ej. TII / DEPI"></div></div>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Ishikawa</button>'+
-      '<button class="btn" onclick="guardar()" id="btnGuardar">Guardar en QuintaDB</button></div></div>';
-  }
-  c.innerHTML=h;
+function GuideField({ label, hint, value, onChange, example, minRows = 3 }) {
+  const [showEj, setShowEj] = useState(false);
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+        <label
+          style={{
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 600,
+            fontSize: 15.5,
+            color: T.ink,
+          }}
+        >
+          {label}
+        </label>
+        <button
+          onClick={() => setShowEj((s) => !s)}
+          style={{
+            fontFamily: FONT_MONO,
+            fontSize: 10.5,
+            letterSpacing: "0.05em",
+            color: T.urp,
+            background: "none",
+            border: `1px solid ${T.urp}`,
+            borderRadius: 3,
+            padding: "2px 7px",
+            cursor: "pointer",
+          }}
+        >
+          {showEj ? "OCULTAR EJEMPLO" : "VER EJEMPLO"}
+        </button>
+      </div>
+      <p style={{ fontFamily: FONT_BODY, fontSize: 13, color: T.inkSoft, margin: "0 0 8px", fontStyle: "italic" }}>
+        {hint}
+      </p>
+      {showEj && (
+        <div
+          style={{
+            background: T.paperDeep,
+            borderLeft: `3px solid ${T.clay}`,
+            padding: "10px 12px",
+            marginBottom: 10,
+            fontFamily: FONT_BODY,
+            fontSize: 13.5,
+            color: T.inkSoft,
+            lineHeight: 1.5,
+          }}
+        >
+          {example}
+        </div>
+      )}
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={minRows}
+        placeholder="Escribe aquí…"
+        style={{
+          width: "100%",
+          fontFamily: FONT_BODY,
+          fontSize: 15,
+          lineHeight: 1.55,
+          color: T.ink,
+          background: "#FFFFFF",
+          border: `1px solid ${T.line}`,
+          borderRadius: 4,
+          padding: "10px 12px",
+          resize: "vertical",
+          boxSizing: "border-box",
+        }}
+      />
+    </div>
+  );
 }
 
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function go(n){ S.paso=n; render(); window.scrollTo(0,0); }
+// ----------------------------------------------------------------------------
+// Paso 1 — Descripción del problema (5 campos guiados según el Manual URP 2020)
+// ----------------------------------------------------------------------------
+function Paso1Problema({ data, setData }) {
+  const campos = [
+    {
+      key: "poblacion",
+      label: "1. Población afectada",
+      hint: "¿Quiénes son afectados directa o indirectamente por el problema?",
+      example: EJ.poblacion,
+    },
+    {
+      key: "causas",
+      label: "2. Posibles causas raíz",
+      hint: "¿Cuáles son las causas raíz que provocan el problema? (aún sin analizarlas a fondo; el Ishikawa del Paso 7 las desarrollará)",
+      example: EJ.causas,
+    },
+    {
+      key: "consecuencias",
+      label: "3. Consecuencias",
+      hint: "¿Cuál o cuáles son las consecuencias del problema?",
+      example: EJ.consecuencias,
+    },
+    {
+      key: "contexto",
+      label: "4. Dónde, cómo, cuándo y bajo qué condiciones se manifiesta",
+      hint: "Describe el escenario concreto en que ocurre el problema.",
+      example: EJ.contexto,
+    },
+    {
+      key: "magnitud",
+      label: "5. Magnitud del problema",
+      hint: "¿Cuál es su impacto económico, productivo, en el servicio al cliente, etc.? Usa cifras o evidencia siempre que sea posible.",
+      example: EJ.magnitud,
+    },
+  ];
 
-// ---- navegación con captura de campos ----
-function p1next(){ S.problemaEmpresa=val('f_prob'); if(!S.problemaEmpresa.trim())return toast('Describe el problema',true); go(2); }
-function p2next(){
-  S.empresa=val('f_emp'); S.ubicacion=val('f_ubi'); S.mapsLink=val('f_map');
-  S.pretest=val('f_pre'); S.test=val('f_tst'); S.postest=val('f_pos');
-  if(!S.empresa.trim())return toast('Indica la empresa',true);
-  if(!S.pretest.trim())return toast('Indica al menos el Pretest',true);
-  go(3);
-}
-function p3next(){ S.proposito=val('f_prop'); if(!S.proposito.trim())return toast('Escribe el propósito',true); go(4); }
-function selLinea(i){ S.lineaIdx=i; S.adoptada=null; render(); }
-function p4next(){ if(S.lineaIdx===null)return; if(!S.adoptada)S.adoptada={texto:LINEAS[S.lineaIdx],origen:'oficial'}; S.tema=armarTema(); go(5); }
-function p5next(){ S.tema=val('f_tema'); go(6); }
-function p6next(){ S.problemaGeneral=val('f_pg'); if(!S.problemaGeneral.trim())return toast('Redacta el problema general',true); armarEspecificos(); go(7); }
-function p7next(){
-  var total=0; CATEGORIAS.forEach(function(c){ total+=S.causas[c].length; });
-  if(total===0)return toast('Agrega al menos una causa',true);
-  armarEspecificos(); go(8);
-}
-function val(id){ var e=document.getElementById(id); return e?e.value:''; }
+  const completos = campos.filter((c) => (data[c.key] || "").trim().length > 15).length;
 
-function onMaps(){
-  S.mapsLink=val('f_map');
-  var coords=extraerCoords(S.mapsLink);
-  var info=document.getElementById('mapInfo'), h='';
-  if(S.mapsLink && !coords){
-    h='<div class="hintWarn">No se detectaron coordenadas. Copia el link desde la barra de direcciones de Google Maps (trae @lat,long), o escribe "lat, long".</div>';
-  } else if(coords){
-    h='<div class="coordsBox">Coordenadas detectadas (se guardan en QuintaDB): <b>'+coords+'</b>'+
-      '<a class="mapLink" href="'+esc(S.mapsLink)+'" target="_blank" rel="noreferrer">↗ Abrir</a></div>';
-  }
-  info.innerHTML=h;
-}
+  return (
+    <div>
+      <div
+        style={{
+          background: T.paperDeep,
+          border: `1px solid ${T.line}`,
+          borderRadius: 4,
+          padding: "12px 14px",
+          marginBottom: 20,
+          fontFamily: FONT_BODY,
+          fontSize: 13.5,
+          color: T.inkSoft,
+          lineHeight: 1.5,
+        }}
+      >
+        <strong style={{ color: T.urpDeep }}>Guía institucional (Manual URP 2020, p. 8):</strong>{" "}
+        la descripción del problema no es un relato libre — debe precisar la población afectada, las
+        posibles causas raíz, las consecuencias, el contexto de manifestación y la magnitud del
+        problema, respaldados en cifras, datos o evidencias.
+      </div>
 
-function agregarCausa(cat,v){ if(!v.trim())return; S.causas[cat].push(v.trim()); render(); }
-function quitarCausa(cat,i){ S.causas[cat].splice(i,1); render(); }
+      {campos.map((c) => (
+        <GuideField
+          key={c.key}
+          label={c.label}
+          hint={c.hint}
+          example={c.example}
+          value={data[c.key] || ""}
+          onChange={(v) => setData({ ...data, [c.key]: v })}
+        />
+      ))}
 
-// Construye problemas específicos desde las causas (preservando lo ya editado)
-function armarEspecificos(){
-  var previos={};
-  S.especificos.forEach(function(e){ previos[e.categoria+'|'+e.causa]=e; });
-  var lista=[];
-  CATEGORIAS.forEach(function(cat){
-    S.causas[cat].forEach(function(cz){
-      var k=cat+'|'+cz;
-      lista.push(previos[k] || {categoria:cat, causa:cz, problema:'', herramienta:''});
-    });
-  });
-  S.especificos=lista;
-}
-
-// Serializa los específicos a texto (uno por línea) para el campo de QuintaDB
-function serializarEspecificos(){
-  return S.especificos.map(function(e,i){
-    return 'PE'+(i+1)+' ['+e.categoria+'] '+(e.problema||'') +' || Herramienta: '+(e.herramienta||'');
-  }).join('\n');
-}
-
-// ============================================================
-//  GUARDAR (POST al proxy)
-// ============================================================
-function guardar(){
-  S.estudiante=val('f_est'); S.curso=val('f_curso');
-  var btn=document.getElementById('btnGuardar');
-  btn.disabled=true; btn.textContent='Guardando…';
-
-  var hoy=new Date();
-  var fecha=hoy.getFullYear()+'-'+pad(hoy.getMonth()+1)+'-'+pad(hoy.getDate());
-  var origen = S.adoptada && S.adoptada.origen==='IA' ? ('IA-'+S.adoptada.tipo) : 'oficial';
-
-  var payload={
-    problema_empresarial:S.problemaEmpresa,
-    empresa:S.empresa,
-    ubicacion:S.ubicacion,
-    mapa:extraerCoords(S.mapsLink)||S.mapsLink,
-    pretest:S.pretest, test:S.test, postest:S.postest,
-    proposito:S.proposito,
-    linea:lineaTexto(),
-    origen_linea:origen,
-    tema:S.tema,
-    problema_general:S.problemaGeneral,
-    problemas_especificos:serializarEspecificos(),
-    estudiante_grupo:S.estudiante,
-    curso:S.curso,
-    fecha_registro:fecha
-  };
-
-  // Guardado por JSONP vía GET (patrón del ecosistema URP, evita CORS con Apps Script)
-  jsonpCall({ payload: encodeURIComponent(JSON.stringify(payload)) }, function(res){
-    btn.disabled=false; btn.textContent='Guardar en QuintaDB';
-    if(res && res.ok){
-      toast('✓ Planteamiento guardado');
-      setTimeout(function(){ mostrarTab('lista'); }, 800);
-    } else {
-      toast('Error al guardar: '+((res&&res.error)||'desconocido'),true);
-    }
-  }, function(){
-    btn.disabled=false; btn.textContent='Guardar en QuintaDB';
-    toast('Error de red al guardar',true);
-  });
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontFamily: FONT_MONO,
+          fontSize: 11.5,
+          color: completos === 5 ? T.ok : T.inkSoft,
+          letterSpacing: "0.04em",
+        }}
+      >
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: completos === 5 ? T.ok : T.rule,
+            display: "inline-block",
+          }}
+        />
+        {completos} / 5 ASPECTOS DOCUMENTADOS
+      </div>
+    </div>
+  );
 }
 
-// JSONP helper: inyecta un <script> con callback para saltar CORS
-var _jsonpId=0;
-function jsonpCall(params, onOk, onErr){
-  _jsonpId++;
-  var cbName='_pi_cb_'+_jsonpId;
-  var timer=setTimeout(function(){ cleanup(); if(onErr)onErr(); }, 20000);
-  window[cbName]=function(data){ cleanup(); if(onOk)onOk(data); };
-  function cleanup(){ clearTimeout(timer); try{delete window[cbName];}catch(e){} if(sc&&sc.parentNode)sc.parentNode.removeChild(sc); }
-  var qs='callback='+cbName;
-  for(var k in params){ qs+='&'+k+'='+params[k]; }
-  var sc=document.createElement('script');
-  sc.src=PROXY_URL+'?'+qs;
-  sc.onerror=function(){ cleanup(); if(onErr)onErr(); };
-  document.body.appendChild(sc);
-}
-function pad(n){ return n<10?'0'+n:''+n; }
-
-// ============================================================
-//  LISTAR (GET al proxy)
-// ============================================================
-function cargarLista(){
-  var cont=document.getElementById('listaCont');
-  cont.innerHTML='<p class="note">Cargando…</p>';
-  jsonpCall({ listar:'1' }, function(res){
-    if(!res || !res.ok){ cont.innerHTML='<p class="hintWarn">No se pudo cargar la lista.</p>'; return; }
-    var recs = (res.data && res.data.records) ? res.data.records : [];
-    if(!recs.length){ cont.innerHTML='<p class="note">Aún no hay planteamientos guardados.</p>'; return; }
-    var h='';
-    // más recientes primero
-    recs.slice().reverse().forEach(function(rec){
-      var v=rec.values||{};
-      function g(k){ return v[FIELD[k]]||''; }
-      h+='<div class="listItem">'+
-         '<div class="listMeta"><span class="badge">'+esc(g('curso')||'—')+'</span>'+
-         '<span>'+esc(g('estudiante_grupo')||'—')+'</span>'+
-         '<span>'+esc(g('empresa')||'')+'</span>'+
-         '<span>'+esc(g('fecha_registro')||'')+'</span></div>'+
-         '<div class="listTema">'+esc(g('tema')||g('problema_general')||'(sin tema)')+'</div>'+
-         '<div class="listPg">'+esc(g('problema_general')||'')+'</div>'+
-         '</div>';
-    });
-    cont.innerHTML=h;
-  }, function(){ cont.innerHTML='<p class="hintWarn">Error de red al cargar.</p>'; });
+// ----------------------------------------------------------------------------
+// Placeholder simple para los pasos 2–8 (estructura de flujo, contenido a
+// desarrollar en la siguiente iteración — se deja el andamiaje visual listo)
+// ----------------------------------------------------------------------------
+function PasoGenerico({ paso, data, setData }) {
+  return (
+    <div>
+      <GuideField
+        label={paso.titulo}
+        hint="Desarrollo de este paso — pendiente de definir contigo el detalle de campos, igual que hicimos en el Paso 1."
+        example="—"
+        value={data.texto || ""}
+        onChange={(v) => setData({ ...data, texto: v })}
+        minRows={5}
+      />
+    </div>
+  );
 }
 
-// ============================================================
-//  TOAST
-// ============================================================
-var toastTimer;
-function toast(msg,err){
-  var t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show'+(err?' err':'');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){ t.className='toast'+(err?' err':''); },3000);
-}
+// ----------------------------------------------------------------------------
+// App principal
+// ----------------------------------------------------------------------------
+export default function PlanteamientoInvestigativo() {
+  const [pasoActual, setPasoActual] = useState(1);
+  const [store, setStore] = useState({});
 
-// init
-render();
-</script>
-</body>
-</html>
+  const setPasoData = (id, data) => setStore((s) => ({ ...s, [id]: data }));
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: T.paper,
+        fontFamily: FONT_BODY,
+        color: T.ink,
+        padding: "28px 18px 60px",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; }
+        ::selection { background: ${T.urp}33; }
+      `}</style>
+
+      {/* Encabezado tipo carátula institucional */}
+      <div style={{ maxWidth: 780, margin: "0 auto 28px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: `2px solid ${T.urp}`, paddingBottom: 10 }}>
+          <div>
+            <div style={{ fontFamily: FONT_MONO, fontSize: 11, letterSpacing: "0.12em", color: T.urp }}>
+              UNIVERSIDAD RICARDO PALMA — ESCUELA PROFESIONAL DE INGENIERÍA INDUSTRIAL
+            </div>
+            <h1 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 26, margin: "4px 0 0", color: T.ink }}>
+              Planteamiento Investigativo
+            </h1>
+          </div>
+          <Folio n={pasoActual} />
+        </div>
+      </div>
+
+      {/* Indicador de flujo (8 pasos) */}
+      <div style={{ maxWidth: 780, margin: "0 auto 26px", display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {STEP_DEFS.map((s) => {
+          const activo = s.id === pasoActual;
+          const hecho = s.id < pasoActual;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setPasoActual(s.id)}
+              style={{
+                fontFamily: FONT_MONO,
+                fontSize: 11,
+                letterSpacing: "0.03em",
+                padding: "6px 10px",
+                borderRadius: 3,
+                border: `1px solid ${activo ? T.urp : T.line}`,
+                background: activo ? T.urp : hecho ? T.paperDeep : "transparent",
+                color: activo ? "#fff" : hecho ? T.urpDeep : T.inkSoft,
+                cursor: "pointer",
+              }}
+            >
+              {String(s.id).padStart(2, "0")} · {s.corto}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Cuerpo del paso actual */}
+      <div
+        style={{
+          maxWidth: 780,
+          margin: "0 auto",
+          background: "#fff",
+          border: `1px solid ${T.line}`,
+          borderRadius: 6,
+          padding: "26px 28px 30px",
+        }}
+      >
+        <h2 style={{ fontFamily: FONT_DISPLAY, fontWeight: 600, fontSize: 20, margin: "0 0 4px", color: T.urpDeep }}>
+          {STEP_DEFS[pasoActual - 1].titulo}
+        </h2>
+        <div style={{ height: 1, background: T.rule, margin: "10px 0 22px" }} />
+
+        {pasoActual === 1 ? (
+          <Paso1Problema data={store[1] || {}} setData={(d) => setPasoData(1, d)} />
+        ) : (
+          <PasoGenerico paso={STEP_DEFS[pasoActual - 1]} data={store[pasoActual] || {}} setData={(d) => setPasoData(pasoActual, d)} />
+        )}
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 28, paddingTop: 18, borderTop: `1px solid ${T.line}` }}>
+          <button
+            disabled={pasoActual === 1}
+            onClick={() => setPasoActual((p) => Math.max(1, p - 1))}
+            style={{
+              fontFamily: FONT_MONO,
+              fontSize: 12,
+              padding: "9px 16px",
+              borderRadius: 4,
+              border: `1px solid ${T.line}`,
+              background: "transparent",
+              color: pasoActual === 1 ? T.line : T.inkSoft,
+              cursor: pasoActual === 1 ? "not-allowed" : "pointer",
+            }}
+          >
+            ← ANTERIOR
+          </button>
+          <button
+            disabled={pasoActual === 8}
+            onClick={() => setPasoActual((p) => Math.min(8, p + 1))}
+            style={{
+              fontFamily: FONT_MONO,
+              fontSize: 12,
+              padding: "9px 16px",
+              borderRadius: 4,
+              border: "none",
+              background: pasoActual === 8 ? T.line : T.urp,
+              color: "#fff",
+              cursor: pasoActual === 8 ? "not-allowed" : "pointer",
+            }}
+          >
+            SIGUIENTE →
+          </button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 780, margin: "18px auto 0", textAlign: "center", fontFamily: FONT_MONO, fontSize: 10.5, color: T.inkSoft, letterSpacing: "0.05em" }}>
+        LIMA — PERÚ · CONFORME AL MANUAL PARA LA ELABORACIÓN DEL PROYECTO DE TESIS (URP, 2020)
+      </div>
+    </div>
+  );
+}
