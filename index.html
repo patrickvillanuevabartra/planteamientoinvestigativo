@@ -76,6 +76,9 @@
   .listTema{font-family:'Poppins',sans-serif;font-size:15px;margin-bottom:6px;}
   .listPg{font-size:13px;color:#4a5a60;}
   .badge{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:11px;}
+  .ejBtn{background:none;border:1px solid var(--teal);color:var(--teal);border-radius:3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;}
+  .ejBtn:hover{background:#eef5f4;}
+  .ejBox{background:#f4f6f2;border-left:3px solid var(--amber);padding:9px 12px;margin:0 0 8px;font-size:13.5px;color:#555f5a;line-height:1.5;border-radius:3px;}
   @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -161,7 +164,39 @@ var LINEAS = [
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
 var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","General","Ishikawa","Específicos"];
 
+// Ejemplos guía por aspecto del problema (Manual URP 2020, p.8).
+// Basados en un caso real del curso (empresa reservada).
+var EJEMPLO_PROB = {
+  pob: "El personal del área de adquisiciones (3 analistas y 1 jefatura) y las áreas usuarias internas que dependen de estas compras para sostener sus operaciones.",
+  cau: "Falta de un procedimiento documentado de compras; ausencia de un sistema que centralice órdenes y proveedores; dependencia de hojas de cálculo dispersas; falta de indicadores de seguimiento a tiempos de entrega.",
+  con: "Retrasos recurrentes en la entrega de materiales a las áreas usuarias, sobrecostos por compras urgentes fuera de negociación y pérdida de trazabilidad de las órdenes emitidas.",
+  ctx: "Se manifiesta de forma continua en la sede principal, con mayor incidencia en los cierres de mes, cuando confluyen varias solicitudes de compra simultáneas sin un orden de prioridad definido.",
+  mag: "En el último semestre, el 38% de las órdenes de compra registró un retraso mayor a 5 días hábiles respecto a la fecha comprometida, generando un sobrecosto estimado por compras urgentes."
+};
+function toggleEj(id){
+  var el=document.getElementById('ej_'+id);
+  if(el) el.style.display = (el.style.display==='none'||!el.style.display) ? 'block' : 'none';
+}
+
 function limpiarLinea(l){ return l.replace(/\s*\(T\)\s*$/,'').trim(); }
+
+// Consolida los 5 aspectos del problema (Manual URP 2020, p.8) en un texto único.
+// Ese texto es el que usa el Ishikawa (efecto central), el payload y la lista.
+function consolidarProblema(){
+  var partes=[];
+  if(S.probPoblacion)     partes.push('Población afectada: '+S.probPoblacion.trim());
+  if(S.probCausas)        partes.push('Posibles causas raíz: '+S.probCausas.trim());
+  if(S.probConsecuencias) partes.push('Consecuencias: '+S.probConsecuencias.trim());
+  if(S.probContexto)      partes.push('Dónde/cómo/cuándo se manifiesta: '+S.probContexto.trim());
+  if(S.probMagnitud)      partes.push('Magnitud del problema: '+S.probMagnitud.trim());
+  S.problemaEmpresa = partes.join('\n');
+  return S.problemaEmpresa;
+}
+// Cuántos de los 5 aspectos tienen contenido suficiente (>15 caracteres).
+function aspectosCompletos(){
+  var xs=[S.probPoblacion,S.probCausas,S.probConsecuencias,S.probContexto,S.probMagnitud];
+  return xs.filter(function(x){ return (x||'').trim().length>15; }).length;
+}
 function extraerCoords(url){
   if(!url) return '';
   var t=url.trim();
@@ -177,6 +212,8 @@ function extraerCoords(url){
 // ============================================================
 var S = {
   paso:1,
+  // Descripción del problema — 5 aspectos exigidos por el Manual URP 2020 (p.8)
+  probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
   problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
   pretest:'', test:'', postest:'',
   proposito:'', lineaIdx:null, adoptada:null,
@@ -229,8 +266,28 @@ function render(){
   renderStepper();
   var c=document.getElementById('pasos'), h='';
   if(S.paso===1){
-    h='<div class="card"><h2>01 · Problema identificado en la empresa</h2>'+
-      '<textarea rows="5" id="f_prob" placeholder="Describe el problema observado: contexto, síntomas, indicador afectado (p. ej. baja Exactitud de Registro de Inventarios), impacto…">'+esc(S.problemaEmpresa)+'</textarea>'+
+    var n=aspectosCompletos();
+    function campoProb(num,titulo,ejKey,hint,fid,stateKey,ph){
+      return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:16px;">'+
+             '<label style="margin:0;">'+num+' · '+titulo+'</label>'+
+             '<button type="button" class="ejBtn" onclick="toggleEj(\''+ejKey+'\')">ver ejemplo</button></div>'+
+             '<p class="note" style="margin:4px 0 6px;">'+hint+'</p>'+
+             '<div class="ejBox" id="ej_'+ejKey+'" style="display:none;">'+esc(EJEMPLO_PROB[ejKey])+'</div>'+
+             '<textarea rows="2" id="'+fid+'" oninput="S.'+stateKey+'=this.value;refreshCont1()" placeholder="'+ph+'">'+esc(S[stateKey])+'</textarea>';
+    }
+    h='<div class="card"><h2>01 · Descripción del problema</h2>'+
+      '<div class="coordsBox" style="background:#fbf4ee;border-left:3px solid var(--amber);margin-bottom:18px;">'+
+      '<b>Guía institucional (Manual URP 2020, p.8):</b> la descripción del problema no es un relato libre. '+
+      'Debe precisar la población afectada, las posibles causas raíz, las consecuencias, dónde/cómo/cuándo se manifiesta '+
+      'y su magnitud, respaldados en cifras, datos o evidencias.</div>'+
+
+      campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion','Ej. el personal del área de… y las áreas usuarias que dependen de…')+
+      campoProb('2','Posibles causas raíz','cau','¿Qué causas raíz lo provocan? (aún sin analizarlas a fondo; el Ishikawa del paso 7 las desarrollará)','f_cau','probCausas','Ej. falta de un procedimiento documentado; ausencia de un sistema que centralice…')+
+      campoProb('3','Consecuencias','con','¿Cuál o cuáles son las consecuencias del problema?','f_con','probConsecuencias','Ej. retrasos recurrentes en la entrega, sobrecostos, pérdida de trazabilidad…')+
+      campoProb('4','Dónde, cómo, cuándo y bajo qué condiciones se manifiesta','ctx','Describe el escenario concreto en que ocurre el problema.','f_ctx','probContexto','Ej. de forma continua en la sede…, con mayor incidencia en los cierres de mes…')+
+      campoProb('5','Magnitud del problema','mag','¿Cuál es su impacto económico, productivo, en el servicio al cliente, etc.? Usa cifras siempre que puedas.','f_mag','probMagnitud','Ej. en el último semestre el 38% de las órdenes tuvo un retraso mayor a 5 días…')+
+
+      '<div id="cont1" class="listMeta" style="margin-top:16px;align-items:center;">'+contadorTxt(n)+'</div>'+
       '<div class="actions"><span></span><button class="btn" onclick="p1next()">Continuar →</button></div></div>';
   }
   else if(S.paso===2){
@@ -295,9 +352,10 @@ function render(){
       boxes+='<div class="catBox"><div class="catTitle">'+cat+'</div>'+items+
              '<input class="addInput" style="width:100%;" placeholder="+ causa" onkeydown="if(event.key===\'Enter\'){agregarCausa(\''+cat+'\',this.value);this.value=\'\';}"></div>';
     });
+    var efecto = S.probConsecuencias || S.probMagnitud || S.probContexto || '—';
     h='<div class="card"><h2>07 · Diagrama de Ishikawa (6M)</h2>'+
-      '<p class="note">El problema central es el problema identificado en la empresa. Agrega o edita las causas por categoría.</p>'+
-      '<div class="fishCenter"><span class="fishLabel">Problema central (empresa):</span>'+esc(S.problemaEmpresa||'—')+'</div>'+
+      '<p class="note">El efecto (cabeza del pescado) resume el problema descrito en el paso 1. Agrega o edita las causas por categoría.</p>'+
+      '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+esc(efecto)+'</div>'+
       '<div class="grid6">'+boxes+'</div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
       '<button class="btn" onclick="p7next()">Continuar →</button></div></div>';
@@ -325,10 +383,32 @@ function render(){
 }
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Contador "X / 5 aspectos documentados" del Paso 1 (se refresca sin re-render
+// para no perder el foco mientras el usuario escribe).
+function contadorTxt(n){
+  var color = n===5 ? 'var(--teal)' : '#8a948f';
+  var dot   = n===5 ? 'var(--teal)' : 'var(--line)';
+  return '<span style="width:8px;height:8px;border-radius:50%;background:'+dot+';display:inline-block;"></span>'+
+         '<span style="color:'+color+';font-weight:'+(n===5?'600':'400')+';">'+n+' / 5 aspectos documentados</span>';
+}
+function refreshCont1(){
+  var el=document.getElementById('cont1');
+  if(el) el.innerHTML=contadorTxt(aspectosCompletos());
+}
 function go(n){ S.paso=n; render(); window.scrollTo(0,0); }
 
 // ---- navegación con captura de campos ----
-function p1next(){ S.problemaEmpresa=val('f_prob'); if(!S.problemaEmpresa.trim())return toast('Describe el problema',true); go(2); }
+function p1next(){
+  // Capturar por si el navegador no disparó oninput en el último campo
+  S.probPoblacion=val('f_pob'); S.probCausas=val('f_cau');
+  S.probConsecuencias=val('f_con'); S.probContexto=val('f_ctx'); S.probMagnitud=val('f_mag');
+  var n=aspectosCompletos();
+  if(n===0) return toast('Describe el problema según la guía del manual',true);
+  if(n<3)   return toast('Completa al menos 3 de los 5 aspectos del problema',true);
+  consolidarProblema();
+  go(2);
+}
 function p2next(){
   S.empresa=val('f_emp'); S.ubicacion=val('f_ubi'); S.mapsLink=val('f_map');
   S.pretest=val('f_pre'); S.test=val('f_tst'); S.postest=val('f_pos');
