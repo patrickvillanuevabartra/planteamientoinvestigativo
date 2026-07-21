@@ -192,10 +192,10 @@ function consolidarProblema(){
   S.problemaEmpresa = partes.join('\n');
   return S.problemaEmpresa;
 }
-// Cuántos de los 5 aspectos tienen contenido suficiente (>15 caracteres).
+// Cuántos de los 5 aspectos tienen contenido (al menos unos caracteres).
 function aspectosCompletos(){
   var xs=[S.probPoblacion,S.probCausas,S.probConsecuencias,S.probContexto,S.probMagnitud];
-  return xs.filter(function(x){ return (x||'').trim().length>15; }).length;
+  return xs.filter(function(x){ return (x||'').trim().length>=3; }).length;
 }
 function extraerCoords(url){
   if(!url) return '';
@@ -279,7 +279,8 @@ function render(){
       '<div class="coordsBox" style="background:#fbf4ee;border-left:3px solid var(--amber);margin-bottom:18px;">'+
       '<b>Guía institucional (Manual URP 2020, p.8):</b> la descripción del problema no es un relato libre. '+
       'Debe precisar la población afectada, las posibles causas raíz, las consecuencias, dónde/cómo/cuándo se manifiesta '+
-      'y su magnitud, respaldados en cifras, datos o evidencias.</div>'+
+      'y su magnitud, respaldados en cifras, datos o evidencias. '+
+      '<span style="display:block;margin-top:6px;">Completa <b>al menos 3 de los 5</b> aspectos para poder continuar.</span></div>'+
 
       campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion')+
       campoProb('2','Posibles causas raíz','cau','¿Qué causas raíz lo provocan? (aún sin analizarlas a fondo; el Ishikawa del paso 7 las desarrollará)','f_cau','probCausas')+
@@ -387,10 +388,13 @@ function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,
 // Contador "X / 5 aspectos documentados" del Paso 1 (se refresca sin re-render
 // para no perder el foco mientras el usuario escribe).
 function contadorTxt(n){
-  var color = n===5 ? 'var(--teal)' : '#8a948f';
-  var dot   = n===5 ? 'var(--teal)' : 'var(--line)';
+  var ok = n>=3;
+  var color = ok ? 'var(--teal)' : '#8a948f';
+  var dot   = ok ? 'var(--teal)' : 'var(--line)';
+  var req   = ok ? 'requisito cumplido' : 'completa al menos 3 de 5 para continuar';
   return '<span style="width:8px;height:8px;border-radius:50%;background:'+dot+';display:inline-block;"></span>'+
-         '<span style="color:'+color+';font-weight:'+(n===5?'600':'400')+';">'+n+' / 5 aspectos documentados</span>';
+         '<span style="color:'+color+';font-weight:'+(ok?'600':'400')+';">'+n+' / 5 aspectos documentados</span>'+
+         '<span style="color:#8a948f;font-size:11.5px;">· '+req+'</span>';
 }
 function refreshCont1(){
   var el=document.getElementById('cont1');
@@ -404,8 +408,8 @@ function p1next(){
   S.probPoblacion=val('f_pob'); S.probCausas=val('f_cau');
   S.probConsecuencias=val('f_con'); S.probContexto=val('f_ctx'); S.probMagnitud=val('f_mag');
   var n=aspectosCompletos();
-  if(n===0) return toast('Describe el problema según la guía del manual',true);
-  if(n<3)   return toast('Completa al menos 3 de los 5 aspectos del problema',true);
+  if(n===0) return toast('Completa los aspectos del problema para continuar',true);
+  if(n<3)   return toast('Completa al menos 3 de los 5 aspectos ('+n+'/5 por ahora)',true);
   consolidarProblema();
   go(2);
 }
