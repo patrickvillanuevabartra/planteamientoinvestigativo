@@ -139,7 +139,10 @@ var FIELD = {
   problemas_especificos: 'ddTbpdUCjiW6flW5W0WPvR',
   estudiante_grupo     : 'cuW51jWQTpWRyjbmkWmmoQ',
   curso                : 'cZlIbGW6jiaOoZW4hcL8oR',
-  fecha_registro       : 'ddKCoGv8nkdikTW7n-m8ot'
+  fecha_registro       : 'ddKCoGv8nkdikTW7n-m8ot',
+  ciclo                : 'bVrvWbW45cVyk1lSkmkSoq',
+  numero_grupo         : 'cprSkAWRDdR4kRpmksqw82',
+  coordinador          : 'cCWQqVWOfdSikDWOLHt8kq'
 };
 
 // ============================================================
@@ -164,14 +167,20 @@ var LINEAS = [
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
 var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","General","Ishikawa","Específicos"];
 
+// Datos institucionales fijos (no editables por el usuario)
+var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
+var PROFESOR_FIJO = "Mg. Ing. Patrick Horacio Villanueva Bartra";
+// Ciclos disponibles en el desplegable
+var CICLOS = ["2026-2","2027-1","2027-2","2028-1","2028-2","2029-1","2029-2"];
+
 // Ejemplos guía por aspecto del problema (Manual URP 2020, p.8).
 // Basados en un caso real del curso (empresa reservada).
 var EJEMPLO_PROB = {
-  pob: "El personal del área de adquisiciones (3 analistas y 1 jefatura) y las áreas usuarias internas que dependen de estas compras para sostener sus operaciones.",
-  cau: "Falta de un procedimiento documentado de compras; ausencia de un sistema que centralice órdenes y proveedores; dependencia de hojas de cálculo dispersas; falta de indicadores de seguimiento a tiempos de entrega.",
-  con: "Retrasos recurrentes en la entrega de materiales a las áreas usuarias, sobrecostos por compras urgentes fuera de negociación y pérdida de trazabilidad de las órdenes emitidas.",
-  ctx: "Se manifiesta de forma continua en la sede principal, con mayor incidencia en los cierres de mes, cuando confluyen varias solicitudes de compra simultáneas sin un orden de prioridad definido.",
-  mag: "En el último semestre, el 38% de las órdenes de compra registró un retraso mayor a 5 días hábiles respecto a la fecha comprometida, generando un sobrecosto estimado por compras urgentes."
+  pob: "Los tres analistas y el jefe del área de adquisiciones, y detrás de ellos las áreas usuarias —producción, mantenimiento y almacén— que no pueden operar cuando el material que solicitaron no llega a tiempo.",
+  cau: "Cada analista lleva su propia hoja de cálculo y no comparte la información con el resto del equipo; las órdenes se aprueban de palabra y recién se documentan cuando el material ya llegó; los pedidos se atienden en el orden en que entran, sin distinguir cuáles son urgentes; y una vez emitida la orden, nadie vuelve a revisar si el proveedor cumplió la fecha acordada.",
+  con: "Las áreas usuarias reciben sus materiales con retraso y detienen sus operaciones; para cubrir la urgencia, el área compra a sobreprecio y sin negociar; y como cada quien maneja su propia hoja, se pierde el rastro de qué se pidió, a quién y en qué estado quedó.",
+  ctx: "Ocurre de forma sostenida en la sede principal y se agrava en los cierres de mes, cuando varias áreas solicitan compras al mismo tiempo y el equipo las atiende sin un criterio claro de prioridad.",
+  mag: "En el último semestre, 38 de cada 100 órdenes de compra llegaron con más de 5 días hábiles de retraso frente a la fecha comprometida, lo que obligó a compras urgentes a sobreprecio y encareció el abastecimiento del período."
 };
 function toggleEj(id){
   var el=document.getElementById('ej_'+id);
@@ -211,7 +220,9 @@ function extraerCoords(url){
 //  ESTADO
 // ============================================================
 var S = {
-  paso:1,
+  paso:0,
+  // Registro del grupo (paso 0)
+  ciclo:'', numeroGrupo:'', coordinador:'',
   // Descripción del problema — 5 aspectos exigidos por el Manual URP 2020 (p.8)
   probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
   problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
@@ -253,19 +264,46 @@ function mostrarTab(cual){
 }
 
 function renderStepper(){
+  var st=document.getElementById('stepper');
+  if(S.paso<1){ st.innerHTML=''; st.style.display='none'; return; }
+  st.style.display='flex';
   var h='';
   for(var i=0;i<PASOS_NOMBRES.length;i++){
     var n=i+1;
     h+='<div class="step"><div class="dot '+(n<=S.paso?'on':'')+'">'+n+'</div>'+
        '<span class="'+(n===S.paso?'on':'')+'">'+PASOS_NOMBRES[i]+'</span></div>';
   }
-  document.getElementById('stepper').innerHTML=h;
+  st.innerHTML=h;
 }
 
 function render(){
   renderStepper();
   var c=document.getElementById('pasos'), h='';
-  if(S.paso===1){
+  if(S.paso===0){
+    var ciclosOpt='<option value="">Selecciona el ciclo…</option>';
+    CICLOS.forEach(function(cy){
+      ciclosOpt+='<option value="'+cy+'"'+(S.ciclo===cy?' selected':'')+'>'+cy+'</option>';
+    });
+    h='<div class="card"><h2>Registro del grupo</h2>'+
+      '<p class="note">Antes de iniciar el planteamiento, consigna los datos básicos del grupo.</p>'+
+
+      '<div class="coordsBox" style="background:#eef5f4;margin-bottom:20px;">'+
+      '<div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Curso</div>'+
+      '<div style="font-weight:600;margin-bottom:8px;">'+esc(CURSO_FIJO)+'</div>'+
+      '<div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Profesor</div>'+
+      '<div style="font-weight:600;">'+esc(PROFESOR_FIJO)+'</div></div>'+
+
+      '<label>Ciclo</label>'+
+      '<select id="f_ciclo" onchange="S.ciclo=this.value">'+ciclosOpt+'</select>'+
+
+      '<div class="row2"><div><label>N° de grupo</label>'+
+      '<input id="f_ngrupo" value="'+esc(S.numeroGrupo)+'" placeholder="Ej. 3"></div>'+
+      '<div><label>Coordinador(a) de grupo</label>'+
+      '<input id="f_coord" value="'+esc(S.coordinador)+'" placeholder="Nombres y apellidos"></div></div>'+
+
+      '<div class="actions"><span></span><button class="btn" onclick="p0next()">Iniciar planteamiento →</button></div></div>';
+  }
+  else if(S.paso===1){
     var n=aspectosCompletos();
     function campoProb(num,titulo,ejKey,hint,fid,stateKey){
       return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:16px;">'+
@@ -283,7 +321,7 @@ function render(){
       '<span style="display:block;margin-top:6px;">Completa <b>al menos 3 de los 5</b> aspectos para poder continuar.</span></div>'+
 
       campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion')+
-      campoProb('2','Posibles causas raíz','cau','¿Qué causas raíz lo provocan? (aún sin analizarlas a fondo; el Ishikawa del paso 7 las desarrollará)','f_cau','probCausas')+
+      campoProb('2','Posibles causas raíz','cau','¿Qué comportamientos, decisiones o condiciones observables provocan el problema? Descríbelas como algo que ocurre (no como "falta de…" o "ausencia de…"). El Ishikawa del paso 7 las desarrollará.','f_cau','probCausas')+
       campoProb('3','Consecuencias','con','¿Cuál o cuáles son las consecuencias del problema?','f_con','probConsecuencias')+
       campoProb('4','Dónde, cómo, cuándo y bajo qué condiciones se manifiesta','ctx','Describe el escenario concreto en que ocurre el problema.','f_ctx','probContexto')+
       campoProb('5','Magnitud del problema','mag','¿Cuál es su impacto económico, productivo, en el servicio al cliente, etc.? Usa cifras siempre que puedas.','f_mag','probMagnitud')+
@@ -374,9 +412,14 @@ function render(){
     h='<div class="card"><h2>08 · Problemas específicos y herramientas</h2>'+
       '<p class="note">Cada causa del Ishikawa genera un problema específico. Complétalo con su herramienta enmarcada en la línea.</p>'+
       pe+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (para guardar)</div>'+
-      '<div class="row2"><div><label>Estudiante / grupo</label><input id="f_est" value="'+esc(S.estudiante)+'" placeholder="Ej. Grupo 3 - Apellidos"></div>'+
-      '<div><label>Curso</label><input id="f_curso" value="'+esc(S.curso)+'" placeholder="Ej. TII / DEPI"></div></div>'+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (registrada al inicio)</div>'+
+      '<div class="coordsBox" style="background:#eef5f4;">'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px 24px;">'+
+      '<span><b>Ciclo:</b> '+esc(S.ciclo||'—')+'</span>'+
+      '<span><b>Grupo N°:</b> '+esc(S.numeroGrupo||'—')+'</span>'+
+      '<span><b>Coordinador(a):</b> '+esc(S.coordinador||'—')+'</span></div>'+
+      '<div style="margin-top:6px;font-size:13px;color:#6a746f;">'+esc(CURSO_FIJO)+' · '+esc(PROFESOR_FIJO)+'</div>'+
+      '<button type="button" class="ejBtn" style="margin-top:8px;" onclick="go(0)">editar datos del grupo</button></div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Ishikawa</button>'+
       '<button class="btn" onclick="guardar()" id="btnGuardar">Guardar en QuintaDB</button></div></div>';
   }
@@ -403,6 +446,13 @@ function refreshCont1(){
 function go(n){ S.paso=n; render(); window.scrollTo(0,0); }
 
 // ---- navegación con captura de campos ----
+function p0next(){
+  S.ciclo=val('f_ciclo'); S.numeroGrupo=val('f_ngrupo'); S.coordinador=val('f_coord');
+  if(!S.ciclo)               return toast('Selecciona el ciclo',true);
+  if(!S.numeroGrupo.trim())  return toast('Indica el N° de grupo',true);
+  if(!S.coordinador.trim())  return toast('Indica el/la coordinador(a) del grupo',true);
+  go(1);
+}
 function p1next(){
   // Capturar por si el navegador no disparó oninput en el último campo
   S.probPoblacion=val('f_pob'); S.probCausas=val('f_cau');
@@ -473,13 +523,15 @@ function serializarEspecificos(){
 //  GUARDAR (POST al proxy)
 // ============================================================
 function guardar(){
-  S.estudiante=val('f_est'); S.curso=val('f_curso');
   var btn=document.getElementById('btnGuardar');
   btn.disabled=true; btn.textContent='Guardando…';
 
   var hoy=new Date();
   var fecha=hoy.getFullYear()+'-'+pad(hoy.getMonth()+1)+'-'+pad(hoy.getDate());
   var origen = S.adoptada && S.adoptada.origen==='IA' ? ('IA-'+S.adoptada.tipo) : 'oficial';
+
+  // Texto legible del grupo para el campo existente "estudiante_grupo"
+  var grupoTxt = 'Grupo '+(S.numeroGrupo||'?')+' · '+(S.coordinador||'');
 
   var payload={
     problema_empresarial:S.problemaEmpresa,
@@ -493,9 +545,12 @@ function guardar(){
     tema:S.tema,
     problema_general:S.problemaGeneral,
     problemas_especificos:serializarEspecificos(),
-    estudiante_grupo:S.estudiante,
-    curso:S.curso,
-    fecha_registro:fecha
+    estudiante_grupo:grupoTxt,
+    curso:CURSO_FIJO,
+    fecha_registro:fecha,
+    ciclo:S.ciclo,
+    numero_grupo:S.numeroGrupo,
+    coordinador:S.coordinador
   };
 
   // Guardado por JSONP vía GET (patrón del ecosistema URP, evita CORS con Apps Script)
@@ -545,9 +600,13 @@ function cargarLista(){
     recs.slice().reverse().forEach(function(rec){
       var v=rec.values||{};
       function g(k){ return v[FIELD[k]]||''; }
+      var ciclo=g('ciclo'), ngrupo=g('numero_grupo'), coord=g('coordinador');
+      var grupoLinea = (ngrupo?('Grupo '+ngrupo):'') + (coord?(' · '+coord):'');
+      if(!grupoLinea) grupoLinea = g('estudiante_grupo')||'—';
       h+='<div class="listItem">'+
-         '<div class="listMeta"><span class="badge">'+esc(g('curso')||'—')+'</span>'+
-         '<span>'+esc(g('estudiante_grupo')||'—')+'</span>'+
+         '<div class="listMeta">'+
+         (ciclo?'<span class="badge">'+esc(ciclo)+'</span>':'')+
+         '<span>'+esc(grupoLinea)+'</span>'+
          '<span>'+esc(g('empresa')||'')+'</span>'+
          '<span>'+esc(g('fecha_registro')||'')+'</span></div>'+
          '<div class="listTema">'+esc(g('tema')||g('problema_general')||'(sin tema)')+'</div>'+
