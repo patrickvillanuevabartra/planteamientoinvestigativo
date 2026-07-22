@@ -54,8 +54,17 @@
   .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .catBox{border:1px solid var(--line);border-radius:4px;padding:12px;background:#fafbf9;}
   .catTitle{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);margin-bottom:8px;}
-  .causa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:3px;padding:5px 8px;margin-bottom:5px;}
+  .causa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:3px;padding:5px 8px;margin-bottom:3px;}
   .causa button{border:none;background:transparent;color:#b04a3a;font-size:16px;line-height:1;padding:0;}
+  .causaWrap{margin-bottom:8px;}
+  .subList{padding-left:12px;margin-top:2px;}
+  .subcausa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:12px;color:#5c584c;background:#f4f6f2;border:1px solid var(--line);border-radius:3px;padding:3px 7px;margin-bottom:3px;}
+  .subcausa button{border:none;background:transparent;color:#b04a3a;font-size:14px;line-height:1;padding:0;}
+  .addSub{font-size:12px;width:100%;margin-top:2px;}
+  .catTitleRow{display:flex;gap:4px;align-items:center;margin-bottom:8px;}
+  .catEdit{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);font-weight:600;border:1px solid transparent;background:transparent;padding:2px 4px;border-radius:3px;flex:1;}
+  .catEdit:hover,.catEdit:focus{border-color:var(--line);background:#fff;}
+  .catDel{border:none;background:transparent;color:#b04a3a;font-size:16px;line-height:1;padding:0 4px;cursor:pointer;}
   .addInput{border:1px dashed var(--line);border-radius:3px;padding:6px 8px;font-size:13px;background:transparent;}
   .peItem{border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:4px;padding:14px;margin-bottom:12px;}
   .peHead{display:flex;gap:10px;align-items:center;margin-bottom:6px;}
@@ -79,6 +88,13 @@
   .ejBtn{background:none;border:1px solid var(--teal);color:var(--teal);border-radius:3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;}
   .ejBtn:hover{background:#eef5f4;}
   .ejBox{background:#f4f6f2;border-left:3px solid var(--amber);padding:9px 12px;margin:0 0 8px;font-size:13.5px;color:#555f5a;line-height:1.5;border-radius:3px;}
+  .grupoBar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-bottom:16px;}
+  .grupoBar .info{font-size:13px;color:#4a5a60;display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;}
+  .grupoBar .info b{color:var(--ink);}
+  .grupoBar .info .cy{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:12px;}
+  .grupoBar .acts{display:flex;gap:8px;}
+  .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
+  .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
   @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -96,6 +112,7 @@
   <!-- ============ VISTA FLUJO ============ -->
   <div id="vistaFlujo">
     <div class="stepper" id="stepper"></div>
+    <div id="grupoBar"></div>
     <div id="pasos"></div>
   </div>
 
@@ -120,7 +137,7 @@
 var PROXY_URL = "https://script.google.com/macros/s/AKfycbyeMZERRsQNsSUsdKet60IqndE2QWc_rORm0n6dFml7Gnf9-8ZEp71ZSuuWKurQM2JV/exec";
 
 // Habilitar cuando actives la IA en el proxy (ruta action=ia).
-var IA_ACTIVA = false;
+var IA_ACTIVA = true;
 
 // Field IDs de QuintaDB (para leer registros en la vista de lista)
 var FIELD = {
@@ -227,14 +244,16 @@ var S = {
   probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
   problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
   pretest:'', test:'', postest:'',
-  proposito:'', lineaIdx:null, adoptada:null,
+  proposito:'', lineaIdx:null, adoptada:null, lineaCustom:false, lineaCustomTexto:'',
   tema:'', problemaGeneral:'',
+  categorias: CATEGORIAS.slice(),   // 6M editables
   causas:{}, especificos:[],
-  estudiante:'', curso:''
+  estudiante:'', curso:'', recordId:null
 };
-CATEGORIAS.forEach(function(c){ S.causas[c]=[]; });
+S.categorias.forEach(function(c){ S.causas[c]=[]; });   // cada causa: {txt, subs:[]}
 
 function lineaTexto(){
+  if(S.lineaCustom) return S.lineaCustomTexto ? S.lineaCustomTexto.trim() : null;
   var l = S.adoptada ? S.adoptada.texto : (S.lineaIdx!==null?LINEAS[S.lineaIdx]:null);
   return l ? limpiarLinea(l) : null;
 }
@@ -276,8 +295,29 @@ function renderStepper(){
   st.innerHTML=h;
 }
 
+function renderGrupoBar(){
+  var bar=document.getElementById('grupoBar');
+  if(S.paso<1){ bar.innerHTML=''; bar.style.display='none'; return; }
+  bar.style.display='block';
+  var estado = S.recordId ? 'Actualizar' : 'Guardar';
+  bar.innerHTML=
+    '<div class="grupoBar">'+
+      '<div class="info">'+
+        (S.ciclo?'<span class="cy">'+esc(S.ciclo)+'</span>':'')+
+        '<span><b>Grupo '+esc(S.numeroGrupo||'—')+'</b></span>'+
+        '<span>'+esc(S.coordinador||'—')+'</span>'+
+        (S.recordId?'<span style="color:var(--teal);font-size:12px;">● guardado</span>':'<span style="color:#8a948f;font-size:12px;">○ sin guardar</span>')+
+      '</div>'+
+      '<div class="acts">'+
+        '<button class="btnMini" onclick="capturarPasoActual();go(0)">Editar datos</button>'+
+        '<button class="btnSave" onclick="guardar()" id="btnSaveBar">'+estado+'</button>'+
+      '</div>'+
+    '</div>';
+}
+
 function render(){
   renderStepper();
+  renderGrupoBar();
   var c=document.getElementById('pasos'), h='';
   if(S.paso===0){
     var ciclosOpt='<option value="">Selecciona el ciclo…</option>';
@@ -349,21 +389,39 @@ function render(){
   }
   else if(S.paso===3){
     h='<div class="card"><h2>03 · Propósito de la investigación</h2>'+
-      '<p class="note">¿Qué busca lograr la investigación? Escríbelo en tus palabras (p. ej. "mejorar la exactitud del registro de inventarios reduciendo errores operativos").</p>'+
-      '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…">'+esc(S.proposito)+'</textarea>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">¿Qué busca lograr la investigación? Escríbelo en tus palabras, en infinitivo (empieza con un verbo: reducir, optimizar, mejorar…).</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_prop" style="display:none;">Optimizar el tiempo de atención en la entrega de bienes y servicios del área de ingeniería, reduciendo los tiempos del proceso de adquisición.</div>'+
+      '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
       '<button class="btn" onclick="p3next()">Continuar →</button></div></div>';
   }
   else if(S.paso===4){
     var lo='';
     for(var i=0;i<LINEAS.length;i++){
-      lo+='<button class="lineOpt '+(S.lineaIdx===i?'sel':'')+'" onclick="selLinea('+i+')">'+
+      lo+='<button class="lineOpt '+(S.lineaIdx===i && !S.lineaCustom ?'sel':'')+'" onclick="selLinea('+i+')">'+
           '<span class="lineNum">'+(i+1)+'</span><span>'+esc(LINEAS[i])+'</span></button>';
     }
+    var customSel = S.lineaCustom ? ' sel' : '';
     h='<div class="card"><h2>04 · Elige la línea de investigación de Ingeniería</h2>'+
-      '<div class="lineList">'+lo+'</div>'+
+      '<p class="note">Selecciona una de las líneas oficiales, o —si tu tema no encaja en ninguna— construye una <b>línea paraguas</b> propia (un concepto amplio que abarque el problema).</p>'+
+      '<div class="lineList">'+lo+
+        '<div class="lineOpt'+customSel+'" style="flex-direction:column;align-items:stretch;cursor:default;">'+
+        '<div style="display:flex;gap:12px;align-items:center;cursor:pointer;" onclick="selCustom()">'+
+        '<span class="lineNum">+</span><span><b>Otra — línea paraguas personalizada</b></span></div>'+
+        (S.lineaCustom ?
+          '<div style="margin-top:10px;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+          '<span class="note" style="margin:0;">Debe ser un paraguas conceptual: amplio, no una herramienta concreta.</span>'+
+          (IA_ACTIVA?'<button type="button" class="ejBtn" id="btnIALinea" onclick="sugerirLineaIA()">✦ sugerir con IA</button>':'')+'</div>'+
+          '<textarea rows="2" id="f_lcustom" oninput="S.lineaCustomTexto=this.value" placeholder="Ej. Excelencia operacional en la gestión de procesos de abastecimiento" style="margin-top:6px;">'+esc(S.lineaCustomTexto)+'</textarea>'+
+          '</div>'
+          : '')+
+        '</div>'+
+      '</div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(3)">← Atrás</button>'+
-      '<button class="btn" onclick="p4next()" '+(S.lineaIdx===null?'disabled':'')+'>Continuar al tema →</button></div></div>';
+      '<button class="btn" onclick="p4next()" '+(!lineaSeleccionValida()?'disabled':'')+'>Continuar al tema →</button></div></div>';
   }
   else if(S.paso===5){
     S.tema = S.tema || armarTema();
@@ -383,27 +441,47 @@ function render(){
   }
   else if(S.paso===7){
     var boxes='';
-    CATEGORIAS.forEach(function(cat){
+    S.categorias.forEach(function(cat,ci){
       var items='';
-      S.causas[cat].forEach(function(cz,idx){
-        items+='<div class="causa"><span>'+esc(cz)+'</span><button onclick="quitarCausa(\''+cat+'\','+idx+')">×</button></div>';
+      (S.causas[cat]||[]).forEach(function(cz,idx){
+        // subcausas (nivel 3)
+        var subs='';
+        (cz.subs||[]).forEach(function(sb,si){
+          subs+='<div class="subcausa"><span>↳ '+esc(sb)+'</span>'+
+                '<button onclick="quitarSub('+ci+','+idx+','+si+')">×</button></div>';
+        });
+        items+='<div class="causaWrap">'+
+               '<div class="causa"><span>'+esc(cz.txt)+'</span>'+
+               '<button onclick="quitarCausa('+ci+','+idx+')">×</button></div>'+
+               '<div class="subList">'+subs+
+               '<input class="addInput addSub" placeholder="+ subcausa (por qué…)" '+
+               'onkeydown="if(event.key===\'Enter\'){agregarSub('+ci+','+idx+',this.value);this.value=\'\';}"></div>'+
+               '</div>';
       });
-      boxes+='<div class="catBox"><div class="catTitle">'+cat+'</div>'+items+
-             '<input class="addInput" style="width:100%;" placeholder="+ causa" onkeydown="if(event.key===\'Enter\'){agregarCausa(\''+cat+'\',this.value);this.value=\'\';}"></div>';
+      boxes+='<div class="catBox">'+
+             '<div class="catTitleRow">'+
+             '<input class="catEdit" value="'+esc(cat)+'" onchange="renombrarCategoria('+ci+',this.value)">'+
+             '<button class="catDel" title="Eliminar categoría" onclick="quitarCategoria('+ci+')">×</button></div>'+
+             items+
+             '<input class="addInput" style="width:100%;" placeholder="+ causa principal" '+
+             'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
     });
     var efecto = S.probConsecuencias || S.probMagnitud || S.probContexto || '—';
-    h='<div class="card"><h2>07 · Diagrama de Ishikawa (6M)</h2>'+
-      '<p class="note">El efecto (cabeza del pescado) resume el problema descrito en el paso 1. Agrega o edita las causas por categoría.</p>'+
+    h='<div class="card"><h2>07 · Diagrama de Ishikawa</h2>'+
+      '<p class="note">El efecto (cabeza del pescado) resume el problema del paso 1. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+esc(efecto)+'</div>'+
       '<div class="grid6">'+boxes+'</div>'+
+      '<button class="btnMini" style="margin-top:12px;" onclick="agregarCategoria()">+ añadir categoría</button>'+
       '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
       '<button class="btn" onclick="p7next()">Continuar →</button></div></div>';
   }
   else if(S.paso===8){
     var pe='';
     S.especificos.forEach(function(e,i){
-      pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+e.categoria+'</span></div>'+
+      var subTxt = (e.subs && e.subs.length) ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">subcausas: '+esc(e.subs.join('; '))+'</div>' : '';
+      pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
+          subTxt+
           '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema específico derivado de esta causa…">'+esc(e.problema)+'</textarea>'+
           '<label>Herramienta enmarcada en la línea</label>'+
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
@@ -471,16 +549,85 @@ function p2next(){
   go(3);
 }
 function p3next(){ S.proposito=val('f_prop'); if(!S.proposito.trim())return toast('Escribe el propósito',true); go(4); }
-function selLinea(i){ S.lineaIdx=i; S.adoptada=null; render(); }
-function p4next(){ if(S.lineaIdx===null)return; if(!S.adoptada)S.adoptada={texto:LINEAS[S.lineaIdx],origen:'oficial'}; S.tema=armarTema(); go(5); }
+function selLinea(i){ S.lineaIdx=i; S.adoptada=null; S.lineaCustom=false; render(); }
+function selCustom(){ S.lineaCustom=true; S.lineaIdx=null; S.adoptada=null; render(); }
+function lineaSeleccionValida(){
+  if(S.lineaCustom) return !!(S.lineaCustomTexto && S.lineaCustomTexto.trim().length>=8);
+  return S.lineaIdx!==null;
+}
+function p4next(){
+  if(!lineaSeleccionValida()) return toast('Selecciona una línea o describe la línea paraguas',true);
+  if(S.lineaCustom){
+    S.adoptada={texto:S.lineaCustomTexto.trim(), origen:'paraguas'};
+  } else if(!S.adoptada){
+    S.adoptada={texto:LINEAS[S.lineaIdx], origen:'oficial'};
+  }
+  S.tema=armarTema(); go(5);
+}
+
+// Sugerir una línea paraguas con IA (vía proxy, ruta action=ia)
+function sugerirLineaIA(){
+  var btn=document.getElementById('btnIALinea');
+  if(btn){ btn.disabled=true; btn.textContent='pensando…'; }
+  var contexto = 'Problema: '+(S.problemaEmpresa||'')+'\nPropósito: '+(S.proposito||'')+'\nEmpresa: '+(S.empresa||'');
+  jsonpCall({ action:'ia', tipo:'linea_paraguas', contexto: encodeURIComponent(contexto) }, function(res){
+    if(btn){ btn.disabled=false; btn.textContent='✦ sugerir con IA'; }
+    if(res && res.ok && res.texto){
+      S.lineaCustomTexto = res.texto.trim();
+      render();
+      toast('Sugerencia lista — puedes editarla');
+    } else {
+      toast('No se pudo generar la sugerencia'+((res&&res.error)?': '+res.error:''),true);
+    }
+  }, function(){
+    if(btn){ btn.disabled=false; btn.textContent='✦ sugerir con IA'; }
+    toast('Error de red al consultar la IA',true);
+  });
+}
 function p5next(){ S.tema=val('f_tema'); go(6); }
 function p6next(){ S.problemaGeneral=val('f_pg'); if(!S.problemaGeneral.trim())return toast('Redacta el problema general',true); armarEspecificos(); go(7); }
 function p7next(){
-  var total=0; CATEGORIAS.forEach(function(c){ total+=S.causas[c].length; });
+  var total=0; S.categorias.forEach(function(c){ total+=(S.causas[c]||[]).length; });
   if(total===0)return toast('Agrega al menos una causa',true);
   armarEspecificos(); go(8);
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
+
+// Vuelca al estado lo escrito en el paso visible (sin validar), para que
+// Guardar/Actualizar o Editar no pierdan cambios no confirmados con Continuar.
+function capturarPasoActual(){
+  switch(S.paso){
+    case 1:
+      if(document.getElementById('f_pob')) S.probPoblacion=val('f_pob');
+      if(document.getElementById('f_cau')) S.probCausas=val('f_cau');
+      if(document.getElementById('f_con')) S.probConsecuencias=val('f_con');
+      if(document.getElementById('f_ctx')) S.probContexto=val('f_ctx');
+      if(document.getElementById('f_mag')) S.probMagnitud=val('f_mag');
+      consolidarProblema();
+      break;
+    case 2:
+      if(document.getElementById('f_emp')) S.empresa=val('f_emp');
+      if(document.getElementById('f_ubi')) S.ubicacion=val('f_ubi');
+      if(document.getElementById('f_map')) S.mapsLink=val('f_map');
+      if(document.getElementById('f_pre')) S.pretest=val('f_pre');
+      if(document.getElementById('f_tst')) S.test=val('f_tst');
+      if(document.getElementById('f_pos')) S.postest=val('f_pos');
+      break;
+    case 3:
+      if(document.getElementById('f_prop')) S.proposito=val('f_prop');
+      break;
+    case 4:
+      if(document.getElementById('f_lcustom')) S.lineaCustomTexto=val('f_lcustom');
+      break;
+    case 5:
+      if(document.getElementById('f_tema')) S.tema=val('f_tema');
+      break;
+    case 6:
+      if(document.getElementById('f_pg')) S.problemaGeneral=val('f_pg');
+      break;
+    // 7 y 8 guardan en el estado vía oninput directamente
+  }
+}
 
 function onMaps(){
   S.mapsLink=val('f_map');
@@ -495,18 +642,43 @@ function onMaps(){
   info.innerHTML=h;
 }
 
-function agregarCausa(cat,v){ if(!v.trim())return; S.causas[cat].push(v.trim()); render(); }
-function quitarCausa(cat,i){ S.causas[cat].splice(i,1); render(); }
+// ---- Ishikawa: categorías, causas y subcausas ----
+function catNombre(ci){ return S.categorias[ci]; }
+function agregarCausa(ci,v){ if(!v.trim())return; S.causas[catNombre(ci)].push({txt:v.trim(),subs:[]}); render(); }
+function quitarCausa(ci,i){ S.causas[catNombre(ci)].splice(i,1); render(); }
+function agregarSub(ci,i,v){ if(!v.trim())return; S.causas[catNombre(ci)][i].subs.push(v.trim()); render(); }
+function quitarSub(ci,i,si){ S.causas[catNombre(ci)][i].subs.splice(si,1); render(); }
 
-// Construye problemas específicos desde las causas (preservando lo ya editado)
+function agregarCategoria(){
+  var base='Nueva categoría', nom=base, k=2;
+  while(S.categorias.indexOf(nom)!==-1){ nom=base+' '+k; k++; }
+  S.categorias.push(nom); S.causas[nom]=[]; render();
+}
+function quitarCategoria(ci){
+  var nom=S.categorias[ci];
+  if(!confirm('¿Eliminar la categoría "'+nom+'" y sus causas?')) return;
+  S.categorias.splice(ci,1); delete S.causas[nom]; render();
+}
+function renombrarCategoria(ci,nuevo){
+  nuevo=(nuevo||'').trim(); if(!nuevo) { render(); return; }
+  var viejo=S.categorias[ci];
+  if(nuevo===viejo) return;
+  if(S.categorias.indexOf(nuevo)!==-1){ toast('Ya existe una categoría con ese nombre',true); render(); return; }
+  S.causas[nuevo]=S.causas[viejo]; delete S.causas[viejo]; S.categorias[ci]=nuevo; render();
+}
+
+// Construye problemas específicos desde las causas (preservando lo ya editado).
+// Cada causa principal genera un problema específico; sus subcausas van como detalle.
 function armarEspecificos(){
   var previos={};
   S.especificos.forEach(function(e){ previos[e.categoria+'|'+e.causa]=e; });
   var lista=[];
-  CATEGORIAS.forEach(function(cat){
-    S.causas[cat].forEach(function(cz){
-      var k=cat+'|'+cz;
-      lista.push(previos[k] || {categoria:cat, causa:cz, problema:'', herramienta:''});
+  S.categorias.forEach(function(cat){
+    (S.causas[cat]||[]).forEach(function(cz){
+      var k=cat+'|'+cz.txt;
+      var prev=previos[k] || {categoria:cat, causa:cz.txt, problema:'', herramienta:''};
+      prev.subs = (cz.subs||[]).slice();
+      lista.push(prev);
     });
   });
   S.especificos=lista;
@@ -515,7 +687,8 @@ function armarEspecificos(){
 // Serializa los específicos a texto (uno por línea) para el campo de QuintaDB
 function serializarEspecificos(){
   return S.especificos.map(function(e,i){
-    return 'PE'+(i+1)+' ['+e.categoria+'] '+(e.problema||'') +' || Herramienta: '+(e.herramienta||'');
+    var sub = (e.subs && e.subs.length) ? ' (subcausas: '+e.subs.join('; ')+')' : '';
+    return 'PE'+(i+1)+' ['+e.categoria+'] '+(e.problema||'')+sub+' || Herramienta: '+(e.herramienta||'');
   }).join('\n');
 }
 
@@ -523,14 +696,22 @@ function serializarEspecificos(){
 //  GUARDAR (POST al proxy)
 // ============================================================
 function guardar(){
-  var btn=document.getElementById('btnGuardar');
-  btn.disabled=true; btn.textContent='Guardando…';
+  capturarPasoActual();
+  // Validación mínima: el registro del grupo debe existir
+  if(!S.ciclo || !S.numeroGrupo || !S.coordinador){
+    toast('Completa primero los datos del grupo (Editar datos)',true);
+    return;
+  }
+  var btnBar=document.getElementById('btnSaveBar');
+  var btn8=document.getElementById('btnGuardar');
+  var accion = S.recordId ? 'Actualizando…' : 'Guardando…';
+  if(btnBar){ btnBar.disabled=true; btnBar.textContent=accion; }
+  if(btn8){ btn8.disabled=true; btn8.textContent=accion; }
 
   var hoy=new Date();
   var fecha=hoy.getFullYear()+'-'+pad(hoy.getMonth()+1)+'-'+pad(hoy.getDate());
-  var origen = S.adoptada && S.adoptada.origen==='IA' ? ('IA-'+S.adoptada.tipo) : 'oficial';
-
-  // Texto legible del grupo para el campo existente "estudiante_grupo"
+  var origen = (S.adoptada && S.adoptada.origen==='IA') ? ('IA-'+S.adoptada.tipo)
+             : (S.adoptada && S.adoptada.origen==='paraguas') ? 'paraguas' : 'oficial';
   var grupoTxt = 'Grupo '+(S.numeroGrupo||'?')+' · '+(S.coordinador||'');
 
   var payload={
@@ -540,7 +721,7 @@ function guardar(){
     mapa:extraerCoords(S.mapsLink)||S.mapsLink,
     pretest:S.pretest, test:S.test, postest:S.postest,
     proposito:S.proposito,
-    linea:lineaTexto(),
+    linea:lineaTexto()||'',
     origen_linea:origen,
     tema:S.tema,
     problema_general:S.problemaGeneral,
@@ -553,17 +734,26 @@ function guardar(){
     coordinador:S.coordinador
   };
 
-  // Guardado por JSONP vía GET (patrón del ecosistema URP, evita CORS con Apps Script)
-  jsonpCall({ payload: encodeURIComponent(JSON.stringify(payload)) }, function(res){
-    btn.disabled=false; btn.textContent='Guardar en QuintaDB';
+  function restore(){
+    if(btnBar){ btnBar.disabled=false; btnBar.textContent = S.recordId?'Actualizar':'Guardar'; }
+    if(btn8){ btn8.disabled=false; btn8.textContent='Guardar en QuintaDB'; }
+  }
+
+  var params = { payload: encodeURIComponent(JSON.stringify(payload)) };
+  if(S.recordId) params.record_id = S.recordId;   // si existe, el proxy actualiza
+
+  jsonpCall(params, function(res){
     if(res && res.ok){
-      toast('✓ Planteamiento guardado');
-      setTimeout(function(){ mostrarTab('lista'); }, 800);
+      if(res.qid) S.recordId = res.qid;            // memoriza el id para próximas actualizaciones
+      toast(S.recordId ? '✓ Planteamiento actualizado' : '✓ Planteamiento guardado');
+      renderGrupoBar();
+      restore();
     } else {
+      restore();
       toast('Error al guardar: '+((res&&res.error)||'desconocido'),true);
     }
   }, function(){
-    btn.disabled=false; btn.textContent='Guardar en QuintaDB';
+    restore();
     toast('Error de red al guardar',true);
   });
 }
