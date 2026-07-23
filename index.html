@@ -19,6 +19,8 @@
   /* stepper */
   .stepper{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px;}
   .step{display:flex;align-items:center;gap:6px;flex:1;min-width:84px;}
+  .stepClick{cursor:pointer;}
+  .stepClick:hover .dot{border-color:var(--ink);}
   .dot{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-family:'Poppins',sans-serif;background:#fff;flex-shrink:0;}
   .dot.on{border-color:var(--ink);background:var(--ink);color:#fff;}
   .step span{font-size:11.5px;color:#8a948f;}
@@ -65,6 +67,15 @@
   .catEdit{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);font-weight:600;border:1px solid transparent;background:transparent;padding:2px 4px;border-radius:3px;flex:1;}
   .catEdit:hover,.catEdit:focus{border-color:var(--line);background:#fff;}
   .catDel{border:none;background:transparent;color:#b04a3a;font-size:16px;line-height:1;padding:0 4px;cursor:pointer;}
+  .parTable{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px;}
+  .parTable th{background:var(--ink);color:#fff;font-family:'Poppins',sans-serif;font-weight:500;font-size:12px;padding:8px;text-align:left;}
+  .parTable th:not(:first-child){text-align:center;}
+  .parTable td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top;}
+  .parTable .prMeta{font-size:11px;color:#8a948f;margin-top:2px;}
+  .parTable .prRow{background:#eef5f4;}
+  .freqInp{width:64px;text-align:center;padding:4px;font-size:13px;}
+  .prTag{background:var(--teal);color:#fff;font-family:'Poppins',sans-serif;font-size:11px;padding:2px 7px;border-radius:3px;}
+  .p80{background:#f6e9d8;color:var(--amber);font-size:11px;padding:2px 7px;border-radius:3px;}
   .addInput{border:1px dashed var(--line);border-radius:3px;padding:6px 8px;font-size:13px;background:transparent;}
   .peItem{border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:4px;padding:14px;margin-bottom:12px;}
   .peHead{display:flex;gap:10px;align-items:center;margin-bottom:6px;}
@@ -159,7 +170,8 @@ var FIELD = {
   fecha_registro       : 'ddKCoGv8nkdikTW7n-m8ot',
   ciclo                : 'bVrvWbW45cVyk1lSkmkSoq',
   numero_grupo         : 'cprSkAWRDdR4kRpmksqw82',
-  coordinador          : 'cCWQqVWOfdSikDWOLHt8kq'
+  coordinador          : 'cCWQqVWOfdSikDWOLHt8kq',
+  estructura           : 'cbW64-W5XcTRq3nmk4emkk'
 };
 
 // ============================================================
@@ -182,7 +194,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","General","Ishikawa","Específicos"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","General","Ishikawa","Pareto","Específicos"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -248,6 +260,8 @@ var S = {
   tema:'', problemaGeneral:'',
   categorias: CATEGORIAS.slice(),   // 6M editables
   causas:{}, especificos:[],
+  paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
+  priorizadas:[],       // hasta 3 subcausas seleccionadas {categoria,causa,sub}
   estudiante:'', curso:'', recordId:null
 };
 S.categorias.forEach(function(c){ S.causas[c]=[]; });   // cada causa: {txt, subs:[]}
@@ -289,10 +303,20 @@ function renderStepper(){
   var h='';
   for(var i=0;i<PASOS_NOMBRES.length;i++){
     var n=i+1;
-    h+='<div class="step"><div class="dot '+(n<=S.paso?'on':'')+'">'+n+'</div>'+
+    h+='<div class="step stepClick" onclick="irAPaso('+n+')" title="Ir al paso '+n+'"><div class="dot '+(n<=S.paso?'on':'')+'">'+n+'</div>'+
        '<span class="'+(n===S.paso?'on':'')+'">'+PASOS_NOMBRES[i]+'</span></div>';
   }
   st.innerHTML=h;
+}
+
+// Navegación directa desde el menú de pasos (captura el paso actual antes de saltar)
+function irAPaso(n){
+  if(n===S.paso) return;
+  capturarPasoActual();
+  // Si vamos hacia (o más allá de) Pareto/Específicos, aseguramos derivar datos
+  if(n>=8) armarPareto();
+  if(n>=9) armarEspecificos();
+  go(n);
 }
 
 function renderGrupoBar(){
@@ -434,8 +458,11 @@ function render(){
   }
   else if(S.paso===6){
     h='<div class="card"><h2>06 · Problema general</h2>'+
-      '<p class="note">Redáctalo con la fórmula: ¿De qué manera [línea] mejora [indicador] en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
-      '<textarea rows="3" id="f_pg" style="font-style:italic;" placeholder="¿De qué manera… mejora… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Redáctalo como pregunta y como <b>paraguas conceptual</b>: plantea el fenómeno amplio, sin nombrar herramientas ni la solución. Fórmula: ¿De qué manera [línea] mejora [indicador] en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pg" style="display:none;">¿De qué manera la gestión por procesos y la mejora continua optimizan el tiempo de atención en la entrega de bienes y servicios del área de ingeniería de Yokogawa América Do Sul Sucursal Perú, Lima, 2026?</div>'+
+      '<textarea rows="3" id="f_pg" style="font-style:italic;margin-top:8px;" placeholder="¿De qué manera… mejora… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(5)">← Volver al tema</button>'+
       '<button class="btn" onclick="p6next()">Continuar al Ishikawa →</button></div></div>';
   }
@@ -468,27 +495,80 @@ function render(){
     });
     var efecto = S.probConsecuencias || S.probMagnitud || S.probContexto || '—';
     h='<div class="card"><h2>07 · Diagrama de Ishikawa</h2>'+
-      '<p class="note">El efecto (cabeza del pescado) resume el problema del paso 1. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">El efecto (cabeza del pescado) resume el problema del paso 1. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_ishi" style="display:none;">Efecto: tiempo de atención elevado en la entrega de bienes y servicios. <b>Método:</b> las órdenes se procesan sin un flujo estándar (subcausas: cada analista sigue su propio orden; no hay puntos de control definidos). <b>Mano de obra:</b> el personal ejecuta el proceso sin criterios uniformes (subcausas: no se registra el avance de cada orden). <b>Medición:</b> no se hace seguimiento a los tiempos por etapa (subcausas: no se calcula el tiempo entre solicitud y entrega).</div>'+
       '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+esc(efecto)+'</div>'+
       '<div class="grid6">'+boxes+'</div>'+
       '<button class="btnMini" style="margin-top:12px;" onclick="agregarCategoria()">+ añadir categoría</button>'+
       '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
-      '<button class="btn" onclick="p7next()">Continuar →</button></div></div>';
+      '<button class="btn" onclick="p7next()">Continuar al Pareto →</button></div></div>';
   }
   else if(S.paso===8){
+    // Construye la tabla de Pareto sobre las subcausas
+    armarPareto();
+    var filas = paretoOrdenado();
+    var total = filas.reduce(function(a,f){ return a+f.freq; },0);
+    var acum=0, rows='';
+    filas.forEach(function(f,idx){
+      acum+=f.freq;
+      var pct = total? (f.freq/total*100):0;
+      var pacum = total? (acum/total*100):0;
+      var en80 = pacum<=80 || idx===0;
+      rows+='<tr class="'+(f.priorizada?'prRow':'')+'">'+
+        '<td>'+esc(f.sub)+'<div class="prMeta">'+esc(f.categoria)+' · '+esc(f.causa)+'</div></td>'+
+        '<td style="text-align:center;"><input type="number" min="0" class="freqInp" value="'+f.freq+'" '+
+          'onchange="setFreq(\''+f.key+'\',this.value)"></td>'+
+        '<td style="text-align:center;">'+pct.toFixed(1)+'%</td>'+
+        '<td style="text-align:center;">'+pacum.toFixed(1)+'%</td>'+
+        '<td style="text-align:center;">'+(f.priorizada?'<span class="prTag">PE'+(f.prIdx+1)+'</span>':(en80?'<span class="p80">80%</span>':''))+'</td>'+
+      '</tr>';
+    });
+    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay subcausas en el Ishikawa. Vuelve al paso 7 y añade subcausas.</td></tr>';
+
+    // Selectores de las 3 priorizadas
+    var opts='<option value="">— elegir subcausa —</option>';
+    filas.forEach(function(f){ opts+='<option value="'+esc(f.key)+'">'+esc(f.sub)+' ('+f.freq+')</option>'; });
+    var selects='';
+    for(var pi=0; pi<3; pi++){
+      var cur = S.priorizadas[pi] ? (S.priorizadas[pi].categoria+'|'+S.priorizadas[pi].causa+'|'+S.priorizadas[pi].sub) : '';
+      var optsSel = opts.replace('value="'+cur+'"','value="'+cur+'" selected');
+      selects+='<div style="margin-bottom:8px;"><label>Problema específico '+(pi+1)+'</label>'+
+        '<select onchange="setPriorizada('+pi+',this.value)">'+optsSel+'</select></div>';
+    }
+
+    h='<div class="card"><h2>08 · Priorización por Pareto</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada subcausa (cuántas veces se observó, según tu ficha de registro). El Pareto ordena de mayor a menor y marca las que acumulan el 80%. Prioriza <b>3 subcausas</b>: serán tus 3 problemas específicos.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_par" style="display:none;">En el trabajo de referencia (Yokogawa), se registró la frecuencia de cada subcausa del proceso de adquisición y con el Pareto se priorizaron las 3 subcausas que concentraban ~80% del tiempo perdido; de ellas se derivaron los 3 problemas específicos, cada uno con su herramienta (BPMN, RACI/SOP, KPIs bajo SCOR).</div>'+
+      '<table class="parTable"><thead><tr><th>Subcausa</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table>'+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Selecciona las 3 subcausas priorizadas</div>'+
+      '<p class="note">Sugerencia: elige las 3 de mayor frecuencia (las del 80%). Puedes ajustar con criterio.</p>'+
+      selects+
+      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Ishikawa</button>'+
+      '<button class="btn" onclick="p8next()">Continuar a específicos →</button></div></div>';
+  }
+  else if(S.paso===9){
+    armarEspecificos();
     var pe='';
     S.especificos.forEach(function(e,i){
-      var subTxt = (e.subs && e.subs.length) ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">subcausas: '+esc(e.subs.join('; '))+'</div>' : '';
+      var subTxt = e.sub ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">subcausa priorizada: '+esc(e.sub)+'</div>' : '';
       pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
           subTxt+
-          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema específico derivado de esta causa…">'+esc(e.problema)+'</textarea>'+
+          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema específico derivado de esta subcausa…">'+esc(e.problema)+'</textarea>'+
           '<label>Herramienta enmarcada en la línea</label>'+
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
     });
-    if(!pe) pe='<p class="note">No hay causas en el Ishikawa. Vuelve al paso anterior y agrega causas.</p>';
-    h='<div class="card"><h2>08 · Problemas específicos y herramientas</h2>'+
-      '<p class="note">Cada causa del Ishikawa genera un problema específico. Complétalo con su herramienta enmarcada en la línea.</p>'+
+    if(!pe) pe='<p class="note">No hay subcausas priorizadas. Vuelve al Pareto (paso 8) y prioriza 3 subcausas.</p>';
+    h='<div class="card"><h2>09 · Problemas específicos y herramientas</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Cada subcausa priorizada en el Pareto genera un problema específico. Complétalo con su herramienta enmarcada en la línea.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN) reduce el tiempo de atención…? · Herramienta: BPMN. PE2: ¿De qué manera la definición de responsabilidades (RACI/SOP) reduce el tiempo…? · Herramienta: RACI/SOP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) reduce el tiempo…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
       '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (registrada al inicio)</div>'+
       '<div class="coordsBox" style="background:#eef5f4;">'+
@@ -498,7 +578,7 @@ function render(){
       '<span><b>Coordinador(a):</b> '+esc(S.coordinador||'—')+'</span></div>'+
       '<div style="margin-top:6px;font-size:13px;color:#6a746f;">'+esc(CURSO_FIJO)+' · '+esc(PROFESOR_FIJO)+'</div>'+
       '<button type="button" class="ejBtn" style="margin-top:8px;" onclick="go(0)">editar datos del grupo</button></div>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Ishikawa</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al Pareto</button>'+
       '<button class="btn" onclick="guardar()" id="btnGuardar">Guardar en QuintaDB</button></div></div>';
   }
   c.innerHTML=h;
@@ -587,9 +667,72 @@ function sugerirLineaIA(){
 function p5next(){ S.tema=val('f_tema'); go(6); }
 function p6next(){ S.problemaGeneral=val('f_pg'); if(!S.problemaGeneral.trim())return toast('Redacta el problema general',true); armarEspecificos(); go(7); }
 function p7next(){
-  var total=0; S.categorias.forEach(function(c){ total+=(S.causas[c]||[]).length; });
-  if(total===0)return toast('Agrega al menos una causa',true);
-  armarEspecificos(); go(8);
+  var totalSub=0;
+  S.categorias.forEach(function(c){
+    (S.causas[c]||[]).forEach(function(cz){ totalSub+=(cz.subs||[]).length; });
+  });
+  if(totalSub===0) return toast('Añade al menos una subcausa (segundo nivel) para el Pareto',true);
+  armarPareto(); go(8);
+}
+
+// ---- PARETO sobre subcausas ----
+function subKey(cat,causa,sub){ return cat+'|'+causa+'|'+sub; }
+
+// Reúne todas las subcausas del Ishikawa y sincroniza el mapa de frecuencias
+function armarPareto(){
+  var vistos={};
+  S.categorias.forEach(function(cat){
+    (S.causas[cat]||[]).forEach(function(cz){
+      (cz.subs||[]).forEach(function(sb){
+        var k=subKey(cat,cz.txt,sb);
+        vistos[k]=true;
+        if(!(k in S.paretoFreq)) S.paretoFreq[k]=1;   // frecuencia por defecto 1
+      });
+    });
+  });
+  // limpia frecuencias de subcausas ya inexistentes
+  Object.keys(S.paretoFreq).forEach(function(k){ if(!vistos[k]) delete S.paretoFreq[k]; });
+}
+
+// Devuelve las subcausas ordenadas por frecuencia desc, con metadatos
+function paretoOrdenado(){
+  var arr=[];
+  S.categorias.forEach(function(cat){
+    (S.causas[cat]||[]).forEach(function(cz){
+      (cz.subs||[]).forEach(function(sb){
+        var k=subKey(cat,cz.txt,sb);
+        arr.push({ key:k, categoria:cat, causa:cz.txt, sub:sb, freq:Number(S.paretoFreq[k]||0) });
+      });
+    });
+  });
+  arr.sort(function(a,b){ return b.freq-a.freq; });
+  // marca cuáles están priorizadas y su índice PE
+  arr.forEach(function(f){
+    f.priorizada=false;
+    S.priorizadas.forEach(function(p,pi){
+      if(p && subKey(p.categoria,p.causa,p.sub)===f.key){ f.priorizada=true; f.prIdx=pi; }
+    });
+  });
+  return arr;
+}
+
+function setFreq(key,v){
+  S.paretoFreq[key]=Math.max(0, Number(v)||0);
+  render();
+}
+
+// Fija la subcausa priorizada en la posición pi (0..2) a partir de su key
+function setPriorizada(pi,key){
+  if(!key){ S.priorizadas[pi]=null; render(); return; }
+  var parts=key.split('|');
+  S.priorizadas[pi]={ categoria:parts[0], causa:parts[1], sub:parts[2] };
+  render();
+}
+
+function p8next(){
+  var elegidas=S.priorizadas.filter(function(p){ return p; });
+  if(elegidas.length<3) return toast('Selecciona las 3 subcausas priorizadas',true);
+  armarEspecificos(); go(9);
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
 
@@ -625,7 +768,7 @@ function capturarPasoActual(){
     case 6:
       if(document.getElementById('f_pg')) S.problemaGeneral=val('f_pg');
       break;
-    // 7 y 8 guardan en el estado vía oninput directamente
+    // 7 (Ishikawa), 8 (Pareto) y 9 (Específicos) guardan en el estado vía oninput/onchange directamente
   }
 }
 
@@ -667,19 +810,16 @@ function renombrarCategoria(ci,nuevo){
   S.causas[nuevo]=S.causas[viejo]; delete S.causas[viejo]; S.categorias[ci]=nuevo; render();
 }
 
-// Construye problemas específicos desde las causas (preservando lo ya editado).
-// Cada causa principal genera un problema específico; sus subcausas van como detalle.
+// Construye 3 problemas específicos desde las subcausas priorizadas en el Pareto
+// (preservando problema/herramienta ya editados por subcausa).
 function armarEspecificos(){
   var previos={};
-  S.especificos.forEach(function(e){ previos[e.categoria+'|'+e.causa]=e; });
+  S.especificos.forEach(function(e){ if(e.sub) previos[e.categoria+'|'+e.causa+'|'+e.sub]=e; });
   var lista=[];
-  S.categorias.forEach(function(cat){
-    (S.causas[cat]||[]).forEach(function(cz){
-      var k=cat+'|'+cz.txt;
-      var prev=previos[k] || {categoria:cat, causa:cz.txt, problema:'', herramienta:''};
-      prev.subs = (cz.subs||[]).slice();
-      lista.push(prev);
-    });
+  S.priorizadas.forEach(function(p){
+    if(!p) return;
+    var k=p.categoria+'|'+p.causa+'|'+p.sub;
+    lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub, problema:'', herramienta:''});
   });
   S.especificos=lista;
 }
@@ -687,9 +827,48 @@ function armarEspecificos(){
 // Serializa los específicos a texto (uno por línea) para el campo de QuintaDB
 function serializarEspecificos(){
   return S.especificos.map(function(e,i){
-    var sub = (e.subs && e.subs.length) ? ' (subcausas: '+e.subs.join('; ')+')' : '';
-    return 'PE'+(i+1)+' ['+e.categoria+'] '+(e.problema||'')+sub+' || Herramienta: '+(e.herramienta||'');
+    var sub = e.sub ? ' (subcausa priorizada: '+e.sub+')' : '';
+    return 'PE'+(i+1)+' ['+e.categoria+' › '+e.causa+'] '+(e.problema||'')+sub+' || Herramienta: '+(e.herramienta||'');
   }).join('\n');
+}
+
+// ============================================================
+//  SERIALIZAR / RESTAURAR ESTADO COMPLETO (campo "Estructura completa")
+// ============================================================
+// Guarda todo lo que no cabe en campos individuales: los 5 aspectos del
+// problema, el Ishikawa (categorías + causas + subcausas), las frecuencias
+// del Pareto, las 3 priorizadas y los específicos con su herramienta.
+function serializarEstado(){
+  return JSON.stringify({
+    v:1,
+    prob:{ pob:S.probPoblacion, cau:S.probCausas, con:S.probConsecuencias, ctx:S.probContexto, mag:S.probMagnitud },
+    delim:{ pretest:S.pretest, test:S.test, postest:S.postest, mapsLink:S.mapsLink },
+    linea:{ idx:S.lineaIdx, custom:S.lineaCustom, customTexto:S.lineaCustomTexto,
+            adoptada:S.adoptada },
+    categorias:S.categorias,
+    causas:S.causas,
+    paretoFreq:S.paretoFreq,
+    priorizadas:S.priorizadas,
+    especificos:S.especificos
+  });
+}
+
+function restaurarEstado(json){
+  var d;
+  try { d=JSON.parse(json); } catch(e){ return false; }
+  if(!d) return false;
+  if(d.prob){ S.probPoblacion=d.prob.pob||''; S.probCausas=d.prob.cau||'';
+    S.probConsecuencias=d.prob.con||''; S.probContexto=d.prob.ctx||''; S.probMagnitud=d.prob.mag||'';
+    consolidarProblema(); }
+  if(d.delim){ S.pretest=d.delim.pretest||''; S.test=d.delim.test||''; S.postest=d.delim.postest||''; if(d.delim.mapsLink) S.mapsLink=d.delim.mapsLink; }
+  if(d.linea){ S.lineaIdx=(d.linea.idx==null?null:d.linea.idx); S.lineaCustom=!!d.linea.custom;
+    S.lineaCustomTexto=d.linea.customTexto||''; S.adoptada=d.linea.adoptada||null; }
+  if(d.categorias){ S.categorias=d.categorias; }
+  if(d.causas){ S.causas=d.causas; }
+  if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
+  if(d.priorizadas){ S.priorizadas=d.priorizadas; }
+  if(d.especificos){ S.especificos=d.especificos; }
+  return true;
 }
 
 // ============================================================
@@ -731,7 +910,8 @@ function guardar(){
     fecha_registro:fecha,
     ciclo:S.ciclo,
     numero_grupo:S.numeroGrupo,
-    coordinador:S.coordinador
+    coordinador:S.coordinador,
+    estructura:serializarEstado()
   };
 
   function restore(){
@@ -778,6 +958,7 @@ function pad(n){ return n<10?'0'+n:''+n; }
 // ============================================================
 //  LISTAR (GET al proxy)
 // ============================================================
+var _recordsCache={};
 function cargarLista(){
   var cont=document.getElementById('listaCont');
   cont.innerHTML='<p class="note">Cargando…</p>';
@@ -786,8 +967,10 @@ function cargarLista(){
     var recs = (res.data && res.data.records) ? res.data.records : [];
     if(!recs.length){ cont.innerHTML='<p class="note">Aún no hay planteamientos guardados.</p>'; return; }
     var h='';
+    _recordsCache={};
     // más recientes primero
     recs.slice().reverse().forEach(function(rec){
+      _recordsCache[rec.id]=rec;
       var v=rec.values||{};
       function g(k){ return v[FIELD[k]]||''; }
       var ciclo=g('ciclo'), ngrupo=g('numero_grupo'), coord=g('coordinador');
@@ -801,10 +984,58 @@ function cargarLista(){
          '<span>'+esc(g('fecha_registro')||'')+'</span></div>'+
          '<div class="listTema">'+esc(g('tema')||g('problema_general')||'(sin tema)')+'</div>'+
          '<div class="listPg">'+esc(g('problema_general')||'')+'</div>'+
+         '<button class="btnMini" style="margin-top:10px;" onclick="continuarEdicion(\''+rec.id+'\')">Continuar edición →</button>'+
          '</div>';
     });
     cont.innerHTML=h;
   }, function(){ cont.innerHTML='<p class="hintWarn">Error de red al cargar.</p>'; });
+}
+
+// Reconstruye el estado desde un registro guardado y abre el flujo para seguir editando
+function continuarEdicion(recId){
+  var rec=_recordsCache[recId];
+  if(!rec){ toast('No se encontró el registro',true); return; }
+  var v=rec.values||{};
+  function g(k){ return v[FIELD[k]]||''; }
+
+  // reset del estado conservando estructura
+  S.recordId = recId;
+  S.ciclo=g('ciclo'); S.numeroGrupo=g('numero_grupo'); S.coordinador=g('coordinador');
+  S.empresa=g('empresa'); S.ubicacion=g('ubicacion'); S.mapsLink=g('mapa');
+  S.pretest=g('pretest'); S.test=g('test'); S.postest=g('postest');
+  S.proposito=g('proposito');
+  S.tema=g('tema'); S.problemaGeneral=g('problema_general');
+
+  // Preferir reconstrucción COMPLETA desde el JSON "Estructura completa"
+  var estr=g('estructura');
+  var reconstruido = estr ? restaurarEstado(estr) : false;
+
+  if(!reconstruido){
+    // Fallback: reconstruir lo básico desde los campos de texto sueltos
+    var prob=g('problema_empresarial');
+    S.probPoblacion=S.probCausas=S.probConsecuencias=S.probContexto=S.probMagnitud='';
+    if(prob){
+      var mapEtq={'Población afectada:':'probPoblacion','Posibles causas raíz:':'probCausas',
+        'Consecuencias:':'probConsecuencias','Dónde/cómo/cuándo se manifiesta:':'probContexto',
+        'Magnitud del problema:':'probMagnitud'};
+      var encontrado=false;
+      prob.split('\n').forEach(function(ln){
+        for(var etq in mapEtq){ if(ln.indexOf(etq)===0){ S[mapEtq[etq]]=ln.slice(etq.length).trim(); encontrado=true; } }
+      });
+      if(!encontrado) S.probPoblacion=prob;
+      consolidarProblema();
+    }
+    var lin=g('linea'), orig=g('origen_linea');
+    if(lin){
+      var idx=LINEAS.indexOf(lin);
+      if(idx!==-1){ S.lineaIdx=idx; S.lineaCustom=false; S.adoptada={texto:lin,origen:'oficial'}; }
+      else { S.lineaCustom=true; S.lineaCustomTexto=lin; S.adoptada={texto:lin,origen:orig||'paraguas'}; }
+    }
+  }
+
+  toast(reconstruido ? 'Planteamiento cargado completo — continúa la edición' : 'Planteamiento cargado — continúa la edición');
+  mostrarTab('flujo');
+  go(1);
 }
 
 // ============================================================
