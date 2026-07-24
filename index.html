@@ -499,11 +499,37 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El efecto (cabeza del pescado) resume el problema del paso 1. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_ishi" style="display:none;">Caso Yokogawa — efecto: <b>elevado tiempo de atención en la entrega de bienes y/o servicios</b>. '+
-      '<b>Método:</b> cada analista tramita las órdenes siguiendo su propio criterio, sin un flujo documentado (subcausa); las aprobaciones se gestionan sin niveles ni pasos definidos (subcausa). '+
-      '<b>Mano de obra:</b> las áreas de ingeniería, logística e importaciones se turnan la validación de un mismo requerimiento antes de continuar el proceso (subcausa); el personal registra la información con criterios distintos entre sí (subcausa). '+
-      '<b>Máquina (Sistema):</b> la información se registra manualmente y por separado en Excel, correo y SAP, sin conexión entre esas fuentes (subcausa); crear una orden en SAP toma varios pasos manuales (subcausa). '+
-      '<b>Medición:</b> el tiempo de cada etapa del proceso no se registra ni se compara contra una meta (subcausa); no existe un reporte periódico del desempeño del proceso (subcausa).</div>'+
+      '<div class="ejBox" id="ej_ishi" style="display:none;padding:14px;">'+
+      '<svg width="100%" viewBox="0 0 680 460" style="display:block;">'+
+      '<line x1="90" y1="245" x2="516" y2="245" stroke="#8a948f" stroke-width="1.2"/>'+
+      '<polygon points="516,238 528,245 516,252" fill="#8a948f"/>'+
+      '<line x1="105" y1="105" x2="180" y2="245" stroke="#8a948f" stroke-width="1"/>'+
+      '<line x1="120" y1="340" x2="180" y2="245" stroke="#8a948f" stroke-width="1"/>'+
+      '<line x1="385" y1="105" x2="430" y2="245" stroke="#8a948f" stroke-width="1"/>'+
+      '<line x1="385" y1="340" x2="430" y2="245" stroke="#8a948f" stroke-width="1"/>'+
+      '<rect x="20" y="55" width="170" height="50" rx="8" fill="#f6e9d8" stroke="#c8743b" stroke-width="1"/>'+
+      '<text x="105" y="75" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#8a5228">Método · 25%</text>'+
+      '<text x="105" y="93" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#a06b3c">Sin flujo estándar</text>'+
+      '<rect x="280" y="55" width="210" height="50" rx="8" fill="#f6e9d8" stroke="#c8743b" stroke-width="1"/>'+
+      '<text x="385" y="75" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#8a5228">Máquina/Sistema · 20%</text>'+
+      '<text x="385" y="93" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#a06b3c">Información dispersa</text>'+
+      '<rect x="20" y="340" width="200" height="50" rx="8" fill="#f6e9d8" stroke="#c8743b" stroke-width="1"/>'+
+      '<text x="120" y="360" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#8a5228">Mano de obra · 30%</text>'+
+      '<text x="120" y="378" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#a06b3c">Demora en aprobaciones</text>'+
+      '<rect x="280" y="340" width="210" height="50" rx="8" fill="#f4f6f2" stroke="#c9cfc6" stroke-width="1"/>'+
+      '<text x="385" y="360" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#5c584c">Medición · 15%</text>'+
+      '<text x="385" y="378" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#6a746f">No hay seguimiento</text>'+
+      '<rect x="520" y="215" width="140" height="60" rx="8" fill="#1c2a33"/>'+
+      '<text x="590" y="205" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11" fill="#8a948f">efecto</text>'+
+      '<text x="590" y="237" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#fff">Tiempo de atención</text>'+
+      '<text x="590" y="255" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#eef1ec">elevado (efecto)</text>'+
+      '<text x="340" y="420" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12" fill="#8a5228">Ámbar: subcausas priorizadas por Pareto (30+25+20 = 75%, ~80%)</text>'+
+      '<text x="340" y="438" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12" fill="#6a746f">Gris: Medición completa el 90% acumulado, sostiene PE3 con KPIs</text>'+
+      '</svg>'+
+      '<p style="margin:10px 0 0;font-size:14px;color:#555f5a;line-height:1.5;">Caso Yokogawa: <b>Método</b> — cada analista tramita las órdenes con su propio criterio, sin flujo documentado. '+
+      '<b>Máquina/Sistema</b> — la información se registra por separado en Excel, correo y SAP. <b>Mano de obra</b> — varias áreas se turnan la validación de un mismo requerimiento. '+
+      '<b>Medición</b> — el tiempo por etapa no se mide (esta última completa el 90% acumulado y sostiene el PE3 con KPIs).</p>'+
+      '</div>'+
       '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+efectoTxt+'</div>'+
       '<div class="grid6">'+boxes+'</div>'+
       '<button class="btnMini" style="margin-top:12px;" onclick="agregarCategoria()">+ añadir categoría</button>'+
