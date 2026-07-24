@@ -493,13 +493,18 @@ function render(){
              '<input class="addInput" style="width:100%;" placeholder="+ causa principal" '+
              'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
     });
-    var efecto = S.probConsecuencias || S.probMagnitud || S.probContexto || '—';
+    var efecto = S.probConsecuencias || S.probMagnitud || S.probContexto || '';
+    var efectoTxt = efecto ? esc(efecto) : '<span style="opacity:.55;font-style:italic;">Aún no definido — se completa automáticamente con lo que escribas en el paso 1 (Consecuencias, Magnitud o Contexto del problema).</span>';
     h='<div class="card"><h2>07 · Diagrama de Ishikawa</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El efecto (cabeza del pescado) resume el problema del paso 1. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_ishi" style="display:none;">Efecto: tiempo de atención elevado en la entrega de bienes y servicios. <b>Método:</b> las órdenes se procesan sin un flujo estándar (subcausas: cada analista sigue su propio orden; no hay puntos de control definidos). <b>Mano de obra:</b> el personal ejecuta el proceso sin criterios uniformes (subcausas: no se registra el avance de cada orden). <b>Medición:</b> no se hace seguimiento a los tiempos por etapa (subcausas: no se calcula el tiempo entre solicitud y entrega).</div>'+
-      '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+esc(efecto)+'</div>'+
+      '<div class="ejBox" id="ej_ishi" style="display:none;">Caso Yokogawa — efecto: <b>elevado tiempo de atención en la entrega de bienes y/o servicios</b>. '+
+      '<b>Método:</b> cada analista tramita las órdenes siguiendo su propio criterio, sin un flujo documentado (subcausa); las aprobaciones se gestionan sin niveles ni pasos definidos (subcausa). '+
+      '<b>Mano de obra:</b> las áreas de ingeniería, logística e importaciones se turnan la validación de un mismo requerimiento antes de continuar el proceso (subcausa); el personal registra la información con criterios distintos entre sí (subcausa). '+
+      '<b>Máquina (Sistema):</b> la información se registra manualmente y por separado en Excel, correo y SAP, sin conexión entre esas fuentes (subcausa); crear una orden en SAP toma varios pasos manuales (subcausa). '+
+      '<b>Medición:</b> el tiempo de cada etapa del proceso no se registra ni se compara contra una meta (subcausa); no existe un reporte periódico del desempeño del proceso (subcausa).</div>'+
+      '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+efectoTxt+'</div>'+
       '<div class="grid6">'+boxes+'</div>'+
       '<button class="btnMini" style="margin-top:12px;" onclick="agregarCategoria()">+ añadir categoría</button>'+
       '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
