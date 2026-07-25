@@ -11,11 +11,11 @@
   }
   *{box-sizing:border-box;}
   body{font-family:'Poppins',system-ui,sans-serif;background:var(--paper);color:var(--ink);
-       margin:0;line-height:1.6;font-size:17px;}
+       margin:0;line-height:1.5;}
   .wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px;}
   .kicker{font-family:'Poppins',sans-serif;font-weight:600;font-size:12px;letter-spacing:.12em;color:var(--amber);margin-bottom:10px;}
-  h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:36px;line-height:1.15;margin:0 0 10px;}
-  .sub{max-width:680px;color:#4a5a60;margin:0 0 24px;font-size:17px;}
+  h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:32px;line-height:1.15;margin:0 0 10px;}
+  .sub{max-width:620px;color:#4a5a60;margin:0 0 24px;}
   /* stepper */
   .stepper{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px;}
   .step{display:flex;align-items:center;gap:6px;flex:1;min-width:84px;}
@@ -23,52 +23,52 @@
   .stepClick:hover .dot{border-color:var(--ink);}
   .dot{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-family:'Poppins',sans-serif;background:#fff;flex-shrink:0;}
   .dot.on{border-color:var(--ink);background:var(--ink);color:#fff;}
-  .step span{font-size:12.5px;color:#8a948f;}
+  .step span{font-size:11.5px;color:#8a948f;}
   .step span.on{color:var(--ink);font-weight:600;}
   /* card */
   .card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:26px;margin-bottom:18px;box-shadow:0 1px 0 rgba(0,0,0,.03);}
-  h2{font-family:'Poppins',sans-serif;font-size:19px;font-weight:600;margin:0 0 16px;}
-  label{display:block;font-family:'Poppins',sans-serif;font-size:13.5px;letter-spacing:.06em;color:#6a746f;margin:10px 0 6px;text-transform:uppercase;}
-  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:4px;padding:11px 12px;font-size:17px;color:var(--ink);font-family:'Poppins',sans-serif;}
+  h2{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;margin:0 0 16px;}
+  label{display:block;font-family:'Poppins',sans-serif;font-size:12px;letter-spacing:.06em;color:#6a746f;margin:10px 0 6px;text-transform:uppercase;}
+  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:4px;padding:10px 11px;font-size:15px;color:var(--ink);font-family:'Poppins',sans-serif;}
   textarea{resize:vertical;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-  .note{font-size:15px;color:#6a746f;margin:0 0 14px;}
-  .blockLbl{font-family:'Poppins',sans-serif;font-size:15px;color:var(--teal);font-weight:500;margin:0 0 4px;}
+  .note{font-size:13px;color:#6a746f;margin:0 0 14px;}
+  .blockLbl{font-family:'Poppins',sans-serif;font-size:13px;color:var(--teal);font-weight:500;margin:0 0 4px;}
   .actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px;align-items:center;}
   button{cursor:pointer;transition:transform .08s,opacity .15s;font-family:'Poppins',sans-serif;}
   button:hover:not(:disabled){transform:translateY(-1px);}
   button:disabled{opacity:.4;cursor:not-allowed;}
-  .btn{background:var(--ink);color:#fff;border:none;border-radius:4px;padding:12px 22px;font-size:15.5px;font-weight:600;}
-  .btnGhost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:12px 20px;font-size:15.5px;font-weight:500;}
+  .btn{background:var(--ink);color:#fff;border:none;border-radius:4px;padding:11px 20px;font-size:14px;font-weight:600;}
+  .btnGhost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:11px 18px;font-size:14px;font-weight:500;}
   .lineList{display:flex;flex-direction:column;gap:6px;}
-  .lineOpt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:4px;padding:11px 13px;font-size:15.5px;color:var(--ink);width:100%;}
+  .lineOpt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:4px;padding:10px 12px;font-size:14px;color:var(--ink);width:100%;}
   .lineOpt.sel{border-color:var(--teal);background:#eef5f4;box-shadow:inset 3px 0 0 var(--teal);}
   .lineNum{font-family:'Poppins',sans-serif;color:var(--amber);font-size:13px;min-width:18px;}
   .coordsBox{margin-top:8px;padding:8px 12px;background:#eef5f4;border-radius:4px;font-size:13px;}
   .coordsBox b{font-family:'Poppins',sans-serif;}
   .hintWarn{font-size:12px;color:#9a3b2c;margin-top:6px;}
   .mapLink{color:var(--teal);font-size:13px;margin-left:10px;}
-  .temaResult{background:var(--ink);color:#fff;border-radius:4px;padding:16px 18px;font-size:18px;font-family:'Poppins',sans-serif;line-height:1.45;margin-top:8px;}
+  .temaResult{background:var(--ink);color:#fff;border-radius:4px;padding:16px 18px;font-size:16px;font-family:'Poppins',sans-serif;line-height:1.4;margin-top:8px;}
   .temaResLbl{font-family:'Poppins',sans-serif;font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-  .fishCenter{background:var(--ink);color:#fff;border-radius:4px;padding:12px 16px;font-style:italic;margin-bottom:16px;font-size:16px;}
+  .fishCenter{background:var(--ink);color:#fff;border-radius:4px;padding:12px 16px;font-style:italic;margin-bottom:16px;font-size:14px;}
   .fishLabel{font-family:'Poppins',sans-serif;font-size:11px;color:var(--amber);font-style:normal;letter-spacing:.04em;display:block;margin-bottom:4px;}
   .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .catBox{border:1px solid var(--line);border-radius:4px;padding:12px;background:#fafbf9;}
-  .catTitle{font-family:'Poppins',sans-serif;font-size:13.5px;color:var(--amber);margin-bottom:8px;}
-  .causa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:15px;background:#fff;border:1px solid var(--line);border-radius:3px;padding:7px 9px;margin-bottom:4px;}
+  .catTitle{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);margin-bottom:8px;}
+  .causa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:3px;padding:5px 8px;margin-bottom:3px;}
   .causa button{border:none;background:transparent;color:#b04a3a;font-size:16px;line-height:1;padding:0;}
   .causaWrap{margin-bottom:8px;}
   .subList{padding-left:12px;margin-top:2px;}
-  .subcausa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:14px;color:#5c584c;background:#f4f6f2;border:1px solid var(--line);border-radius:3px;padding:5px 8px;margin-bottom:4px;}
+  .subcausa{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:12px;color:#5c584c;background:#f4f6f2;border:1px solid var(--line);border-radius:3px;padding:3px 7px;margin-bottom:3px;}
   .subcausa button{border:none;background:transparent;color:#b04a3a;font-size:14px;line-height:1;padding:0;}
   .addSub{font-size:12px;width:100%;margin-top:2px;}
   .catTitleRow{display:flex;gap:4px;align-items:center;margin-bottom:8px;}
   .catEdit{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);font-weight:600;border:1px solid transparent;background:transparent;padding:2px 4px;border-radius:3px;flex:1;}
   .catEdit:hover,.catEdit:focus{border-color:var(--line);background:#fff;}
   .catDel{border:none;background:transparent;color:#b04a3a;font-size:16px;line-height:1;padding:0 4px;cursor:pointer;}
-  .parTable{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px;}
-  .parTable th{background:var(--ink);color:#fff;font-family:'Poppins',sans-serif;font-weight:500;font-size:13.5px;padding:9px;text-align:left;}
+  .parTable{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px;}
+  .parTable th{background:var(--ink);color:#fff;font-family:'Poppins',sans-serif;font-weight:500;font-size:12px;padding:8px;text-align:left;}
   .parTable th:not(:first-child){text-align:center;}
   .parTable td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top;}
   .parTable .prMeta{font-size:11px;color:#8a948f;margin-top:2px;}
@@ -76,36 +76,41 @@
   .freqInp{width:64px;text-align:center;padding:4px;font-size:13px;}
   .prTag{background:var(--teal);color:#fff;font-family:'Poppins',sans-serif;font-size:11px;padding:2px 7px;border-radius:3px;}
   .p80{background:#f6e9d8;color:var(--amber);font-size:11px;padding:2px 7px;border-radius:3px;}
+  .ejParTable{width:100%;border-collapse:collapse;margin:8px 0;font-size:12.5px;}
+  .ejParTable th{background:#d8d2c0;color:var(--ink);padding:5px 8px;text-align:left;font-family:'Poppins',sans-serif;font-weight:500;}
+  .ejParTable td{border-bottom:1px solid #ddd;padding:5px 8px;}
+  .ejParTable .ejHot{background:#fdf3e7;}
+  .ejParTable .ejHot td{font-weight:500;}
   .addInput{border:1px dashed var(--line);border-radius:3px;padding:6px 8px;font-size:13px;background:transparent;}
   .peItem{border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:4px;padding:14px;margin-bottom:12px;}
   .peHead{display:flex;gap:10px;align-items:center;margin-bottom:6px;}
   .peTag{font-family:'Poppins',sans-serif;background:var(--ink);color:#fff;font-size:12px;padding:2px 8px;border-radius:3px;}
   .peCat{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);}
-  .peProblem{font-size:17px;font-weight:500;margin-bottom:8px;}
-  .peTool{font-size:15px;color:var(--teal);background:#eef5f4;padding:7px 11px;border-radius:4px;}
+  .peProblem{font-size:15px;font-weight:500;margin-bottom:8px;}
+  .peTool{font-size:13px;color:var(--teal);background:#eef5f4;padding:6px 10px;border-radius:4px;}
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
   .toast.show{opacity:1;}
   .toast.err{background:#9a3b2c;}
   /* tabs */
   .tabs{display:flex;gap:8px;margin-bottom:20px;}
-  .tab{padding:9px 18px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:15.5px;font-weight:500;}
+  .tab{padding:8px 16px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:14px;font-weight:500;}
   .tab.on{background:var(--ink);color:#fff;border-color:var(--ink);}
   /* lista */
   .listItem{border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:12px;background:#fff;}
   .listMeta{font-family:'Poppins',sans-serif;font-size:12px;color:#8a948f;margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap;}
-  .listTema{font-family:'Poppins',sans-serif;font-size:17px;margin-bottom:6px;}
-  .listPg{font-size:15px;color:#4a5a60;}
+  .listTema{font-family:'Poppins',sans-serif;font-size:15px;margin-bottom:6px;}
+  .listPg{font-size:13px;color:#4a5a60;}
   .badge{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:11px;}
-  .ejBtn{background:none;border:1px solid var(--teal);color:var(--teal);border-radius:3px;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;}
+  .ejBtn{background:none;border:1px solid var(--teal);color:var(--teal);border-radius:3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;}
   .ejBtn:hover{background:#eef5f4;}
-  .ejBox{background:#f4f6f2;border-left:3px solid var(--amber);padding:10px 13px;margin:0 0 8px;font-size:15.5px;color:#555f5a;line-height:1.55;border-radius:3px;}
+  .ejBox{background:#f4f6f2;border-left:3px solid var(--amber);padding:9px 12px;margin:0 0 8px;font-size:13.5px;color:#555f5a;line-height:1.5;border-radius:3px;}
   .grupoBar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-bottom:16px;}
-  .grupoBar .info{font-size:14.5px;color:#4a5a60;display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;}
+  .grupoBar .info{font-size:13px;color:#4a5a60;display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;}
   .grupoBar .info b{color:var(--ink);}
   .grupoBar .info .cy{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:12px;}
   .grupoBar .acts{display:flex;gap:8px;}
-  .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:9px 16px;font-size:14.5px;font-weight:600;}
-  .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:9px 13px;font-size:14.5px;}
+  .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
+  .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
   @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -116,19 +121,19 @@
   <p class="sub">Define problema y delimitaciones, fija el propósito, ancla en una línea oficial, arma el tema, formula el problema general y derívalo en un Ishikawa.</p>
 
   <div class="tabs">
-    <button class="tab" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
-    <button class="tab on" id="tabLista" onclick="mostrarTab('lista')">Planteamientos guardados</button>
+    <button class="tab on" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
+    <button class="tab" id="tabLista" onclick="mostrarTab('lista')">Planteamientos guardados</button>
   </div>
 
   <!-- ============ VISTA FLUJO ============ -->
-  <div id="vistaFlujo" style="display:none;">
+  <div id="vistaFlujo">
     <div class="stepper" id="stepper"></div>
     <div id="grupoBar"></div>
     <div id="pasos"></div>
   </div>
 
   <!-- ============ VISTA LISTA ============ -->
-  <div id="vistaLista">
+  <div id="vistaLista" style="display:none;">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
         <h2 style="margin:0;">Planteamientos guardados</h2>
@@ -257,7 +262,7 @@ var S = {
   problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
   pretest:'', test:'', postest:'',
   proposito:'', lineaIdx:null, adoptada:null, lineaCustom:false, lineaCustomTexto:'',
-  tema:'', problemaGeneral:'',
+  tema:'', problemaGeneral:'', efectoCentral:'',
   categorias: CATEGORIAS.slice(),   // 6M editables
   causas:{}, especificos:[],
   paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
@@ -493,46 +498,27 @@ function render(){
              '<input class="addInput" style="width:100%;" placeholder="+ causa principal" '+
              'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
     });
-    var efecto = S.probConsecuencias || S.probMagnitud || S.probContexto || '';
-    var efectoTxt = efecto ? esc(efecto) : '<span style="opacity:.55;font-style:italic;">Aún no definido — se completa automáticamente con lo que escribas en el paso 1 (Consecuencias, Magnitud o Contexto del problema).</span>';
+    var efectoSugerido = S.probConsecuencias || S.probMagnitud || S.probContexto || '';
+    var efectoVal = S.efectoCentral || efectoSugerido;
     h='<div class="card"><h2>07 · Diagrama de Ishikawa</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">El efecto (cabeza del pescado) resume el problema del paso 1. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
+      '<p class="note" style="margin:0;">El efecto (cabeza del pescado) es el problema central. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_ishi" style="display:none;padding:14px;">'+
-      '<svg width="100%" viewBox="0 0 680 460" style="display:block;">'+
-      '<line x1="90" y1="245" x2="516" y2="245" stroke="#8a948f" stroke-width="1.2"/>'+
-      '<polygon points="516,238 528,245 516,252" fill="#8a948f"/>'+
-      '<line x1="105" y1="105" x2="180" y2="245" stroke="#8a948f" stroke-width="1"/>'+
-      '<line x1="120" y1="340" x2="180" y2="245" stroke="#8a948f" stroke-width="1"/>'+
-      '<line x1="385" y1="105" x2="430" y2="245" stroke="#8a948f" stroke-width="1"/>'+
-      '<line x1="385" y1="340" x2="430" y2="245" stroke="#8a948f" stroke-width="1"/>'+
-      '<rect x="20" y="55" width="170" height="50" rx="8" fill="#f6e9d8" stroke="#c8743b" stroke-width="1"/>'+
-      '<text x="105" y="75" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#8a5228">Método · 25%</text>'+
-      '<text x="105" y="93" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#a06b3c">Sin flujo estándar</text>'+
-      '<rect x="280" y="55" width="210" height="50" rx="8" fill="#f6e9d8" stroke="#c8743b" stroke-width="1"/>'+
-      '<text x="385" y="75" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#8a5228">Máquina/Sistema · 20%</text>'+
-      '<text x="385" y="93" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#a06b3c">Información dispersa</text>'+
-      '<rect x="20" y="340" width="200" height="50" rx="8" fill="#f6e9d8" stroke="#c8743b" stroke-width="1"/>'+
-      '<text x="120" y="360" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#8a5228">Mano de obra · 30%</text>'+
-      '<text x="120" y="378" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#a06b3c">Demora en aprobaciones</text>'+
-      '<rect x="280" y="340" width="210" height="50" rx="8" fill="#f4f6f2" stroke="#c9cfc6" stroke-width="1"/>'+
-      '<text x="385" y="360" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#5c584c">Medición · 15%</text>'+
-      '<text x="385" y="378" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#6a746f">No hay seguimiento</text>'+
-      '<rect x="520" y="215" width="140" height="60" rx="8" fill="#1c2a33"/>'+
-      '<text x="590" y="205" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11" fill="#8a948f">efecto</text>'+
-      '<text x="590" y="237" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="13" fill="#fff">Tiempo de atención</text>'+
-      '<text x="590" y="255" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11.5" fill="#eef1ec">elevado (efecto)</text>'+
-      '<text x="340" y="420" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12" fill="#8a5228">Ámbar: subcausas priorizadas por Pareto (30+25+20 = 75%, ~80%)</text>'+
-      '<text x="340" y="438" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12" fill="#6a746f">Gris: Medición completa el 90% acumulado, sostiene PE3 con KPIs</text>'+
-      '</svg>'+
-      '<p style="margin:10px 0 0;font-size:14px;color:#555f5a;line-height:1.5;">Caso Yokogawa: <b>Método</b> — cada analista tramita las órdenes con su propio criterio, sin flujo documentado. '+
-      '<b>Máquina/Sistema</b> — la información se registra por separado en Excel, correo y SAP. <b>Mano de obra</b> — varias áreas se turnan la validación de un mismo requerimiento. '+
-      '<b>Medición</b> — el tiempo por etapa no se mide (esta última completa el 90% acumulado y sostiene el PE3 con KPIs).</p>'+
-      '</div>'+
-      '<div class="fishCenter"><span class="fishLabel">Efecto — problema central:</span>'+efectoTxt+'</div>'+
-      '<div class="grid6">'+boxes+'</div>'+
-      '<button class="btnMini" style="margin-top:12px;" onclick="agregarCategoria()">+ añadir categoría</button>'+
+      '<div class="ejBox" id="ej_ishi" style="display:none;">'+
+      '<b>Caso Yokogawa — Efecto (cabeza):</b> elevado tiempo de atención en la entrega de bienes y/o servicios.<br><br>'+
+      '<b>Método:</b> cada analista tramita las órdenes siguiendo su propio criterio, sin un flujo documentado <i>(subcausa)</i>; las aprobaciones se gestionan sin niveles ni pasos definidos <i>(subcausa)</i>.<br>'+
+      '<b>Mano de obra:</b> las áreas de ingeniería, logística e importaciones se turnan la validación de un mismo requerimiento antes de continuar <i>(subcausa)</i>; el personal registra la información con criterios distintos entre sí <i>(subcausa)</i>.<br>'+
+      '<b>Máquina (Sistema):</b> la información se registra manualmente y por separado en Excel, correo y SAP, sin conexión entre esas fuentes <i>(subcausa)</i>; crear una orden en SAP toma varios pasos manuales <i>(subcausa)</i>.<br>'+
+      '<b>Medición:</b> el tiempo de cada etapa del proceso no se registra ni se compara contra una meta <i>(subcausa)</i>; no existe un reporte periódico del desempeño del proceso <i>(subcausa)</i>.</div>'+
+
+      '<label style="margin-top:12px;">Problema central (cabeza del pescado)</label>'+
+      '<textarea rows="2" id="f_efecto" oninput="S.efectoCentral=this.value" placeholder="Escribe el efecto/problema central del diagrama…">'+esc(efectoVal)+'</textarea>'+
+      (efectoSugerido && !S.efectoCentral ? '<p class="note" style="margin:4px 0 0;font-size:12px;">Sugerido desde el paso 1 — puedes editarlo.</p>' : '')+
+
+      '<div class="grid6" style="margin-top:16px;">'+boxes+'</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'+
+      '<button class="btnMini" onclick="agregarCategoria()">+ añadir categoría</button>'+
+      '<button class="btnMini" onclick="descargarIshikawa()">⬇ descargar diagrama (PNG)</button></div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
       '<button class="btn" onclick="p7next()">Continuar al Pareto →</button></div></div>';
   }
@@ -573,7 +559,17 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada subcausa (cuántas veces se observó, según tu ficha de registro). El Pareto ordena de mayor a menor y marca las que acumulan el 80%. Prioriza <b>3 subcausas</b>: serán tus 3 problemas específicos.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_par" style="display:none;">En el trabajo de referencia (Yokogawa), se registró la frecuencia de cada subcausa del proceso de adquisición y con el Pareto se priorizaron las 3 subcausas que concentraban ~80% del tiempo perdido: demoras en aprobaciones internas (Mano de obra), falta de estandarización del proceso (Método) e información dispersa entre sistemas (Máquina/Sistema). De ellas se derivaron los 3 problemas específicos, cada uno con su herramienta (BPMN, Automatización — RPA/ERP —, KPIs bajo SCOR).</div>'+
+      '<div class="ejBox" id="ej_par" style="display:none;">'+
+      '<b>Caso Yokogawa — Análisis de Pareto (Tabla 1).</b> Se registró la frecuencia relativa de cada causa del proceso de adquisición (juicio experto):'+
+      '<table class="ejParTable"><thead><tr><th>Causa</th><th>%</th><th>% acum.</th></tr></thead><tbody>'+
+      '<tr class="ejHot"><td>C1 · Demoras en aprobaciones</td><td>30%</td><td>30%</td></tr>'+
+      '<tr class="ejHot"><td>C2 · Falta de planificación</td><td>25%</td><td>55%</td></tr>'+
+      '<tr class="ejHot"><td>C3 · Información dispersa</td><td>20%</td><td><b>75%</b></td></tr>'+
+      '<tr><td>C4 · Reprocesos por errores</td><td>12%</td><td>87%</td></tr>'+
+      '<tr><td>C5 · Falta de seguimiento</td><td>8%</td><td>95%</td></tr>'+
+      '<tr><td>C6 · Otros</td><td>5%</td><td>100%</td></tr>'+
+      '</tbody></table>'+
+      'Las <b>3 causas críticas (C1+C2+C3 = 75%)</b>, resaltadas, concentran el grueso del problema y son las que se priorizan → derivan en los 3 problemas específicos, cada uno con su herramienta (BPMN, RACI/SOP, KPIs bajo SCOR).</div>'+
       '<table class="parTable"><thead><tr><th>Subcausa</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table>'+
       '<div class="blockLbl" style="margin-top:20px;">◆ Selecciona las 3 subcausas priorizadas</div>'+
@@ -599,7 +595,7 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Cada subcausa priorizada en el Pareto genera un problema específico. Complétalo con su herramienta enmarcada en la línea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera la implementación de BPMN contribuye a la estandarización del proceso de adquisición…? · Herramienta: BPMN (AS-IS → TO-BE, con SOP y matriz RACI como entregables de la estandarización). PE2: ¿De qué manera la automatización mejora la integración de la información del proceso…? · Herramienta: Automatización (RPA + integración ERP). PE3: ¿De qué manera la implementación de indicadores de gestión (KPIs) mejora el seguimiento, control y evaluación del proceso…? · Herramienta: KPIs bajo modelo SCOR.</div>'+
+      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN) reduce el tiempo de atención…? · Herramienta: BPMN. PE2: ¿De qué manera la definición de responsabilidades (RACI/SOP) reduce el tiempo…? · Herramienta: RACI/SOP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) reduce el tiempo…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
       '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (registrada al inicio)</div>'+
       '<div class="coordsBox" style="background:#eef5f4;">'+
@@ -706,7 +702,86 @@ function p7next(){
   armarPareto(); go(8);
 }
 
-// ---- PARETO sobre subcausas ----
+// ---- Descargar el Ishikawa como PNG (forma de pescado) ----
+function descargarIshikawa(){
+  var cats = S.categorias.filter(function(c){ return (S.causas[c]||[]).length>0; });
+  if(!cats.length){ toast('Añade al menos una causa antes de descargar',true); return; }
+  var efecto = (S.efectoCentral || S.probConsecuencias || S.probMagnitud || 'Problema central').trim();
+
+  var W=1600, H=900, cv=document.createElement('canvas');
+  cv.width=W; cv.height=H;
+  var x=cv.getContext('2d');
+  x.fillStyle='#ffffff'; x.fillRect(0,0,W,H);
+
+  var spineY=H/2, spineX0=90, spineX1=W-330;
+  // espina central
+  x.strokeStyle='#1c2a33'; x.lineWidth=4;
+  x.beginPath(); x.moveTo(spineX0,spineY); x.lineTo(spineX1,spineY); x.stroke();
+  // cabeza (efecto)
+  x.fillStyle='#1c2a33';
+  x.beginPath(); x.moveTo(spineX1,spineY-70); x.lineTo(W-40,spineY-70);
+  x.lineTo(W-40,spineY+70); x.lineTo(spineX1,spineY+70); x.closePath(); x.fill();
+  x.fillStyle='#fff'; x.font='bold 20px Arial'; x.textAlign='center'; x.textBaseline='middle';
+  wrapText(x, efecto, (spineX1+W-40)/2, spineY, W-40-spineX1-24, 24, 4);
+
+  // ramas: mitad arriba, mitad abajo
+  var n=cats.length, usableX=spineX1-spineX0-120;
+  cats.forEach(function(cat,i){
+    var up = i%2===0;
+    var col = Math.floor(i/2);
+    var totalCols = Math.ceil(n/2);
+    var bx = spineX0 + 120 + (usableX/(totalCols))*(col+0.5);
+    var by = spineY + (up? -1:1)*60;
+    var tipX = bx - 120, tipY = spineY + (up?-1:1)*230;
+    // línea diagonal de la categoría
+    x.strokeStyle='#2f6d6a'; x.lineWidth=3;
+    x.beginPath(); x.moveTo(bx,spineY); x.lineTo(tipX,tipY); x.stroke();
+    // etiqueta categoría
+    x.fillStyle='#2f6d6a'; x.font='bold 18px Arial'; x.textAlign='center';
+    x.fillText(cat, tipX, tipY + (up?-10:22));
+    // causas y subcausas
+    var causas=S.causas[cat]||[];
+    x.textAlign='left';
+    causas.forEach(function(cz,ci){
+      var frac=(ci+1)/(causas.length+1);
+      var px=bx+(tipX-bx)*frac, py=spineY+(tipY-spineY)*frac;
+      x.strokeStyle='#c8743b'; x.lineWidth=2;
+      x.beginPath(); x.moveTo(px,py); x.lineTo(px+110,py); x.stroke();
+      x.fillStyle='#26241e'; x.font='14px Arial';
+      x.fillText(truncar(cz.txt,28), px+114, py-4);
+      (cz.subs||[]).forEach(function(sb,si){
+        x.fillStyle='#8a948f'; x.font='12px Arial';
+        x.fillText('· '+truncar(sb,30), px+126, py+14+si*15);
+      });
+    });
+  });
+
+  // título
+  x.fillStyle='#1c2a33'; x.font='bold 22px Arial'; x.textAlign='left'; x.textBaseline='alphabetic';
+  x.fillText('Diagrama de Ishikawa', 40, 44);
+  x.fillStyle='#8a948f'; x.font='13px Arial';
+  x.fillText('Grupo '+(S.numeroGrupo||'')+(S.coordinador?' · '+S.coordinador:''), 40, 66);
+
+  var url=cv.toDataURL('image/png');
+  var a=document.createElement('a');
+  a.href=url; a.download='ishikawa_grupo_'+(S.numeroGrupo||'')+'.png';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast('Diagrama descargado');
+}
+function truncar(s,n){ s=String(s||''); return s.length>n? s.slice(0,n-1)+'…' : s; }
+function wrapText(ctx,text,cx,cy,maxW,lh,maxLines){
+  var words=String(text).split(' '), lines=[], line='';
+  for(var i=0;i<words.length;i++){
+    var test=line?line+' '+words[i]:words[i];
+    if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=words[i]; }
+    else line=test;
+    if(lines.length>=maxLines-1){ line=test; }
+  }
+  if(line) lines.push(line);
+  if(lines.length>maxLines){ lines=lines.slice(0,maxLines); lines[maxLines-1]=truncar(lines[maxLines-1],30); }
+  var startY=cy-((lines.length-1)*lh)/2;
+  lines.forEach(function(ln,i){ ctx.fillText(ln,cx,startY+i*lh); });
+}
 function subKey(cat,causa,sub){ return cat+'|'+causa+'|'+sub; }
 
 // Reúne todas las subcausas del Ishikawa y sincroniza el mapa de frecuencias
@@ -876,6 +951,7 @@ function serializarEstado(){
     delim:{ pretest:S.pretest, test:S.test, postest:S.postest, mapsLink:S.mapsLink },
     linea:{ idx:S.lineaIdx, custom:S.lineaCustom, customTexto:S.lineaCustomTexto,
             adoptada:S.adoptada },
+    efectoCentral:S.efectoCentral,
     categorias:S.categorias,
     causas:S.causas,
     paretoFreq:S.paretoFreq,
@@ -895,6 +971,7 @@ function restaurarEstado(json){
   if(d.linea){ S.lineaIdx=(d.linea.idx==null?null:d.linea.idx); S.lineaCustom=!!d.linea.custom;
     S.lineaCustomTexto=d.linea.customTexto||''; S.adoptada=d.linea.adoptada||null; }
   if(d.categorias){ S.categorias=d.categorias; }
+  if(typeof d.efectoCentral==='string'){ S.efectoCentral=d.efectoCentral; }
   if(d.causas){ S.causas=d.causas; }
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
@@ -1082,7 +1159,6 @@ function toast(msg,err){
 
 // init
 render();
-cargarLista();
 </script>
 </body>
 </html>
