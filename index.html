@@ -266,8 +266,9 @@ var S = {
   tema:'', problemaGeneral:'', efectoCentral:'', consecuenciaSintoma:'',
   categorias: CATEGORIAS.slice(),   // 6M editables
   causas:{}, especificos:[],
+  nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
   paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
-  priorizadas:[],       // hasta 3 subcausas seleccionadas {categoria,causa,sub}
+  priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
   estudiante:'', curso:'', recordId:null
 };
 S.categorias.forEach(function(c){ S.causas[c]=[]; });   // cada causa: {txt, subs:[]}
@@ -537,7 +538,7 @@ function render(){
       var pacum = total? (acum/total*100):0;
       var en80 = pacum<=80 || idx===0;
       rows+='<tr class="'+(f.priorizada?'prRow':'')+'">'+
-        '<td>'+esc(f.sub)+'<div class="prMeta">'+esc(f.categoria)+' · '+esc(f.causa)+'</div></td>'+
+        '<td>'+esc(f.etiqueta)+'<div class="prMeta">'+esc(f.meta)+'</div></td>'+
         '<td style="text-align:center;"><input type="number" min="0" class="freqInp" value="'+f.freq+'" '+
           'onchange="setFreq(\''+f.key+'\',this.value)"></td>'+
         '<td style="text-align:center;">'+pct.toFixed(1)+'%</td>'+
@@ -545,14 +546,14 @@ function render(){
         '<td style="text-align:center;">'+(f.priorizada?'<span class="prTag">PE'+(f.prIdx+1)+'</span>':(en80?'<span class="p80">80%</span>':''))+'</td>'+
       '</tr>';
     });
-    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay subcausas en el Ishikawa. Vuelve al paso 7 y añade subcausas.</td></tr>';
+    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay '+rotuloNivel(true)+' en el Ishikawa. Vuelve al paso 7 y a\u00f1ade '+rotuloNivel(true)+'.</td></tr>';
 
     // Selectores de las 3 priorizadas
-    var opts='<option value="">— elegir subcausa —</option>';
-    filas.forEach(function(f){ opts+='<option value="'+esc(f.key)+'">'+esc(f.sub)+' ('+f.freq+')</option>'; });
+    var opts='<option value="">\u2014 elegir '+rotuloNivel()+' \u2014</option>';
+    filas.forEach(function(f){ opts+='<option value="'+esc(f.key)+'">'+esc(f.etiqueta)+' ('+f.freq+')</option>'; });
     var selects='';
     for(var pi=0; pi<3; pi++){
-      var cur = S.priorizadas[pi] ? (S.priorizadas[pi].categoria+'|'+S.priorizadas[pi].causa+'|'+S.priorizadas[pi].sub) : '';
+      var cur = S.priorizadas[pi] ? subKey(S.priorizadas[pi].categoria,S.priorizadas[pi].causa,S.priorizadas[pi].sub||'') : '';
       var optsSel = opts.replace('value="'+cur+'"','value="'+cur+'" selected');
       selects+='<div style="margin-bottom:8px;"><label>Problema específico '+(pi+1)+'</label>'+
         '<select onchange="setPriorizada('+pi+',this.value)">'+optsSel+'</select></div>';
@@ -560,11 +561,18 @@ function render(){
 
     h='<div class="card"><h2>08 · Priorización por Pareto</h2>'+
       '<div class="coordsBox" style="background:#eef5f4;margin-bottom:14px;">'+
-      '<b>De dónde salen estas filas:</b> cada fila es una <b>subcausa</b> que registraste en tu diagrama de Ishikawa (paso 7). '+
-      'Aquí se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
-      'Las 3 que elijas serán tus 3 problemas específicos.</div>'+
+      '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 7). '+
+      'Aqu\u00ed se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
+      'Las 3 que elijas ser\u00e1n tus 3 problemas espec\u00edficos.</div>'+
+      '<div class="blockLbl">\u25c6 \u00bfA qu\u00e9 nivel quieres priorizar?</div>'+
+      '<div class="lineList" style="margin-bottom:6px;">'+
+      '<button type="button" class="lineOpt '+(porSubcausa()?'':'sel')+'" onclick="setNivelPareto(\'causa\')">'+
+      '<span class="lineNum">1\u00ba</span><span><b>Causas</b> \u2014 lo que cuelga directo de cada espina (Ishikawa de 1.\u00ba nivel).</span></button>'+
+      '<button type="button" class="lineOpt '+(porSubcausa()?'sel':'')+'" onclick="setNivelPareto(\'subcausa\')">'+
+      '<span class="lineNum">2\u00ba</span><span><b>Subcausas</b> \u2014 el porqu\u00e9 de cada causa. Requiere haberlas cargado en el paso 7.</span></button></div>'+
+      '<p class="note" style="font-size:12.5px;">La categor\u00eda (M\u00e9todo, M\u00e1quina\u2026) no se prioriza: es un cajon de clasificaci\u00f3n, no una causa que puedas medir o corregir.</p>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada subcausa (cuántas veces se observó, según tu ficha de registro).</p>'+
+      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada '+rotuloNivel()+' (cu\u00e1ntas veces se observ\u00f3, seg\u00fan tu ficha de registro).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_par" style="display:none;">'+
       '<b>Caso Yokogawa — Análisis de Pareto (Tabla 1).</b> Se registró la frecuencia relativa de cada causa del proceso de adquisición (juicio experto):'+
@@ -577,9 +585,9 @@ function render(){
       '<tr><td>C6 · Otros</td><td>5%</td><td>100%</td></tr>'+
       '</tbody></table>'+
       'Las <b>3 causas críticas (C1+C2+C3 = 75%)</b>, resaltadas, concentran el grueso del problema y son las que se priorizan → derivan en los 3 problemas específicos, cada uno con su herramienta (BPMN, RACI/SOP, KPIs bajo SCOR).</div>'+
-      '<table class="parTable"><thead><tr><th>Subcausa (de tu Ishikawa)</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
+      '<table class="parTable"><thead><tr><th>'+(porSubcausa()?'Subcausa':'Causa')+' (de tu Ishikawa)</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table>'+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Selecciona las 3 subcausas priorizadas</div>'+
+      '<div class="blockLbl" style="margin-top:20px;">\u25c6 Selecciona las 3 '+rotuloNivel(true)+' priorizadas</div>'+
       '<p class="note">Sugerencia: elige las 3 de mayor frecuencia (las del 80%). Puedes ajustar con criterio.</p>'+
       selects+
       '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Ishikawa</button>'+
@@ -593,14 +601,14 @@ function render(){
       pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
           subTxt+
-          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema específico derivado de esta subcausa…">'+esc(e.problema)+'</textarea>'+
+          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea>'+
           '<label>Herramienta enmarcada en la línea</label>'+
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
     });
-    if(!pe) pe='<p class="note">No hay subcausas priorizadas. Vuelve al Pareto (paso 8) y prioriza 3 subcausas.</p>';
+    if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 8) y prioriza 3.</p>';
     h='<div class="card"><h2>09 · Problemas específicos y herramientas</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Cada subcausa priorizada en el Pareto genera un problema específico. Complétalo con su herramienta enmarcada en la línea.</p>'+
+      '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN) reduce el tiempo de atención…? · Herramienta: BPMN. PE2: ¿De qué manera la definición de responsabilidades (RACI/SOP) reduce el tiempo…? · Herramienta: RACI/SOP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) reduce el tiempo…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
@@ -738,7 +746,12 @@ var EJEMPLO_ISHIKAWA = {
       {txt:"Demora en cotizaciones de proveedores"},{txt:"Falta de especificaciones técnicas"}
     ]}
   ],
-  priorizadas:["Máquina (Sistema)","Método","Medición"],
+  // Priorizadas a nivel de CAUSA (no de categoría): las 3 del Pareto del caso.
+  priorizadas:[
+    {categoria:"Mano de obra",      causa:"Demora en aprobaciones por parte de las \u00e1reas", sub:""},
+    {categoria:"M\u00e1quina (Sistema)", causa:"Falta de integraci\u00f3n de la informaci\u00f3n entre los sistemas", sub:""},
+    {categoria:"Medici\u00f3n",         causa:"Falta de seguimiento del proceso", sub:""}
+  ],
   consecuencia:"Retraso en el tiempo de atención en la entrega de bienes y/o servicios en perjuicio del área de ingeniería"
 };
 function dibujarEjemploIshikawa(){
@@ -750,9 +763,11 @@ function dibujarEjemploIshikawa(){
   img.src=url; img.dataset.listo='1';
 }
 // Dibuja un Ishikawa (pescado) en canvas y devuelve el dataURL PNG.
-// cats: [{nombre, causas:[{txt, subs:[...]}]}]  · priorizadas: [nombreCat, ...]
-function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
-  priorizadas = priorizadas || [];
+// cats: [{nombre, causas:[{txt, subs:[...]}]}]
+// prior: [{categoria, causa, sub}]  — se resalta la CAUSA (o subcausa) priorizada,
+// no la categoría entera: la categoría es un cajón de clasificación, no una causa.
+function construirIshikawaPNG(efecto, cats, titulo, prior, consecuencia){
+  prior = (prior||[]).filter(function(p){ return p && p.categoria; });
   cats = (cats||[]).filter(function(c){ return (c.causas||[]).length>0; });
   if(!cats.length) cats = [{nombre:'(sin categorías)', causas:[]}];
 
@@ -879,7 +894,7 @@ function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
 
   // ---- Ramas ----
   function dibujarRama(cat, bx, up, brH){
-    var esPrior = priorizadas.indexOf(cat.nombre)!==-1;
+    var esPrior = prior.some(function(p){ return p.categoria===cat.nombre; });
     var tipX = bx - DX, tipY = spineY + (up?-1:1)*brH;
     x.strokeStyle = esPrior ? '#c8743b' : '#2f6d6a';
     x.lineWidth   = esPrior ? 6 : 3.5;
@@ -906,14 +921,17 @@ function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
       acum+=hC;
       var px = bx + (tipX-bx)*frac;
       var py = spineY + (tipY-spineY)*frac;
-      x.strokeStyle = esPrior ? '#c8743b' : '#7a8a86';
-      x.lineWidth   = esPrior ? 3 : 1.8;
+      var czTxt = cz.txt||cz;
+      var czPrior = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt && !p.sub; });
+      var czTiene = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt; });
+      x.strokeStyle = czTiene ? '#c8743b' : '#7a8a86';
+      x.lineWidth   = czTiene ? 3 : 1.8;
       x.beginPath(); x.moveTo(px,py); x.lineTo(px-CONECTOR,py); x.stroke();
 
       var rightX = px - CONECTOR - 10;
       var dispo  = Math.min(anchoTexto, rightX - MARG_L);   // nunca sale del lienzo
-      x.fillStyle = esPrior ? '#a8501e' : '#26241e';
-      x.font = (esPrior?'bold ':'')+F_CAUSA+'px Arial';
+      x.fillStyle = czTiene ? '#a8501e' : '#26241e';
+      x.font = (czTiene?'bold ':'')+F_CAUSA+'px Arial';
       x.textAlign='right'; x.textBaseline='middle';
       var lns = partir(x, cz.txt||cz, dispo, 3);
       var y0 = py - ((lns.length-1)*LH_CAUSA)/2;
@@ -922,7 +940,9 @@ function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
       // subcausas
       var ySub = y0 + lns.length*LH_CAUSA - 2;
       (cz.subs||[]).forEach(function(sb,si){
-        x.fillStyle='#7d8781'; x.font=F_SUB+'px Arial';
+        var sbPrior = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt && p.sub===sb; });
+        x.fillStyle = sbPrior ? '#a8501e' : '#7d8781';
+        x.font = (sbPrior?'bold ':'')+F_SUB+'px Arial';
         var ls = partir(x, '· '+sb, dispo-14, 1);
         x.fillText(ls[0], rightX-10, ySub + si*LH_SUB);
       });
@@ -933,10 +953,17 @@ function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
   abajo .forEach(function(cat,i){ dibujarRama(cat, bx0 + SEPARACION*i, false, BR_DN); });
 
   // ---- Leyenda ----
-  if(priorizadas.length){
+  if(prior.length){
+    var etq = prior.map(function(p){ return p.sub || p.causa; });
     x.fillStyle='#c8743b'; x.font='bold '+F_LEG+'px Arial';
     x.textAlign='left'; x.textBaseline='alphabetic';
-    x.fillText('■ Categorías priorizadas (Pareto): '+priorizadas.join(' · '), MARG_L+6, H-26);
+    var leyenda = '\u25a0 Priorizadas (Pareto): '+etq.join('  \u00b7  ');
+    while(x.measureText(leyenda).width > W-2*MARG_L-12 && etq.length){
+      etq[etq.length-1] = etq[etq.length-1].slice(0,-2)+'\u2026';
+      leyenda = '\u25a0 Priorizadas (Pareto): '+etq.join('  \u00b7  ');
+      if(etq[etq.length-1].length<=3) break;
+    }
+    x.fillText(leyenda, MARG_L+6, H-26);
   }
   return cv.toDataURL('image/png');
 }
@@ -945,11 +972,9 @@ function descargarIshikawa(){
                          .filter(function(c){ return c.causas.length>0; });
   if(!cats.length){ toast('Añade al menos una causa antes de descargar',true); return; }
   var efecto = (S.efectoCentral || S.probConsecuencias || S.probMagnitud || 'Problema central').trim();
-  // categorías que contienen alguna subcausa priorizada en el Pareto
-  var priorCats=[];
-  S.priorizadas.forEach(function(p){ if(p && priorCats.indexOf(p.categoria)===-1) priorCats.push(p.categoria); });
+  var prior = S.priorizadas.filter(function(p){ return p; });
   var subt = 'Grupo '+(S.numeroGrupo||'')+(S.coordinador?' · '+S.coordinador:'');
-  var url=construirIshikawaPNG(efecto, cats, 'Diagrama de Ishikawa — '+subt, priorCats, S.consecuenciaSintoma);
+  var url=construirIshikawaPNG(efecto, cats, 'Diagrama de Ishikawa \u2014 '+subt, prior, S.consecuenciaSintoma);
   var a=document.createElement('a');
   a.href=url; a.download='ishikawa_grupo_'+(S.numeroGrupo||'')+'.png';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -987,34 +1012,49 @@ function armarPareto(){
   var vistos={};
   S.categorias.forEach(function(cat){
     (S.causas[cat]||[]).forEach(function(cz){
+      // 1.º nivel: la causa (sub vacío)
+      var kc=subKey(cat,cz.txt,'');
+      vistos[kc]=true;
+      if(!(kc in S.paretoFreq)) S.paretoFreq[kc]=1;
+      // 2.º nivel: cada subcausa
       (cz.subs||[]).forEach(function(sb){
         var k=subKey(cat,cz.txt,sb);
         vistos[k]=true;
-        if(!(k in S.paretoFreq)) S.paretoFreq[k]=1;   // frecuencia por defecto 1
+        if(!(k in S.paretoFreq)) S.paretoFreq[k]=1;
       });
     });
   });
-  // limpia frecuencias de subcausas ya inexistentes
+  // Limpia frecuencias de elementos ya inexistentes. Se conservan los DOS niveles,
+  // para que cambiar de nivel no borre lo ya medido en el otro.
   Object.keys(S.paretoFreq).forEach(function(k){ if(!vistos[k]) delete S.paretoFreq[k]; });
 }
 
-// Devuelve las subcausas ordenadas por frecuencia desc, con metadatos
+function porSubcausa(){ return S.nivelPareto==='subcausa'; }
+function rotuloNivel(pl){ return porSubcausa() ? (pl?'subcausas':'subcausa') : (pl?'causas':'causa'); }
+
+// Devuelve los elementos del nivel elegido, ordenados por frecuencia desc
 function paretoOrdenado(){
   var arr=[];
   S.categorias.forEach(function(cat){
     (S.causas[cat]||[]).forEach(function(cz){
-      (cz.subs||[]).forEach(function(sb){
-        var k=subKey(cat,cz.txt,sb);
-        arr.push({ key:k, categoria:cat, causa:cz.txt, sub:sb, freq:Number(S.paretoFreq[k]||0) });
-      });
+      if(porSubcausa()){
+        (cz.subs||[]).forEach(function(sb){
+          var k=subKey(cat,cz.txt,sb);
+          arr.push({ key:k, categoria:cat, causa:cz.txt, sub:sb, etiqueta:sb,
+                     meta:cat+' \u00b7 '+cz.txt, freq:Number(S.paretoFreq[k]||0) });
+        });
+      } else {
+        var k=subKey(cat,cz.txt,'');
+        arr.push({ key:k, categoria:cat, causa:cz.txt, sub:'', etiqueta:cz.txt,
+                   meta:cat, freq:Number(S.paretoFreq[k]||0) });
+      }
     });
   });
   arr.sort(function(a,b){ return b.freq-a.freq; });
-  // marca cuáles están priorizadas y su índice PE
   arr.forEach(function(f){
     f.priorizada=false;
     S.priorizadas.forEach(function(p,pi){
-      if(p && subKey(p.categoria,p.causa,p.sub)===f.key){ f.priorizada=true; f.prIdx=pi; }
+      if(p && subKey(p.categoria,p.causa,p.sub||'')===f.key){ f.priorizada=true; f.prIdx=pi; }
     });
   });
   return arr;
@@ -1025,17 +1065,27 @@ function setFreq(key,v){
   render();
 }
 
-// Fija la subcausa priorizada en la posición pi (0..2) a partir de su key
+// Cambia el nivel de análisis del Pareto (1.º nivel = causa · 2.º nivel = subcausa)
+function setNivelPareto(n){
+  if(S.nivelPareto===n) return;
+  var hay = S.priorizadas.filter(function(p){ return p; }).length;
+  if(hay && !confirm('Cambiar de nivel borra los '+hay+' elementos que ya priorizaste. \u00bfContinuar?')) return;
+  S.nivelPareto=n;
+  S.priorizadas=[];
+  render();
+}
+
+// Fija el elemento priorizado en la posición pi (0..2) a partir de su key
 function setPriorizada(pi,key){
   if(!key){ S.priorizadas[pi]=null; render(); return; }
   var parts=key.split('|');
-  S.priorizadas[pi]={ categoria:parts[0], causa:parts[1], sub:parts[2] };
+  S.priorizadas[pi]={ categoria:parts[0], causa:parts[1], sub:parts[2]||'' };
   render();
 }
 
 function p8next(){
   var elegidas=S.priorizadas.filter(function(p){ return p; });
-  if(elegidas.length<3) return toast('Selecciona las 3 subcausas priorizadas',true);
+  if(elegidas.length<3) return toast('Selecciona las 3 '+rotuloNivel(true)+' priorizadas',true);
   armarEspecificos(); go(9);
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
@@ -1153,6 +1203,7 @@ function serializarEstado(){
     consecuenciaSintoma:S.consecuenciaSintoma,
     categorias:S.categorias,
     causas:S.causas,
+    nivelPareto:S.nivelPareto,
     paretoFreq:S.paretoFreq,
     priorizadas:S.priorizadas,
     especificos:S.especificos
@@ -1173,6 +1224,7 @@ function restaurarEstado(json){
   if(typeof d.efectoCentral==='string'){ S.efectoCentral=d.efectoCentral; }
   if(typeof d.consecuenciaSintoma==='string'){ S.consecuenciaSintoma=d.consecuenciaSintoma; }
   if(d.causas){ S.causas=d.causas; }
+  if(d.nivelPareto==='causa'||d.nivelPareto==='subcausa'){ S.nivelPareto=d.nivelPareto; }
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
   if(d.especificos){ S.especificos=d.especificos; }
