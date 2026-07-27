@@ -262,7 +262,7 @@ var S = {
   problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
   pretest:'', test:'', postest:'',
   proposito:'', lineaIdx:null, adoptada:null, lineaCustom:false, lineaCustomTexto:'',
-  tema:'', problemaGeneral:'', efectoCentral:'',
+  tema:'', problemaGeneral:'', efectoCentral:'', consecuenciaSintoma:'',
   categorias: CATEGORIAS.slice(),   // 6M editables
   causas:{}, especificos:[],
   paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
@@ -513,6 +513,10 @@ function render(){
       '<textarea rows="2" id="f_efecto" oninput="S.efectoCentral=this.value" placeholder="Escribe el efecto/problema central del diagrama…">'+esc(efectoVal)+'</textarea>'+
       (efectoSugerido && !S.efectoCentral ? '<p class="note" style="margin:4px 0 0;font-size:12px;">Sugerido desde el paso 1 — puedes editarlo.</p>' : '')+
 
+      '<label style="margin-top:14px;">Consecuencia o síntoma del problema central</label>'+
+      '<textarea rows="2" id="f_consec" oninput="S.consecuenciaSintoma=this.value" placeholder="Ej. Retraso en el tiempo de atención en la entrega de bienes y/o servicios, en perjuicio del área de ingeniería…">'+esc(S.consecuenciaSintoma)+'</textarea>'+
+      '<p class="note" style="margin:4px 0 0;font-size:12px;">Es el efecto observable que evidencia el problema (aparece como recuadro junto a la cabeza del pescado).</p>'+
+
       '<div class="grid6" style="margin-top:16px;">'+boxes+'</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'+
       '<button class="btnMini" onclick="agregarCategoria()">+ añadir categoría</button>'+
@@ -706,75 +710,141 @@ function p7next(){
 
 // Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
 var EJEMPLO_ISHIKAWA = {
-  efecto: "Elevado tiempo de atención en la entrega de bienes y/o servicios",
+  efecto: "Elevado tiempo de atención en la entrega de bienes y/o servicios en el área de ingeniería de la empresa Yokogawa América Do Sul Ltda., Sucursal Perú",
   cats: [
-    { nombre:"Método", causas:[
-      { txt:"Cada analista tramita con su propio criterio", subs:["Sin flujo documentado","Aprobaciones sin pasos definidos"] }
+    { nombre:"Máquina (Sistema)", causas:[
+      {txt:"Registro manual de información"},{txt:"Demora en la creación de órdenes o líneas en SAP"},
+      {txt:"Uso limitado de herramientas digitales"},{txt:"Falta de integración de la información entre los sistemas"}
     ]},
     { nombre:"Mano de obra", causas:[
-      { txt:"Varias áreas validan el mismo requerimiento", subs:["Ingeniería, logística e importaciones se turnan","Registro con criterios distintos"] }
+      {txt:"Demora en aprobaciones por parte de las áreas"},{txt:"Dependencia de múltiples áreas (ingeniería, logística, importaciones)"},
+      {txt:"Falta de capacitación en el proceso"},{txt:"Errores en el registro de información"}
     ]},
-    { nombre:"Máquina (Sistema)", causas:[
-      { txt:"Información dispersa y no conectada", subs:["Excel, correo y SAP por separado","Crear orden en SAP toma varios pasos"] }
+    { nombre:"Método", causas:[
+      {txt:"Falta de estandarización del proceso de procura"},{txt:"Flujo de actividades y/o autorizaciones y/o aprobaciones no definido"},
+      {txt:"Exceso de pasos en el proceso"},{txt:"No existen procedimientos documentados"}
     ]},
     { nombre:"Medición", causas:[
-      { txt:"No se mide el tiempo del proceso", subs:["Tiempo por etapa no se registra","Sin reporte periódico de desempeño"] }
+      {txt:"No hay control de desempeño"},{txt:"Falta de seguimiento del proceso"},
+      {txt:"No se mide el tiempo por etapa"},{txt:"Falta de gestión del desempeño del proceso"}
+    ]},
+    { nombre:"Medio ambiente", causas:[
+      {txt:"Dependencia de correos electrónicos"},{txt:"Mala comunicación entre áreas"},
+      {txt:"Falta de coordinación entre áreas"},{txt:"Carga laboral elevada"}
+    ]},
+    { nombre:"Material", causas:[
+      {txt:"Requerimientos mal definidos"},{txt:"Información incompleta en los requerimientos"},
+      {txt:"Demora en cotizaciones de proveedores"},{txt:"Falta de especificaciones técnicas"}
     ]}
-  ]
+  ],
+  priorizadas:["Máquina (Sistema)","Método","Medición"],
+  consecuencia:"Retraso en el tiempo de atención en la entrega de bienes y/o servicios en perjuicio del área de ingeniería"
 };
 function dibujarEjemploIshikawa(){
   var img=document.getElementById('imgEjIshi');
   if(!img || img.dataset.listo) return;
-  var url=construirIshikawaPNG(EJEMPLO_ISHIKAWA.efecto, EJEMPLO_ISHIKAWA.cats, 'Ejemplo — Caso Yokogawa (V. Orellana)');
+  var url=construirIshikawaPNG(EJEMPLO_ISHIKAWA.efecto, EJEMPLO_ISHIKAWA.cats,
+    'Ishikawa del proceso de adquisición de bienes y servicios (Caso Yokogawa · V. Orellana)',
+    EJEMPLO_ISHIKAWA.priorizadas, EJEMPLO_ISHIKAWA.consecuencia);
   img.src=url; img.dataset.listo='1';
 }
 // Dibuja un Ishikawa (pescado) en canvas y devuelve el dataURL PNG.
-// cats: [{nombre, causas:[{txt, subs:[...]}]}]
-function construirIshikawaPNG(efecto, cats, titulo){
+// cats: [{nombre, causas:[{txt, subs:[...]}]}]  · priorizadas: [nombreCat, ...]
+function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
+  priorizadas = priorizadas || [];
   cats = cats.filter(function(c){ return (c.causas||[]).length>0; });
-  var W=1600, H=900, cv=document.createElement('canvas');
+  var W=2000, H=1150, cv=document.createElement('canvas');
   cv.width=W; cv.height=H;
   var x=cv.getContext('2d');
   x.fillStyle='#ffffff'; x.fillRect(0,0,W,H);
 
-  var spineY=H/2, spineX0=90, spineX1=W-330;
+  // título
+  x.fillStyle='#1c2a33'; x.font='italic bold 26px Georgia'; x.textAlign='left'; x.textBaseline='alphabetic';
+  x.fillText(titulo||'Diagrama de Ishikawa', 40, 46);
+
+  var spineY=H/2+20, spineX0=70, spineX1=W-430;
+  // espina central
   x.strokeStyle='#1c2a33'; x.lineWidth=4;
   x.beginPath(); x.moveTo(spineX0,spineY); x.lineTo(spineX1,spineY); x.stroke();
+  // cabeza (efecto)
   x.fillStyle='#1c2a33';
-  x.beginPath(); x.moveTo(spineX1,spineY-75); x.lineTo(W-40,spineY-75);
-  x.lineTo(W-40,spineY+75); x.lineTo(spineX1,spineY+75); x.closePath(); x.fill();
-  x.fillStyle='#fff'; x.font='bold 20px Arial'; x.textAlign='center'; x.textBaseline='middle';
-  wrapText(x, efecto, (spineX1+W-40)/2, spineY, W-40-spineX1-30, 24, 5);
+  x.beginPath();
+  x.moveTo(spineX1,spineY-140);
+  x.quadraticCurveTo(W-40,spineY-140, W-40,spineY);
+  x.quadraticCurveTo(W-40,spineY+140, spineX1,spineY+140);
+  x.closePath(); x.fill();
+  x.fillStyle='#fff'; x.font='bold 21px Arial'; x.textAlign='center'; x.textBaseline='middle';
+  wrapText(x, efecto, (spineX1+W-70)/2, spineY, (W-70)-spineX1-70, 26, 7);
 
-  var n=cats.length, usableX=spineX1-spineX0-120;
-  cats.forEach(function(cat,i){
-    var up = i%2===0;
-    var col = Math.floor(i/2);
-    var totalCols = Math.ceil(n/2);
-    var bx = spineX0 + 120 + (usableX/(totalCols))*(col+0.5);
-    var tipX = bx - 120, tipY = spineY + (up?-1:1)*230;
-    x.strokeStyle='#2f6d6a'; x.lineWidth=3;
-    x.beginPath(); x.moveTo(bx,spineY); x.lineTo(tipX,tipY); x.stroke();
-    x.fillStyle='#2f6d6a'; x.font='bold 18px Arial'; x.textAlign='center'; x.textBaseline='alphabetic';
-    x.fillText(cat.nombre, tipX, tipY + (up?-10:24));
-    var causas=cat.causas||[];
+  // recuadro de consecuencia/síntoma (junto a la cabeza, arriba)
+  if(consecuencia){
+    var cbX=spineX1+30, cbY=60, cbW=W-cbX-50, cbH=100;
+    x.strokeStyle='#c8743b'; x.lineWidth=2; x.fillStyle='#fdf3e7';
+    x.fillRect(cbX,cbY,cbW,cbH); x.strokeRect(cbX,cbY,cbW,cbH);
+    x.fillStyle='#a8501e'; x.font='bold 13px Arial'; x.textAlign='left'; x.textBaseline='top';
+    x.fillText('CONSECUENCIA / SÍNTOMA', cbX+10, cbY+8);
+    x.fillStyle='#26241e'; x.font='13px Arial'; x.textBaseline='middle';
     x.textAlign='left';
+    wrapTextLeft(x, consecuencia, cbX+10, cbY+42, cbW-20, 17, 4);
+    // conector hacia la cabeza
+    x.strokeStyle='#c8743b'; x.lineWidth=1.5;
+    x.beginPath(); x.moveTo(cbX+cbW/2, cbY+cbH); x.lineTo(cbX+cbW/2, spineY-140); x.stroke();
+  }
+
+  // Distribución: mitades arriba/abajo, repartidas a lo largo de la espina
+  var n=cats.length;
+  var arriba=[], abajo=[];
+  cats.forEach(function(c,i){ (i%2===0?arriba:abajo).push(c); });
+
+  function dibujarRama(cat, bx, up){
+    var esPrior = priorizadas.indexOf(cat.nombre)!==-1;
+    var tipX = bx - 150, tipY = spineY + (up?-1:1)*300;
+    // línea diagonal de la categoría
+    x.strokeStyle = esPrior ? '#c8743b' : '#2f6d6a';
+    x.lineWidth = esPrior ? 5 : 3;
+    x.beginPath(); x.moveTo(bx,spineY); x.lineTo(tipX,tipY); x.stroke();
+    // caja de la categoría
+    var label=cat.nombre;
+    x.font='bold 19px Arial'; x.textAlign='center'; x.textBaseline='middle';
+    var lw=x.measureText(label).width+24;
+    var boxY = up ? tipY-34 : tipY+6;
+    x.fillStyle = esPrior ? '#c8743b' : '#1c2a33';
+    x.fillRect(tipX-lw/2, boxY, lw, 30);
+    x.fillStyle='#fff'; x.fillText(label, tipX, boxY+15);
+    // causas
+    var causas=cat.causas||[];
+    x.textAlign=up?'right':'right'; x.textBaseline='middle';
     causas.forEach(function(cz,ci){
       var frac=(ci+1)/(causas.length+1);
       var px=bx+(tipX-bx)*frac, py=spineY+(tipY-spineY)*frac;
-      x.strokeStyle='#c8743b'; x.lineWidth=2;
-      x.beginPath(); x.moveTo(px,py); x.lineTo(px+110,py); x.stroke();
-      x.fillStyle='#26241e'; x.font='14px Arial';
-      x.fillText(truncar(cz.txt||cz,30), px+114, py-4);
+      x.strokeStyle= esPrior ? '#c8743b' : '#7a8a86'; x.lineWidth= esPrior?2.5:1.5;
+      x.beginPath(); x.moveTo(px,py); x.lineTo(px-140,py); x.stroke();
+      x.fillStyle= esPrior ? '#a8501e' : '#26241e';
+      x.font= (esPrior?'bold ':'')+'14px Arial';
+      x.textAlign='right';
+      x.fillText(truncar(cz.txt||cz,42), px-146, py);
       (cz.subs||[]).forEach(function(sb,si){
         x.fillStyle='#8a948f'; x.font='12px Arial';
-        x.fillText('· '+truncar(sb,32), px+126, py+14+si*15);
+        x.fillText('· '+truncar(sb,40), px-160, py+16+si*15);
       });
     });
+  }
+
+  var usable=spineX1-spineX0-200;
+  arriba.forEach(function(cat,i){
+    var bx=spineX0+220+(usable/arriba.length)*(i+0.5);
+    dibujarRama(cat,bx,true);
+  });
+  abajo.forEach(function(cat,i){
+    var bx=spineX0+220+(usable/abajo.length)*(i+0.5);
+    dibujarRama(cat,bx,false);
   });
 
-  x.fillStyle='#1c2a33'; x.font='bold 22px Arial'; x.textAlign='left'; x.textBaseline='alphabetic';
-  x.fillText(titulo||'Diagrama de Ishikawa', 40, 44);
+  // leyenda de priorizadas
+  if(priorizadas.length){
+    x.fillStyle='#c8743b'; x.font='bold 14px Arial'; x.textAlign='left'; x.textBaseline='alphabetic';
+    x.fillText('■ Categorías priorizadas (Pareto): '+priorizadas.join(' · '), 40, H-24);
+  }
   return cv.toDataURL('image/png');
 }
 
@@ -783,14 +853,28 @@ function descargarIshikawa(){
                          .filter(function(c){ return c.causas.length>0; });
   if(!cats.length){ toast('Añade al menos una causa antes de descargar',true); return; }
   var efecto = (S.efectoCentral || S.probConsecuencias || S.probMagnitud || 'Problema central').trim();
+  // categorías que contienen alguna subcausa priorizada en el Pareto
+  var priorCats=[];
+  S.priorizadas.forEach(function(p){ if(p && priorCats.indexOf(p.categoria)===-1) priorCats.push(p.categoria); });
   var subt = 'Grupo '+(S.numeroGrupo||'')+(S.coordinador?' · '+S.coordinador:'');
-  var url=construirIshikawaPNG(efecto, cats, 'Diagrama de Ishikawa — '+subt);
+  var url=construirIshikawaPNG(efecto, cats, 'Diagrama de Ishikawa — '+subt, priorCats, S.consecuenciaSintoma);
   var a=document.createElement('a');
   a.href=url; a.download='ishikawa_grupo_'+(S.numeroGrupo||'')+'.png';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   toast('Diagrama descargado');
 }
 function truncar(s,n){ s=String(s||''); return s.length>n? s.slice(0,n-1)+'…' : s; }
+function wrapTextLeft(ctx,text,lx,cy,maxW,lh,maxLines){
+  var words=String(text).split(' '), lines=[], line='';
+  for(var i=0;i<words.length;i++){
+    var test=line?line+' '+words[i]:words[i];
+    if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=words[i]; }
+    else line=test;
+  }
+  if(line) lines.push(line);
+  if(lines.length>maxLines){ lines=lines.slice(0,maxLines); lines[maxLines-1]=truncar(lines[maxLines-1],46); }
+  lines.forEach(function(ln,i){ ctx.fillText(ln,lx,cy+i*lh); });
+}
 function wrapText(ctx,text,cx,cy,maxW,lh,maxLines){
   var words=String(text).split(' '), lines=[], line='';
   for(var i=0;i<words.length;i++){
@@ -974,6 +1058,7 @@ function serializarEstado(){
     linea:{ idx:S.lineaIdx, custom:S.lineaCustom, customTexto:S.lineaCustomTexto,
             adoptada:S.adoptada },
     efectoCentral:S.efectoCentral,
+    consecuenciaSintoma:S.consecuenciaSintoma,
     categorias:S.categorias,
     causas:S.causas,
     paretoFreq:S.paretoFreq,
@@ -994,6 +1079,7 @@ function restaurarEstado(json){
     S.lineaCustomTexto=d.linea.customTexto||''; S.adoptada=d.linea.adoptada||null; }
   if(d.categorias){ S.categorias=d.categorias; }
   if(typeof d.efectoCentral==='string'){ S.efectoCentral=d.efectoCentral; }
+  if(typeof d.consecuenciaSintoma==='string'){ S.consecuenciaSintoma=d.consecuenciaSintoma; }
   if(d.causas){ S.causas=d.causas; }
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
