@@ -503,13 +503,11 @@ function render(){
     h='<div class="card"><h2>07 · Diagrama de Ishikawa</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El efecto (cabeza del pescado) es el problema central. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\')">ver ejemplo</button></div>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\');dibujarEjemploIshikawa()">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_ishi" style="display:none;">'+
-      '<b>Caso Yokogawa — Efecto (cabeza):</b> elevado tiempo de atención en la entrega de bienes y/o servicios.<br><br>'+
-      '<b>Método:</b> cada analista tramita las órdenes siguiendo su propio criterio, sin un flujo documentado <i>(subcausa)</i>; las aprobaciones se gestionan sin niveles ni pasos definidos <i>(subcausa)</i>.<br>'+
-      '<b>Mano de obra:</b> las áreas de ingeniería, logística e importaciones se turnan la validación de un mismo requerimiento antes de continuar <i>(subcausa)</i>; el personal registra la información con criterios distintos entre sí <i>(subcausa)</i>.<br>'+
-      '<b>Máquina (Sistema):</b> la información se registra manualmente y por separado en Excel, correo y SAP, sin conexión entre esas fuentes <i>(subcausa)</i>; crear una orden en SAP toma varios pasos manuales <i>(subcausa)</i>.<br>'+
-      '<b>Medición:</b> el tiempo de cada etapa del proceso no se registra ni se compara contra una meta <i>(subcausa)</i>; no existe un reporte periódico del desempeño del proceso <i>(subcausa)</i>.</div>'+
+      '<div style="font-size:12.5px;margin-bottom:8px;">Así se ve el Ishikawa del caso Yokogawa (V. Orellana): el <b>efecto</b> en la cabeza y las <b>4 categorías</b> con sus causas y subcausas.</div>'+
+      '<img id="imgEjIshi" alt="Ejemplo de diagrama de Ishikawa" style="width:100%;border:1px solid var(--line);border-radius:4px;background:#fff;">'+
+      '</div>'+
 
       '<label style="margin-top:12px;">Problema central (cabeza del pescado)</label>'+
       '<textarea rows="2" id="f_efecto" oninput="S.efectoCentral=this.value" placeholder="Escribe el efecto/problema central del diagrama…">'+esc(efectoVal)+'</textarea>'+
@@ -556,8 +554,12 @@ function render(){
     }
 
     h='<div class="card"><h2>08 · Priorización por Pareto</h2>'+
+      '<div class="coordsBox" style="background:#eef5f4;margin-bottom:14px;">'+
+      '<b>De dónde salen estas filas:</b> cada fila es una <b>subcausa</b> que registraste en tu diagrama de Ishikawa (paso 7). '+
+      'Aquí se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
+      'Las 3 que elijas serán tus 3 problemas específicos.</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada subcausa (cuántas veces se observó, según tu ficha de registro). El Pareto ordena de mayor a menor y marca las que acumulan el 80%. Prioriza <b>3 subcausas</b>: serán tus 3 problemas específicos.</p>'+
+      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada subcausa (cuántas veces se observó, según tu ficha de registro).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_par" style="display:none;">'+
       '<b>Caso Yokogawa — Análisis de Pareto (Tabla 1).</b> Se registró la frecuencia relativa de cada causa del proceso de adquisición (juicio experto):'+
@@ -570,7 +572,7 @@ function render(){
       '<tr><td>C6 · Otros</td><td>5%</td><td>100%</td></tr>'+
       '</tbody></table>'+
       'Las <b>3 causas críticas (C1+C2+C3 = 75%)</b>, resaltadas, concentran el grueso del problema y son las que se priorizan → derivan en los 3 problemas específicos, cada uno con su herramienta (BPMN, RACI/SOP, KPIs bajo SCOR).</div>'+
-      '<table class="parTable"><thead><tr><th>Subcausa</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
+      '<table class="parTable"><thead><tr><th>Subcausa (de tu Ishikawa)</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table>'+
       '<div class="blockLbl" style="margin-top:20px;">◆ Selecciona las 3 subcausas priorizadas</div>'+
       '<p class="note">Sugerencia: elige las 3 de mayor frecuencia (las del 80%). Puedes ajustar con criterio.</p>'+
@@ -702,45 +704,60 @@ function p7next(){
   armarPareto(); go(8);
 }
 
-// ---- Descargar el Ishikawa como PNG (forma de pescado) ----
-function descargarIshikawa(){
-  var cats = S.categorias.filter(function(c){ return (S.causas[c]||[]).length>0; });
-  if(!cats.length){ toast('Añade al menos una causa antes de descargar',true); return; }
-  var efecto = (S.efectoCentral || S.probConsecuencias || S.probMagnitud || 'Problema central').trim();
-
+// Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
+var EJEMPLO_ISHIKAWA = {
+  efecto: "Elevado tiempo de atención en la entrega de bienes y/o servicios",
+  cats: [
+    { nombre:"Método", causas:[
+      { txt:"Cada analista tramita con su propio criterio", subs:["Sin flujo documentado","Aprobaciones sin pasos definidos"] }
+    ]},
+    { nombre:"Mano de obra", causas:[
+      { txt:"Varias áreas validan el mismo requerimiento", subs:["Ingeniería, logística e importaciones se turnan","Registro con criterios distintos"] }
+    ]},
+    { nombre:"Máquina (Sistema)", causas:[
+      { txt:"Información dispersa y no conectada", subs:["Excel, correo y SAP por separado","Crear orden en SAP toma varios pasos"] }
+    ]},
+    { nombre:"Medición", causas:[
+      { txt:"No se mide el tiempo del proceso", subs:["Tiempo por etapa no se registra","Sin reporte periódico de desempeño"] }
+    ]}
+  ]
+};
+function dibujarEjemploIshikawa(){
+  var img=document.getElementById('imgEjIshi');
+  if(!img || img.dataset.listo) return;
+  var url=construirIshikawaPNG(EJEMPLO_ISHIKAWA.efecto, EJEMPLO_ISHIKAWA.cats, 'Ejemplo — Caso Yokogawa (V. Orellana)');
+  img.src=url; img.dataset.listo='1';
+}
+// Dibuja un Ishikawa (pescado) en canvas y devuelve el dataURL PNG.
+// cats: [{nombre, causas:[{txt, subs:[...]}]}]
+function construirIshikawaPNG(efecto, cats, titulo){
+  cats = cats.filter(function(c){ return (c.causas||[]).length>0; });
   var W=1600, H=900, cv=document.createElement('canvas');
   cv.width=W; cv.height=H;
   var x=cv.getContext('2d');
   x.fillStyle='#ffffff'; x.fillRect(0,0,W,H);
 
   var spineY=H/2, spineX0=90, spineX1=W-330;
-  // espina central
   x.strokeStyle='#1c2a33'; x.lineWidth=4;
   x.beginPath(); x.moveTo(spineX0,spineY); x.lineTo(spineX1,spineY); x.stroke();
-  // cabeza (efecto)
   x.fillStyle='#1c2a33';
-  x.beginPath(); x.moveTo(spineX1,spineY-70); x.lineTo(W-40,spineY-70);
-  x.lineTo(W-40,spineY+70); x.lineTo(spineX1,spineY+70); x.closePath(); x.fill();
+  x.beginPath(); x.moveTo(spineX1,spineY-75); x.lineTo(W-40,spineY-75);
+  x.lineTo(W-40,spineY+75); x.lineTo(spineX1,spineY+75); x.closePath(); x.fill();
   x.fillStyle='#fff'; x.font='bold 20px Arial'; x.textAlign='center'; x.textBaseline='middle';
-  wrapText(x, efecto, (spineX1+W-40)/2, spineY, W-40-spineX1-24, 24, 4);
+  wrapText(x, efecto, (spineX1+W-40)/2, spineY, W-40-spineX1-30, 24, 5);
 
-  // ramas: mitad arriba, mitad abajo
   var n=cats.length, usableX=spineX1-spineX0-120;
   cats.forEach(function(cat,i){
     var up = i%2===0;
     var col = Math.floor(i/2);
     var totalCols = Math.ceil(n/2);
     var bx = spineX0 + 120 + (usableX/(totalCols))*(col+0.5);
-    var by = spineY + (up? -1:1)*60;
     var tipX = bx - 120, tipY = spineY + (up?-1:1)*230;
-    // línea diagonal de la categoría
     x.strokeStyle='#2f6d6a'; x.lineWidth=3;
     x.beginPath(); x.moveTo(bx,spineY); x.lineTo(tipX,tipY); x.stroke();
-    // etiqueta categoría
-    x.fillStyle='#2f6d6a'; x.font='bold 18px Arial'; x.textAlign='center';
-    x.fillText(cat, tipX, tipY + (up?-10:22));
-    // causas y subcausas
-    var causas=S.causas[cat]||[];
+    x.fillStyle='#2f6d6a'; x.font='bold 18px Arial'; x.textAlign='center'; x.textBaseline='alphabetic';
+    x.fillText(cat.nombre, tipX, tipY + (up?-10:24));
+    var causas=cat.causas||[];
     x.textAlign='left';
     causas.forEach(function(cz,ci){
       var frac=(ci+1)/(causas.length+1);
@@ -748,21 +765,26 @@ function descargarIshikawa(){
       x.strokeStyle='#c8743b'; x.lineWidth=2;
       x.beginPath(); x.moveTo(px,py); x.lineTo(px+110,py); x.stroke();
       x.fillStyle='#26241e'; x.font='14px Arial';
-      x.fillText(truncar(cz.txt,28), px+114, py-4);
+      x.fillText(truncar(cz.txt||cz,30), px+114, py-4);
       (cz.subs||[]).forEach(function(sb,si){
         x.fillStyle='#8a948f'; x.font='12px Arial';
-        x.fillText('· '+truncar(sb,30), px+126, py+14+si*15);
+        x.fillText('· '+truncar(sb,32), px+126, py+14+si*15);
       });
     });
   });
 
-  // título
   x.fillStyle='#1c2a33'; x.font='bold 22px Arial'; x.textAlign='left'; x.textBaseline='alphabetic';
-  x.fillText('Diagrama de Ishikawa', 40, 44);
-  x.fillStyle='#8a948f'; x.font='13px Arial';
-  x.fillText('Grupo '+(S.numeroGrupo||'')+(S.coordinador?' · '+S.coordinador:''), 40, 66);
+  x.fillText(titulo||'Diagrama de Ishikawa', 40, 44);
+  return cv.toDataURL('image/png');
+}
 
-  var url=cv.toDataURL('image/png');
+function descargarIshikawa(){
+  var cats = S.categorias.map(function(c){ return { nombre:c, causas:(S.causas[c]||[]) }; })
+                         .filter(function(c){ return c.causas.length>0; });
+  if(!cats.length){ toast('Añade al menos una causa antes de descargar',true); return; }
+  var efecto = (S.efectoCentral || S.probConsecuencias || S.probMagnitud || 'Problema central').trim();
+  var subt = 'Grupo '+(S.numeroGrupo||'')+(S.coordinador?' · '+S.coordinador:'');
+  var url=construirIshikawaPNG(efecto, cats, 'Diagrama de Ishikawa — '+subt);
   var a=document.createElement('a');
   a.href=url; a.download='ishikawa_grupo_'+(S.numeroGrupo||'')+'.png';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
