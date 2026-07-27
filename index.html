@@ -176,7 +176,8 @@ var FIELD = {
   ciclo                : 'bVrvWbW45cVyk1lSkmkSoq',
   numero_grupo         : 'cprSkAWRDdR4kRpmksqw82',
   coordinador          : 'cCWQqVWOfdSikDWOLHt8kq',
-  estructura           : 'cbW64-W5XcTRq3nmk4emkk'
+  estructura           : 'cbW64-W5XcTRq3nmk4emkk',
+  consecuencia         : 'dcPMhdICnnW6C5WRaHuSk7'
 };
 
 // ============================================================
@@ -752,102 +753,193 @@ function dibujarEjemploIshikawa(){
 // cats: [{nombre, causas:[{txt, subs:[...]}]}]  · priorizadas: [nombreCat, ...]
 function construirIshikawaPNG(efecto, cats, titulo, priorizadas, consecuencia){
   priorizadas = priorizadas || [];
-  cats = cats.filter(function(c){ return (c.causas||[]).length>0; });
-  var W=2000, H=1150, cv=document.createElement('canvas');
+  cats = (cats||[]).filter(function(c){ return (c.causas||[]).length>0; });
+  if(!cats.length) cats = [{nombre:'(sin categorías)', causas:[]}];
+
+  // ---- Tipografías (en px del lienzo). Se subieron todas para que el
+  //      diagrama se lea sin ampliar, respetando el ancho del recuadro.
+  var F_TIT=30, F_EFECTO=25, F_CAT=23, F_CAUSA=20, F_SUB=17, F_CONS=18, F_CONSLBL=16, F_LEG=18;
+  var LH_CAUSA=25, LH_SUB=21, LH_CONS=24;
+
+  // ---- Parámetros de espacio horizontal ----
+  var MARG_L=18;            // margen izquierdo del lienzo
+  var TEXTO_ANCHO=300;      // ancho reservado a la izquierda de cada rama para sus causas
+  var SEPARACION=350;       // separación horizontal entre ramas del mismo lado
+  var HEAD_W=280;           // ancho de la cabeza (efecto)
+  var DX=70;                // desplazamiento horizontal de la diagonal
+  var CONECTOR=80;          // largo del guion horizontal de cada causa
+
+  var arriba=[], abajo=[];
+  cats.forEach(function(c,i){ (i%2===0?arriba:abajo).push(c); });
+  var maxRamas = Math.max(arriba.length, abajo.length);
+
+  var spineX0 = MARG_L + 22;
+  var bx0 = MARG_L + TEXTO_ANCHO + CONECTOR + DX;                       // x de la primera rama
+  var spineX1 = bx0 + SEPARACION*(maxRamas-1) + 70;     // fin de la espina
+  var W = spineX1 + HEAD_W + 26;
+
+  // ---- Lienzo temporal solo para medir texto ----
+  var mcv=document.createElement('canvas'), m=mcv.getContext('2d');
+
+  // Parte el texto en líneas que quepan en maxW (por medición real, no por nº de letras)
+  function partir(ctx,text,maxW,maxLines){
+    var words=String(text||'').split(/\s+/), lines=[], line='';
+    for(var i=0;i<words.length;i++){
+      var test = line ? line+' '+words[i] : words[i];
+      if(ctx.measureText(test).width > maxW && line){
+        lines.push(line); line=words[i];
+        if(lines.length===maxLines-1 && i<words.length-1){
+          // última línea permitida: mete lo que quede y recorta con …
+          var resto=words.slice(i).join(' ');
+          while(resto && ctx.measureText(resto+'…').width>maxW) resto=resto.slice(0,-1);
+          lines.push(resto+'…'); return lines;
+        }
+      } else { line=test; }
+    }
+    if(line) lines.push(line);
+    return lines.slice(0,maxLines);
+  }
+
+  // Ancho de texto disponible para las causas de una rama (no invade la rama vecina)
+  var anchoTexto = Math.min(TEXTO_ANCHO - 46, SEPARACION - CONECTOR - 60);
+
+  // Alto que ocupa cada causa (texto + subcausas) para repartir la diagonal
+  function altoCausa(cz){
+    m.font=F_CAUSA+'px Arial';
+    var l = partir(m, cz.txt||cz, anchoTexto, 3).length;
+    var ns = (cz.subs||[]).length;
+    return l*LH_CAUSA + ns*LH_SUB + 16;
+  }
+  function altoRama(lista){
+    var t=0; (lista||[]).forEach(function(cz){ t+=altoCausa(cz); });
+    return t;
+  }
+  function altoLado(ramas){
+    var mx=210;
+    ramas.forEach(function(c){ mx=Math.max(mx, altoRama(c.causas)+70); });
+    return mx;
+  }
+  var BR_UP = altoLado(arriba), BR_DN = altoLado(abajo);
+
+  // ---- Alto del recuadro de consecuencia (arriba a la derecha) ----
+  var cbX = spineX1 - 40, cbW = W - cbX - 22, cbY = 68, cbH = 0, consLineas = [];
+  if(consecuencia){
+    m.font=F_CONS+'px Arial';
+    consLineas = partir(m, consecuencia, cbW-24, 5);
+    cbH = 42 + consLineas.length*LH_CONS + 12;
+  }
+
+  var topY = Math.max(240, cbY + cbH + 40);
+  var spineY = topY + BR_UP;
+  var H = spineY + BR_DN + 96;
+
+  var cv=document.createElement('canvas');
   cv.width=W; cv.height=H;
   var x=cv.getContext('2d');
   x.fillStyle='#ffffff'; x.fillRect(0,0,W,H);
 
-  // título
-  x.fillStyle='#1c2a33'; x.font='italic bold 26px Georgia'; x.textAlign='left'; x.textBaseline='alphabetic';
-  x.fillText(titulo||'Diagrama de Ishikawa', 40, 46);
+  // ---- Título ----
+  x.fillStyle='#1c2a33'; x.font='italic bold '+F_TIT+'px Georgia';
+  x.textAlign='left'; x.textBaseline='alphabetic';
+  x.fillText(titulo||'Diagrama de Ishikawa', MARG_L+6, 46);
 
-  var spineY=H/2+20, spineX0=70, spineX1=W-430;
-  // espina central
-  x.strokeStyle='#1c2a33'; x.lineWidth=4;
+  // ---- Espina central ----
+  x.strokeStyle='#1c2a33'; x.lineWidth=5;
   x.beginPath(); x.moveTo(spineX0,spineY); x.lineTo(spineX1,spineY); x.stroke();
-  // cabeza (efecto)
+
+  // ---- Cabeza (efecto) ----
+  var headH = Math.min(170, Math.max(120, BR_UP*0.5));
   x.fillStyle='#1c2a33';
   x.beginPath();
-  x.moveTo(spineX1,spineY-140);
-  x.quadraticCurveTo(W-40,spineY-140, W-40,spineY);
-  x.quadraticCurveTo(W-40,spineY+140, spineX1,spineY+140);
+  x.moveTo(spineX1, spineY-headH);
+  x.quadraticCurveTo(W-16, spineY-headH, W-16, spineY);
+  x.quadraticCurveTo(W-16, spineY+headH, spineX1, spineY+headH);
   x.closePath(); x.fill();
-  x.fillStyle='#fff'; x.font='bold 21px Arial'; x.textAlign='center'; x.textBaseline='middle';
-  wrapText(x, efecto, (spineX1+W-70)/2, spineY, (W-70)-spineX1-70, 26, 7);
+  x.fillStyle='#fff'; x.font='bold '+F_EFECTO+'px Arial';
+  x.textAlign='center'; x.textBaseline='middle';
+  (function(){
+    var maxW = (W-16) - spineX1 - 54;
+    var lines = partir(x, efecto, maxW, 8);
+    var y0 = spineY - ((lines.length-1)*30)/2;
+    lines.forEach(function(ln,i){ x.fillText(ln, (spineX1 + (W-16))/2, y0 + i*30); });
+  })();
 
-  // recuadro de consecuencia/síntoma (junto a la cabeza, arriba)
+  // ---- Recuadro de consecuencia / síntoma ----
   if(consecuencia){
-    var cbX=spineX1+30, cbY=60, cbW=W-cbX-50, cbH=100;
     x.strokeStyle='#c8743b'; x.lineWidth=2; x.fillStyle='#fdf3e7';
     x.fillRect(cbX,cbY,cbW,cbH); x.strokeRect(cbX,cbY,cbW,cbH);
-    x.fillStyle='#a8501e'; x.font='bold 13px Arial'; x.textAlign='left'; x.textBaseline='top';
-    x.fillText('CONSECUENCIA / SÍNTOMA', cbX+10, cbY+8);
-    x.fillStyle='#26241e'; x.font='13px Arial'; x.textBaseline='middle';
-    x.textAlign='left';
-    wrapTextLeft(x, consecuencia, cbX+10, cbY+42, cbW-20, 17, 4);
-    // conector hacia la cabeza
+    x.fillStyle='#a8501e'; x.font='bold '+F_CONSLBL+'px Arial';
+    x.textAlign='left'; x.textBaseline='top';
+    x.fillText('CONSECUENCIA / SÍNTOMA', cbX+12, cbY+10);
+    x.fillStyle='#26241e'; x.font=F_CONS+'px Arial'; x.textBaseline='alphabetic';
+    consLineas.forEach(function(ln,i){ x.fillText(ln, cbX+12, cbY+42+ (i+1)*LH_CONS - 6); });
     x.strokeStyle='#c8743b'; x.lineWidth=1.5;
-    x.beginPath(); x.moveTo(cbX+cbW/2, cbY+cbH); x.lineTo(cbX+cbW/2, spineY-140); x.stroke();
+    x.beginPath(); x.moveTo(cbX+cbW/2, cbY+cbH); x.lineTo(cbX+cbW/2, spineY-headH); x.stroke();
   }
 
-  // Distribución: mitades arriba/abajo, repartidas a lo largo de la espina
-  var n=cats.length;
-  var arriba=[], abajo=[];
-  cats.forEach(function(c,i){ (i%2===0?arriba:abajo).push(c); });
-
-  function dibujarRama(cat, bx, up){
+  // ---- Ramas ----
+  function dibujarRama(cat, bx, up, brH){
     var esPrior = priorizadas.indexOf(cat.nombre)!==-1;
-    var tipX = bx - 150, tipY = spineY + (up?-1:1)*300;
-    // línea diagonal de la categoría
+    var tipX = bx - DX, tipY = spineY + (up?-1:1)*brH;
     x.strokeStyle = esPrior ? '#c8743b' : '#2f6d6a';
-    x.lineWidth = esPrior ? 5 : 3;
+    x.lineWidth   = esPrior ? 6 : 3.5;
     x.beginPath(); x.moveTo(bx,spineY); x.lineTo(tipX,tipY); x.stroke();
+
     // caja de la categoría
-    var label=cat.nombre;
-    x.font='bold 19px Arial'; x.textAlign='center'; x.textBaseline='middle';
-    var lw=x.measureText(label).width+24;
-    var boxY = up ? tipY-34 : tipY+6;
+    x.font='bold '+F_CAT+'px Arial'; x.textAlign='center'; x.textBaseline='middle';
+    var lw=x.measureText(cat.nombre).width+30, bh=34;
+    var boxY = up ? tipY-bh-6 : tipY+6;
     x.fillStyle = esPrior ? '#c8743b' : '#1c2a33';
-    x.fillRect(tipX-lw/2, boxY, lw, 30);
-    x.fillStyle='#fff'; x.fillText(label, tipX, boxY+15);
-    // causas
+    // Etiqueta anclada al extremo de la espina (no centrada): así nunca
+    // invade el texto de las causas de la rama vecina de la derecha.
+    var boxX = tipX - lw + 14;
+    x.fillRect(boxX, boxY, lw, bh);
+    x.fillStyle='#fff'; x.fillText(cat.nombre, boxX+lw/2, boxY+bh/2);
+
+    // causas repartidas por altura real (no por fracción fija)
     var causas=cat.causas||[];
-    x.textAlign=up?'right':'right'; x.textBaseline='middle';
-    causas.forEach(function(cz,ci){
-      var frac=(ci+1)/(causas.length+1);
-      var px=bx+(tipX-bx)*frac, py=spineY+(tipY-spineY)*frac;
-      x.strokeStyle= esPrior ? '#c8743b' : '#7a8a86'; x.lineWidth= esPrior?2.5:1.5;
-      x.beginPath(); x.moveTo(px,py); x.lineTo(px-140,py); x.stroke();
-      x.fillStyle= esPrior ? '#a8501e' : '#26241e';
-      x.font= (esPrior?'bold ':'')+'14px Arial';
-      x.textAlign='right';
-      x.fillText(truncar(cz.txt||cz,42), px-146, py);
+    var total=altoRama(causas) || 1;
+    var acum=0;
+    causas.forEach(function(cz){
+      var hC=altoCausa(cz);
+      var frac=(acum + hC/2)/total;            // centro vertical del bloque
+      acum+=hC;
+      var px = bx + (tipX-bx)*frac;
+      var py = spineY + (tipY-spineY)*frac;
+      x.strokeStyle = esPrior ? '#c8743b' : '#7a8a86';
+      x.lineWidth   = esPrior ? 3 : 1.8;
+      x.beginPath(); x.moveTo(px,py); x.lineTo(px-CONECTOR,py); x.stroke();
+
+      var rightX = px - CONECTOR - 10;
+      var dispo  = Math.min(anchoTexto, rightX - MARG_L);   // nunca sale del lienzo
+      x.fillStyle = esPrior ? '#a8501e' : '#26241e';
+      x.font = (esPrior?'bold ':'')+F_CAUSA+'px Arial';
+      x.textAlign='right'; x.textBaseline='middle';
+      var lns = partir(x, cz.txt||cz, dispo, 3);
+      var y0 = py - ((lns.length-1)*LH_CAUSA)/2;
+      lns.forEach(function(ln,i){ x.fillText(ln, rightX, y0 + i*LH_CAUSA); });
+
+      // subcausas
+      var ySub = y0 + lns.length*LH_CAUSA - 2;
       (cz.subs||[]).forEach(function(sb,si){
-        x.fillStyle='#8a948f'; x.font='12px Arial';
-        x.fillText('· '+truncar(sb,40), px-160, py+16+si*15);
+        x.fillStyle='#7d8781'; x.font=F_SUB+'px Arial';
+        var ls = partir(x, '· '+sb, dispo-14, 1);
+        x.fillText(ls[0], rightX-10, ySub + si*LH_SUB);
       });
     });
   }
 
-  var usable=spineX1-spineX0-200;
-  arriba.forEach(function(cat,i){
-    var bx=spineX0+220+(usable/arriba.length)*(i+0.5);
-    dibujarRama(cat,bx,true);
-  });
-  abajo.forEach(function(cat,i){
-    var bx=spineX0+220+(usable/abajo.length)*(i+0.5);
-    dibujarRama(cat,bx,false);
-  });
+  arriba.forEach(function(cat,i){ dibujarRama(cat, bx0 + SEPARACION*i, true,  BR_UP); });
+  abajo .forEach(function(cat,i){ dibujarRama(cat, bx0 + SEPARACION*i, false, BR_DN); });
 
-  // leyenda de priorizadas
+  // ---- Leyenda ----
   if(priorizadas.length){
-    x.fillStyle='#c8743b'; x.font='bold 14px Arial'; x.textAlign='left'; x.textBaseline='alphabetic';
-    x.fillText('■ Categorías priorizadas (Pareto): '+priorizadas.join(' · '), 40, H-24);
+    x.fillStyle='#c8743b'; x.font='bold '+F_LEG+'px Arial';
+    x.textAlign='left'; x.textBaseline='alphabetic';
+    x.fillText('■ Categorías priorizadas (Pareto): '+priorizadas.join(' · '), MARG_L+6, H-26);
   }
   return cv.toDataURL('image/png');
 }
-
 function descargarIshikawa(){
   var cats = S.categorias.map(function(c){ return { nombre:c, causas:(S.causas[c]||[]) }; })
                          .filter(function(c){ return c.causas.length>0; });
@@ -1127,7 +1219,8 @@ function guardar(){
     ciclo:S.ciclo,
     numero_grupo:S.numeroGrupo,
     coordinador:S.coordinador,
-    estructura:serializarEstado()
+    estructura:serializarEstado(),
+    consecuencia:S.consecuenciaSintoma
   };
 
   function restore(){
@@ -1225,6 +1318,10 @@ function continuarEdicion(recId){
   // Preferir reconstrucción COMPLETA desde el JSON "Estructura completa"
   var estr=g('estructura');
   var reconstruido = estr ? restaurarEstado(estr) : false;
+
+  // La consecuencia/síntoma ya tiene campo propio en QuintaDB: si el JSON de
+  // "Estructura completa" no la trajo, se toma de ese campo.
+  if(!S.consecuenciaSintoma) S.consecuenciaSintoma = g('consecuencia');
 
   if(!reconstruido){
     // Fallback: reconstruir lo básico desde los campos de texto sueltos
