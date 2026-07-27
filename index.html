@@ -746,11 +746,13 @@ var EJEMPLO_ISHIKAWA = {
       {txt:"Demora en cotizaciones de proveedores"},{txt:"Falta de especificaciones técnicas"}
     ]}
   ],
-  // Priorizadas a nivel de CAUSA (no de categoría): las 3 del Pareto del caso.
+  // Priorizadas a nivel de CAUSA (no de categoría). Las 3 del Pareto del caso,
+  // una por cada categoría priorizada: Método, Máquina (Sistema) y Medición.
+  // Cada una deriva en un problema específico con su herramienta.
   priorizadas:[
-    {categoria:"Mano de obra",      causa:"Demora en aprobaciones por parte de las \u00e1reas", sub:""},
-    {categoria:"M\u00e1quina (Sistema)", causa:"Falta de integraci\u00f3n de la informaci\u00f3n entre los sistemas", sub:""},
-    {categoria:"Medici\u00f3n",         causa:"Falta de seguimiento del proceso", sub:""}
+    {categoria:"Método",            causa:"Falta de estandarización del proceso de procura",            sub:""},
+    {categoria:"Máquina (Sistema)", causa:"Falta de integración de la información entre los sistemas", sub:""},
+    {categoria:"Medición",          causa:"Falta de seguimiento del proceso",                          sub:""}
   ],
   consecuencia:"Retraso en el tiempo de atención en la entrega de bienes y/o servicios en perjuicio del área de ingeniería"
 };
