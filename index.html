@@ -425,13 +425,13 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'del\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_del" style="display:none;">'+
       '<table class="ejParTable"><tbody>'+
-      '<tr><td style="width:38%;">Empresa / unidad</td><td>Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa \u2014 \u00e1rea de administraci\u00f3n de proyectos y servicios</td></tr>'+
+      '<tr><td style="width:38%;">Empresa / unidad</td><td>Empresa Alfa S.A.C. \u2014 \u00e1rea de administraci\u00f3n de proyectos y servicios<br><span style="font-size:11.5px;color:#8a7f6d;">(automatizaci\u00f3n industrial y servicios de ingenier\u00eda; nombre ficticio)</span></td></tr>'+
       '<tr><td>Ubicaci\u00f3n</td><td>Lima</td></tr>'+
       '<tr><td>Pretest</td><td>01 al 30 de abril de 2026</td></tr>'+
       '<tr><td>Test (intervenci\u00f3n)</td><td>01 de mayo al 30 de junio de 2026</td></tr>'+
       '<tr><td>Postest</td><td>01 al 31 de julio de 2026</td></tr>'+
       '</tbody></table>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado del trabajo de V. Orellana (Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa), apartado de delimitaci\u00f3n espacial y temporal.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (apartado de delimitaci\u00f3n espacial y temporal); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="blockLbl" style="margin-top:14px;">◆ Delimitación espacial</div>'+
       '<div class="row2"><div><label>Empresa / unidad de estudio</label>'+
@@ -455,7 +455,7 @@ function render(){
       '<p class="note" style="margin:0;">¿Qué busca lograr la investigación? Escríbelo en tus palabras, en infinitivo (empieza con un verbo: reducir, optimizar, mejorar…).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
-      'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la empresa Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa.'+
+      'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la Empresa Alfa S.A.C.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Empieza con un verbo en infinitivo (<b>Reducir</b>) y nombra el indicador que se quiere mover. Este mismo verbo debe reaparecer en el problema general (paso 7).</p>'+
       '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
@@ -476,7 +476,7 @@ function render(){
       '<div class="ejBox" id="ej_lin" style="display:none;">'+
       '<b>Gesti\u00f3n de operaciones y mejora de procesos.</b>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado del trabajo de V. Orellana (Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa), apartado de l\u00ednea de investigaci\u00f3n.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (apartado de l\u00ednea de investigaci\u00f3n); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="lineList">'+lo+
         '<div class="lineOpt'+customSel+'" style="flex-direction:column;align-items:stretch;cursor:default;">'+
@@ -502,9 +502,9 @@ function render(){
       '<p class="note" style="margin:0;">El tema combina tu prop\u00f3sito con la l\u00ednea, la empresa y el periodo. Puedes editarlo.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_tem" style="display:none;">'+
-      'Aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua para la optimizaci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda de la empresa Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa.'+
+      'Aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua para la optimizaci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda de la Empresa Alfa S.A.C.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[l\u00ednea]</b> para <b>[lo que se quiere lograr]</b> en <b>[d\u00f3nde]</b>. Es afirmativo y sin signos de pregunta.</p>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado del trabajo de V. Orellana (Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa), car\u00e1tula del trabajo.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (car\u00e1tula del trabajo); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="temaResLbl">Tema</div>'+
       '<textarea rows="3" id="f_tema" style="font-family:Poppins,sans-serif;font-size:16px;">'+esc(S.tema)+'</textarea>'+
@@ -545,7 +545,7 @@ function render(){
       '<p class="note" style="margin:0;">El efecto (cabeza del pescado) es el problema central. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\');dibujarEjemploIshikawa()">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_ishi" style="display:none;">'+
-      '<div style="font-size:12.5px;margin-bottom:8px;">Ishikawa <b>adaptado</b> del caso Yokogawa (V. Orellana): el <b>efecto</b> en la cabeza y las <b>6 categor\u00edas</b> con sus causas. Las causas se reescribieron como hechos observables (ver la gu\u00eda de redacci\u00f3n de abajo); en \u00e1mbar, las tres priorizadas en el Pareto.</div>'+
+      '<div style="font-size:12.5px;margin-bottom:8px;">Ishikawa <b>adaptado</b> de un caso real de aula: el <b>efecto</b> en la cabeza y las <b>6 categor\u00edas</b> con sus causas. Las causas se reescribieron como hechos observables (ver la gu\u00eda de redacci\u00f3n de abajo); en \u00e1mbar, las tres priorizadas en el Pareto.</div>'+
       '<div class="ishiBox"><img id="imgEjIshi" alt="Ejemplo de diagrama de Ishikawa" '+
       'style="width:100%;display:block;border:1px solid var(--line);border-radius:4px;background:#fff;">'+
       '<div class="ishiOv" id="ovEjIshi"></div></div>'+
@@ -576,7 +576,7 @@ function render(){
       '<tr><td>Falta de gestión del desempeño</td><td>Los resultados del proceso no se analizan</td></tr>'+
       '<tr><td>Falta de capacitación en el proceso</td><td>El personal ejecuta con criterios no homogéneos</td></tr>'+
       '</tbody></table>'+
-      'Los ejemplos de la derecha no son inventados: salen del propio caso Yokogawa, del cap\u00edtulo donde el estudio describe c\u00f3mo trabaja el \u00e1rea.</div>'+
+      'Los ejemplos de la derecha no son inventados: salen del propio caso de la Empresa Alfa, del cap\u00edtulo donde el estudio describe c\u00f3mo trabaja el \u00e1rea.</div>'+
 
       '<div class="grid6" style="margin-top:16px;">'+boxes+'</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'+
@@ -592,7 +592,7 @@ function render(){
       '<p class="note" style="margin:0;">Se hace en dos momentos: <b>primero</b> compruebas que el propósito y el problema central digan lo mismo; <b>después</b> redactas la pregunta uniendo la línea de investigación con el propósito.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pg" style="display:none;">'+
-      '<b>Cómo se arma, con el caso Yokogawa:</b>'+
+      '<b>Cómo se arma, con el caso de la Empresa Alfa:</b>'+
       '<table class="ejParTable"><tbody>'+
       '<tr><td style="width:34%;">Problema central (Ishikawa)</td><td><i>Elevado</i> tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
       '<tr><td>Propósito (paso 3)</td><td><i>Reducir</i> el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</td></tr>'+
@@ -600,9 +600,8 @@ function render(){
       '<tr><td>Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
       '</tbody></table>'+
       '<b>Problema general que redactó:</b><br>'+
-      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> permite <b>reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la empresa Yokogawa América Do Sul Ltda Sucursal Perú?</i>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Fíjate en el verbo: su propósito dice <b>reducir</b> y su problema general dice <b>permite reducir</b>. Es el mismo verbo, no un sinónimo. Ahí se nota que están alineados.</p>'+
-      '<p class="note" style="font-size:12px;margin:6px 0 0;">Tomado del trabajo de V. Orellana: aparece igual en su matriz de consistencia y en el apartado de formulación del problema. Su redacción no incluye lugar ni año; la fórmula de abajo sí los pide, porque es el formato de la Escuela.</p>'+
+      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> permite <b>reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la Empresa Alfa S.A.C., en el periodo 2026?</i>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Mira el verbo. El propósito decía <b>reducir</b> el tiempo de atención, y la pregunta vuelve a decir <b>reducir</b>. Si en tu pregunta aparece un verbo distinto al de tu propósito, alguno de los dos se te movió: revísalo antes de continuar.</p>'+
       '</div>'+
 
       '<div class="blockLbl" style="margin-top:16px;">◆ Primero · ¿El propósito y el problema central dicen lo mismo?</div>'+
@@ -626,8 +625,8 @@ function render(){
       '<p class="note" style="margin:0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pgr\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pgr" style="display:none;">'+
-      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua permite reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la empresa Yokogawa América Do Sul Ltda Sucursal Perú?</i>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general de V. Orellana, tal como aparece en su matriz de consistencia.</p>'+
+      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua permite reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., en el periodo 2026?</i>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general del caso, tal como aparece en su matriz de consistencia.</p>'+
       '</div>'+
       '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
@@ -684,7 +683,7 @@ function render(){
       '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada '+rotuloNivel()+' (cu\u00e1ntas veces se observ\u00f3, seg\u00fan tu ficha de registro).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_par" style="display:none;">'+
-      '<b>Caso Yokogawa — Análisis de Pareto (Tabla 1).</b> Se registró la frecuencia relativa de cada causa del proceso de adquisición (juicio experto):'+
+      '<b>Caso de la Empresa Alfa — Análisis de Pareto (Tabla 1).</b> Se registró la frecuencia relativa de cada causa del proceso de adquisición (juicio experto):'+
       '<table class="ejParTable"><thead><tr><th>Causa</th><th>%</th><th>% acum.</th></tr></thead><tbody>'+
       '<tr class="ejHot"><td>C1 · Demoras en aprobaciones</td><td>30%</td><td>30%</td></tr>'+
       '<tr class="ejHot"><td>C2 · Falta de planificación</td><td>25%</td><td>55%</td></tr>'+
@@ -908,7 +907,7 @@ function p7next(){
 
 // Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
 var EJEMPLO_ISHIKAWA = {
-  efecto: "Elevado tiempo de atención en la entrega de bienes y/o servicios en el área de ingeniería de la empresa Yokogawa América Do Sul Ltda., Sucursal Perú",
+  efecto: "Elevado tiempo de atención en la entrega de bienes y/o servicios en el área de ingeniería de la Empresa Alfa S.A.C.",
   cats: [
     { nombre:"Máquina (Sistema)", causas:[
       {txt:"Registro manual de información"},{txt:"Demora en la creación de órdenes o líneas en SAP"},
@@ -949,7 +948,7 @@ function dibujarEjemploIshikawa(){
   var img=document.getElementById('imgEjIshi');
   if(!img || img.dataset.listo) return;
   var url=construirIshikawaPNG(EJEMPLO_ISHIKAWA.efecto, EJEMPLO_ISHIKAWA.cats,
-    'Ishikawa del proceso de adquisici\u00f3n de bienes y servicios (adaptado del caso Yokogawa \u00b7 V. Orellana)',
+    'Ishikawa del proceso de adquisici\u00f3n de bienes y servicios (adaptado de un caso real de aula)',
     EJEMPLO_ISHIKAWA.priorizadas, EJEMPLO_ISHIKAWA.consecuencia);
   img.src=url; img.dataset.listo='1';
   overlayIshikawa('ovEjIshi');
