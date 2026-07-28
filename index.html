@@ -619,10 +619,16 @@ function render(){
         '<button class="btnMini" onclick="go(6)">← corregir el problema central</button></div>' : '')+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Después · Redacta el problema general</div>'+
-      '<div class="cohV med" style="font-size:13.5px;">La pregunta es <b>la línea + el propósito</b>. El problema central no se copia: es lo que garantiza que el propósito apunte a donde debe.</div>'+
+      '<div class="cohV med" style="font-size:13.5px;">La pregunta es <b>la línea + el propósito ya alineado con el problema central</b>. El problema central no se copia dentro de la pregunta: es lo que garantiza que el propósito apunte a donde debe.</div>'+
       '<div class="insBox" style="margin-top:10px;"><div class="insCard"><b>Línea de investigación (paso 4)</b><span>'+
       (lineaTexto() ? esc(lineaTexto()) : '<i style="color:#a8501e;">sin definir</i>')+'</span></div></div>'+
-      '<p class="note" style="margin:6px 0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:8px 0 6px;">'+
+      '<p class="note" style="margin:0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pgr\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pgr" style="display:none;">'+
+      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua permite reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la empresa Yokogawa América Do Sul Ltda Sucursal Perú?</i>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general de V. Orellana, tal como aparece en su matriz de consistencia.</p>'+
+      '</div>'+
       '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
 
