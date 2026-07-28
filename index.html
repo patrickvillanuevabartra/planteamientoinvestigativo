@@ -88,6 +88,14 @@
   .peCat{font-family:'Poppins',sans-serif;font-size:12px;color:var(--amber);}
   .peProblem{font-size:15px;font-weight:500;margin-bottom:8px;}
   .peTool{font-size:13px;color:var(--teal);background:#eef5f4;padding:6px 10px;border-radius:4px;}
+  .insBox{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0 4px;}
+  .insCard{border:1px solid var(--line);border-radius:5px;padding:8px 10px;background:#fbfaf7;}
+  .insCard b{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8a7f6d;margin-bottom:3px;}
+  .insCard span{font-size:12.5px;line-height:1.35;}
+  .cohBox{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .cohChip{font-size:12px;padding:3px 9px;border-radius:11px;border:1px solid;}
+  .cohChip.ok{color:#1f6a4d;border-color:#9ccbb5;background:#eef8f3;}
+  .cohChip.no{color:#a8501e;border-color:#e3b48c;background:#fdf3e7;}
   .ishiBox{position:relative;line-height:0;}
   .ishiOv{position:absolute;left:0;top:0;right:0;bottom:0;}
   .ishiHit{position:absolute;cursor:help;border-radius:2px;}
@@ -204,7 +212,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","General","Ishikawa","Pareto","Específicos"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","General","Pareto","Específicos"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -406,7 +414,20 @@ function render(){
   }
   else if(S.paso===2){
     h='<div class="card"><h2>02 · Delimitación</h2>'+
-      '<div class="blockLbl">◆ Delimitación espacial</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Delimitar es decir <b>dónde</b> y <b>cuándo</b> se hará el estudio. El periodo se parte en tres momentos porque el diseño es pre-post.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'del\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_del" style="display:none;">'+
+      '<table class="ejParTable"><tbody>'+
+      '<tr><td style="width:38%;">Empresa / unidad</td><td>Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa \u2014 \u00e1rea de administraci\u00f3n de proyectos y servicios</td></tr>'+
+      '<tr><td>Ubicaci\u00f3n</td><td>Lima</td></tr>'+
+      '<tr><td>Pretest</td><td>01 al 30 de abril de 2026</td></tr>'+
+      '<tr><td>Test (intervenci\u00f3n)</td><td>01 de mayo al 30 de junio de 2026</td></tr>'+
+      '<tr><td>Postest</td><td>01 al 31 de julio de 2026</td></tr>'+
+      '</tbody></table>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado del trabajo de V. Orellana (Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa), apartado de delimitaci\u00f3n espacial y temporal.</p>'+
+      '</div>'+
+      '<div class="blockLbl" style="margin-top:14px;">◆ Delimitación espacial</div>'+
       '<div class="row2"><div><label>Empresa / unidad de estudio</label>'+
       '<input id="f_emp" value="'+esc(S.empresa)+'" placeholder="Nombre de la empresa o área"></div>'+
       '<div><label>Ubicación (distrito, ciudad)</label>'+
@@ -427,7 +448,10 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">¿Qué busca lograr la investigación? Escríbelo en tus palabras, en infinitivo (empieza con un verbo: reducir, optimizar, mejorar…).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_prop" style="display:none;">Optimizar el tiempo de atención en la entrega de bienes y servicios del área de ingeniería, reduciendo los tiempos del proceso de adquisición.</div>'+
+      '<div class="ejBox" id="ej_prop" style="display:none;">'+
+      'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la empresa Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa.'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Empieza con un verbo en infinitivo (<b>Reducir</b>) y nombra el indicador que se quiere mover. Este mismo verbo debe reaparecer en el problema general (paso 7).</p>'+
+      '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
       '<button class="btn" onclick="p3next()">Continuar →</button></div></div>';
@@ -440,7 +464,14 @@ function render(){
     }
     var customSel = S.lineaCustom ? ' sel' : '';
     h='<div class="card"><h2>04 · Elige la línea de investigación de Ingeniería</h2>'+
-      '<p class="note">Selecciona una de las líneas oficiales, o —si tu tema no encaja en ninguna— construye una <b>línea paraguas</b> propia (un concepto amplio que abarque el problema).</p>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Selecciona una de las l\u00edneas oficiales, o \u2014si tu tema no encaja en ninguna\u2014 construye una <b>l\u00ednea paraguas</b> propia (un concepto amplio que abarque el problema).</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'lin\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_lin" style="display:none;">'+
+      '<b>Gesti\u00f3n de operaciones y mejora de procesos.</b>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado del trabajo de V. Orellana (Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa), apartado de l\u00ednea de investigaci\u00f3n.</p>'+
+      '</div>'+
       '<div class="lineList">'+lo+
         '<div class="lineOpt'+customSel+'" style="flex-direction:column;align-items:stretch;cursor:default;">'+
         '<div style="display:flex;gap:12px;align-items:center;cursor:pointer;" onclick="selCustom()">'+
@@ -461,23 +492,20 @@ function render(){
   else if(S.paso===5){
     S.tema = S.tema || armarTema();
     h='<div class="card"><h2>05 · Tema de investigación</h2>'+
-      '<p class="note">El tema combina tu propósito con la línea, la empresa y el periodo. Puedes editarlo.</p>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">El tema combina tu prop\u00f3sito con la l\u00ednea, la empresa y el periodo. Puedes editarlo.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_tem" style="display:none;">'+
+      'Aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua para la optimizaci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda de la empresa Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa.'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[l\u00ednea]</b> para <b>[lo que se quiere lograr]</b> en <b>[d\u00f3nde]</b>. Es afirmativo y sin signos de pregunta.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado del trabajo de V. Orellana (Yokogawa Am\u00e9rica Do Sul Ltda Sucursal Per\u00fa), car\u00e1tula del trabajo.</p>'+
+      '</div>'+
       '<div class="temaResLbl">Tema</div>'+
       '<textarea rows="3" id="f_tema" style="font-family:Poppins,sans-serif;font-size:16px;">'+esc(S.tema)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(4)">← Cambiar línea</button>'+
       '<button class="btn" onclick="p5next()">Continuar →</button></div></div>';
   }
   else if(S.paso===6){
-    h='<div class="card"><h2>06 · Problema general</h2>'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Redáctalo como pregunta y como <b>paraguas conceptual</b>: plantea el fenómeno amplio, sin nombrar herramientas ni la solución. Fórmula: ¿De qué manera [línea] mejora [indicador] en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_pg" style="display:none;">¿De qué manera la gestión por procesos y la mejora continua optimizan el tiempo de atención en la entrega de bienes y servicios del área de ingeniería de Yokogawa América Do Sul Sucursal Perú, Lima, 2026?</div>'+
-      '<textarea rows="3" id="f_pg" style="font-style:italic;margin-top:8px;" placeholder="¿De qué manera… mejora… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(5)">← Volver al tema</button>'+
-      '<button class="btn" onclick="p6next()">Continuar al Ishikawa →</button></div></div>';
-  }
-  else if(S.paso===7){
     var boxes='';
     S.categorias.forEach(function(cat,ci){
       var items='';
@@ -506,7 +534,7 @@ function render(){
     });
     var efectoSugerido = S.probConsecuencias || S.probMagnitud || S.probContexto || '';
     var efectoVal = S.efectoCentral || efectoSugerido;
-    h='<div class="card"><h2>07 · Diagrama de Ishikawa</h2>'+
+    h='<div class="card"><h2>06 · Diagrama de Ishikawa</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El efecto (cabeza del pescado) es el problema central. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\');dibujarEjemploIshikawa()">ver ejemplo</button></div>'+
@@ -548,7 +576,36 @@ function render(){
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'+
       '<button class="btnMini" onclick="agregarCategoria()">+ añadir categoría</button>'+
       '<button class="btnMini" onclick="descargarIshikawa()">⬇ descargar diagrama (PNG)</button></div>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(6)">← Atrás</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(5)">← Volver al tema</button>'+
+      '<button class="btn" onclick="p6next()">Continuar al problema general →</button></div></div>';
+  }
+  else if(S.paso===7){
+    h='<div class="card"><h2>07 · Problema general</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">El problema general se construye <b>relacionando tres cosas que ya definiste</b>: la línea de investigación, el problema central del Ishikawa <b>expresado en positivo</b>, y el propósito. Redáctalo como pregunta.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pg" style="display:none;">'+
+      '<b>Cómo se arma, con el caso Yokogawa:</b>'+
+      '<table class="ejParTable"><tbody>'+
+      '<tr><td style="width:34%;">Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
+      '<tr><td>Problema central (Ishikawa)</td><td><i>Elevado</i> tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
+      '<tr><td>El mismo, en positivo</td><td><i>Optimizar</i> el tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
+      '<tr><td>Propósito (paso 3)</td><td>Optimizar el tiempo de atención en la entrega de bienes y servicios del área de ingeniería</td></tr>'+
+      '</tbody></table>'+
+      '<b>Resultado:</b> ¿De qué manera la gestión por procesos y la mejora continua <b>optimizan</b> el tiempo de atención en la entrega de bienes y servicios del área de ingeniería de Yokogawa América Do Sul Sucursal Perú, Lima, 2026?'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Fíjate que el verbo del propósito y el del problema general son el mismo. Si no coinciden, alguno de los dos está mal planteado.</p>'+
+      '</div>'+
+
+      '<div class="blockLbl" style="margin-top:14px;">◆ Tus insumos</div>'+
+      panelInsumos()+
+
+      '<label style="margin-top:12px;">Problema general</label>'+
+      '<p class="note" style="margin:0 0 6px;font-size:12.5px;">Fórmula: ¿De qué manera <b>[línea]</b> mejora <b>[problema central en positivo]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
+      '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… mejora… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
+      '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Las marcas se actualizan mientras escribes. Son una ayuda, no una nota: revisan que no hayas dejado fuera ninguno de los tres insumos.</p>'+
+
+      '<div class="actions"><button class="btnGhost" onclick="go(6)">← Volver al Ishikawa</button>'+
       '<button class="btn" onclick="p7next()">Continuar al Pareto →</button></div></div>';
   }
   else if(S.paso===8){
@@ -615,7 +672,7 @@ function render(){
       '<div class="blockLbl" style="margin-top:20px;">\u25c6 Selecciona las 3 '+rotuloNivel(true)+' priorizadas</div>'+
       '<p class="note">Sugerencia: elige las 3 de mayor frecuencia (las del 80%). Puedes ajustar con criterio.</p>'+
       selects+
-      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Ishikawa</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al problema general</button>'+
       '<button class="btn" onclick="p8next()">Continuar a específicos →</button></div></div>';
   }
   else if(S.paso===9){
@@ -731,15 +788,73 @@ function sugerirLineaIA(){
     toast('Error de red al consultar la IA',true);
   });
 }
-function p5next(){ S.tema=val('f_tema'); go(6); }
-function p6next(){ S.problemaGeneral=val('f_pg'); if(!S.problemaGeneral.trim())return toast('Redacta el problema general',true); armarEspecificos(); go(7); }
-function p7next(){
-  var totalSub=0;
-  S.categorias.forEach(function(c){
-    (S.causas[c]||[]).forEach(function(cz){ totalSub+=(cz.subs||[]).length; });
+
+// ---- Coherencia del problema general -------------------------------------
+// Compara por palabras significativas compartidas. No corrige el texto del
+// alumno: solo le avisa si algo quedó suelto respecto de los pasos previos.
+var STOPW = {de:1,la:1,el:1,los:1,las:1,del:1,en:1,que:1,con:1,por:1,para:1,una:1,uno:1,
+             se:1,su:1,sus:1,al:1,lo:1,como:1,mas:1,este:1,esta:1,manera:1,forma:1,
+             empresa:1,area:1,sucursal:1,mediante:1,traves:1};
+function normTxt(s){
+  return String(s||'').toLowerCase()
+    .replace(/[\u00e1\u00e0\u00e4\u00e2]/g,'a').replace(/[\u00e9\u00e8\u00eb\u00ea]/g,'e')
+    .replace(/[\u00ed\u00ec\u00ef\u00ee]/g,'i').replace(/[\u00f3\u00f2\u00f6\u00f4]/g,'o')
+    .replace(/[\u00fa\u00f9\u00fc\u00fb]/g,'u').replace(/\u00f1/g,'n')
+    .replace(/[^a-z0-9\s]/g,' ');
+}
+function clavesDe(s){
+  var vis={}, out=[];
+  normTxt(s).split(/\s+/).forEach(function(w){
+    if(w.length>4 && !STOPW[w] && !vis[w]){ vis[w]=1; out.push(w); }
   });
-  if(totalSub===0) return toast('Añade al menos una subcausa (segundo nivel) para el Pareto',true);
-  armarPareto(); go(8);
+  return out;
+}
+function compartidas(a,b){
+  var kb=clavesDe(b), n=0;
+  clavesDe(a).forEach(function(w){ if(kb.indexOf(w)!==-1) n++; });
+  return n;
+}
+function lineaTexto(){
+  return S.lineaCustom ? (S.lineaCustomTexto||'') : (LINEAS[S.lineaIdx]||'');
+}
+function panelInsumos(){
+  function card(t,v,falta){
+    return '<div class="insCard"><b>'+t+'</b><span>'+(v?esc(v):'<i style="color:#a8501e;">'+falta+'</i>')+'</span></div>';
+  }
+  return '<div class="insBox">'+
+    card('L\u00ednea de investigaci\u00f3n (paso 4)', lineaTexto(), 'sin definir')+
+    card('Problema central \u2014 Ishikawa (paso 6)', S.efectoCentral, 'sin definir')+
+    card('Prop\u00f3sito (paso 3)', S.proposito, 'sin definir')+
+    '</div>';
+}
+function panelCoherencia(pg){
+  function chip(ok,t){ return '<span class="cohChip '+(ok?'ok':'no')+'">'+(ok?'\u2713':'!')+' '+t+'</span>'; }
+  var lin=lineaTexto(), efe=S.efectoCentral||'', prop=S.proposito||'';
+  return '<div class="cohBox">'+
+    chip(/\u00bf/.test(pg) && /\?/.test(pg), 'Redactado como pregunta')+
+    chip(!!lin  && compartidas(pg,lin) >=1, 'Recoge la l\u00ednea de investigaci\u00f3n')+
+    chip(!!efe  && compartidas(pg,efe) >=1, 'Recoge el problema central')+
+    chip(!!prop && compartidas(pg,prop)>=1, 'Coherente con el prop\u00f3sito')+
+    '</div>';
+}
+function refrescarCoherencia(){
+  var c=document.getElementById('cohWrap');
+  if(c) c.innerHTML=panelCoherencia(val('f_pg'));
+}
+function p5next(){ S.tema=val('f_tema'); go(6); }
+// 06 Ishikawa -> 07 Problema general
+function p6next(){
+  var totalCausas=0;
+  S.categorias.forEach(function(c){ totalCausas+=(S.causas[c]||[]).length; });
+  if(!String(S.efectoCentral||'').trim()) return toast('Escribe el problema central (cabeza del pescado)',true);
+  if(totalCausas===0) return toast('A\u00f1ade al menos una causa al Ishikawa',true);
+  go(7);
+}
+// 07 Problema general -> 08 Pareto
+function p7next(){
+  S.problemaGeneral=val('f_pg');
+  if(!S.problemaGeneral.trim()) return toast('Redacta el problema general',true);
+  armarPareto(); armarEspecificos(); go(8);
 }
 
 // Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
