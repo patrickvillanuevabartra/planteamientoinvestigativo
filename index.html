@@ -307,7 +307,7 @@ function anio(){
 function armarTema(){
   if(!S.proposito || !lineaTexto()) return '';
   var p = S.proposito.trim().replace(/\.?\s*$/,'');
-  return p+' mediante '+lineaTexto()+' en la empresa '+(S.empresa||'[Empresa]')+' en el periodo '+periodo();
+  return p+' mediante '+lineaTexto()+' en la empresa '+(S.empresa||'[Empresa]')+', en el periodo '+periodo();
 }
 
 // ============================================================
@@ -502,9 +502,9 @@ function render(){
       '<p class="note" style="margin:0;">El tema combina tu prop\u00f3sito con la l\u00ednea, la empresa y el periodo. Puedes editarlo.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_tem" style="display:none;">'+
-      'Aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua para la optimizaci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda de la Empresa Alfa S.A.C.'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[l\u00ednea]</b> para <b>[lo que se quiere lograr]</b> en <b>[d\u00f3nde]</b>. Es afirmativo y sin signos de pregunta.</p>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (car\u00e1tula del trabajo); la empresa se mantiene en reserva.</p>'+
+      'Optimizaci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[lo que se quiere lograr]</b> mediante <b>[la l\u00ednea]</b> en <b>[d\u00f3nde]</b>, en <b>[el periodo]</b>. Es afirmativo y sin signos de pregunta.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Adaptado de un trabajo real del curso (car\u00e1tula del trabajo, reordenada seg\u00fan esta f\u00f3rmula); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="temaResLbl">Tema</div>'+
       '<textarea rows="3" id="f_tema" style="font-family:Poppins,sans-serif;font-size:16px;">'+esc(S.tema)+'</textarea>'+
