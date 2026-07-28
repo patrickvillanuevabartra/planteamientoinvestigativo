@@ -93,6 +93,12 @@
   .insCard b{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8a7f6d;margin-bottom:3px;}
   .insCard span{font-size:12.5px;line-height:1.35;}
   .cohBox{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .cohV{border-radius:5px;padding:9px 12px;margin-top:8px;font-size:13px;border:1px solid;}
+  .cohV.ok{color:#1f6a4d;border-color:#9ccbb5;background:#eef8f3;}
+  .cohV.med{color:#8a6d1f;border-color:#dcc48a;background:#fbf6e8;}
+  .cohV.no{color:#a8501e;border-color:#e3b48c;background:#fdf3e7;}
+  .insCard mark{background:#f7e0c8;color:inherit;padding:0 1px;border-radius:2px;}
+
   .cohChip{font-size:12px;padding:3px 9px;border-radius:11px;border:1px solid;}
   .cohChip.ok{color:#1f6a4d;border-color:#9ccbb5;background:#eef8f3;}
   .cohChip.no{color:#a8501e;border-color:#e3b48c;background:#fdf3e7;}
@@ -580,30 +586,45 @@ function render(){
       '<button class="btn" onclick="p6next()">Continuar al problema general →</button></div></div>';
   }
   else if(S.paso===7){
+    var an = analisisCentralProposito();
     h='<div class="card"><h2>07 · Problema general</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">El problema general se construye <b>relacionando tres cosas que ya definiste</b>: la línea de investigación, el problema central del Ishikawa <b>expresado en positivo</b>, y el propósito. Redáctalo como pregunta.</p>'+
+      '<p class="note" style="margin:0;">Se hace en dos momentos: <b>primero</b> compruebas que el propósito y el problema central digan lo mismo; <b>después</b> redactas la pregunta uniendo la línea de investigación con el propósito.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pg" style="display:none;">'+
       '<b>Cómo se arma, con el caso Yokogawa:</b>'+
       '<table class="ejParTable"><tbody>'+
-      '<tr><td style="width:34%;">Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
-      '<tr><td>Problema central (Ishikawa)</td><td><i>Elevado</i> tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
-      '<tr><td>El mismo, en positivo</td><td><i>Optimizar</i> el tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
-      '<tr><td>Propósito (paso 3)</td><td>Optimizar el tiempo de atención en la entrega de bienes y servicios del área de ingeniería</td></tr>'+
+      '<tr><td style="width:34%;">Problema central (Ishikawa)</td><td><i>Elevado</i> tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
+      '<tr><td>Propósito (paso 3)</td><td><i>Reducir</i> el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</td></tr>'+
+      '<tr><td>¿Hablan de lo mismo?</td><td>Sí: ambos giran sobre <b>tiempo de atención</b> en la <b>entrega</b> de <b>bienes y servicios</b>. Uno lo dice en negativo, el otro en positivo.</td></tr>'+
+      '<tr><td>Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
       '</tbody></table>'+
-      '<b>Resultado:</b> ¿De qué manera la gestión por procesos y la mejora continua <b>optimizan</b> el tiempo de atención en la entrega de bienes y servicios del área de ingeniería de Yokogawa América Do Sul Sucursal Perú, Lima, 2026?'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Fíjate que el verbo del propósito y el del problema general son el mismo. Si no coinciden, alguno de los dos está mal planteado.</p>'+
+      '<b>Problema general que redactó:</b><br>'+
+      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> permite <b>reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la empresa Yokogawa América Do Sul Ltda Sucursal Perú?</i>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Fíjate en el verbo: su propósito dice <b>reducir</b> y su problema general dice <b>permite reducir</b>. Es el mismo verbo, no un sinónimo. Ahí se nota que están alineados.</p>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Tomado del trabajo de V. Orellana: aparece igual en su matriz de consistencia y en el apartado de formulación del problema. Su redacción no incluye lugar ni año; la fórmula de abajo sí los pide, porque es el formato de la Escuela.</p>'+
       '</div>'+
 
-      '<div class="blockLbl" style="margin-top:14px;">◆ Tus insumos</div>'+
-      panelInsumos()+
+      '<div class="blockLbl" style="margin-top:16px;">◆ Primero · ¿El propósito y el problema central dicen lo mismo?</div>'+
+      '<p class="note" style="margin:0 0 2px;">En <mark>ámbar</mark> los términos que comparten. El proyecto apunta al problema central, así que el propósito tiene que contenerlo.</p>'+
+      '<div class="insBox">'+
+      '<div class="insCard"><b>Problema central — Ishikawa (paso 6)</b><span>'+
+      (S.efectoCentral ? resaltarComunes(S.efectoCentral, S.proposito||'') : '<i style="color:#a8501e;">sin definir</i>')+'</span></div>'+
+      '<div class="insCard"><b>Propósito (paso 3)</b><span>'+
+      (S.proposito ? resaltarComunes(S.proposito, S.efectoCentral||'') : '<i style="color:#a8501e;">sin definir</i>')+'</span></div>'+
+      '</div>'+
+      '<div class="cohV '+an.cls+'">'+an.txt+'</div>'+
+      (an.cls!=='ok' ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'+
+        '<button class="btnMini" onclick="go(3)">← corregir el propósito</button>'+
+        '<button class="btnMini" onclick="go(6)">← corregir el problema central</button></div>' : '')+
 
-      '<label style="margin-top:12px;">Problema general</label>'+
-      '<p class="note" style="margin:0 0 6px;font-size:12.5px;">Fórmula: ¿De qué manera <b>[línea]</b> mejora <b>[problema central en positivo]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
-      '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… mejora… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Después · Redacta el problema general</div>'+
+      '<div class="cohV med" style="font-size:13.5px;">La pregunta es <b>la línea + el propósito</b>. El problema central no se copia: es lo que garantiza que el propósito apunte a donde debe.</div>'+
+      '<div class="insBox" style="margin-top:10px;"><div class="insCard"><b>Línea de investigación (paso 4)</b><span>'+
+      (lineaTexto() ? esc(lineaTexto()) : '<i style="color:#a8501e;">sin definir</i>')+'</span></div></div>'+
+      '<p class="note" style="margin:6px 0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
+      '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
-      '<p class="note" style="font-size:12px;margin:6px 0 0;">Las marcas se actualizan mientras escribes. Son una ayuda, no una nota: revisan que no hayas dejado fuera ninguno de los tres insumos.</p>'+
 
       '<div class="actions"><button class="btnGhost" onclick="go(6)">← Volver al Ishikawa</button>'+
       '<button class="btn" onclick="p7next()">Continuar al Pareto →</button></div></div>';
@@ -817,6 +838,28 @@ function compartidas(a,b){
 function lineaTexto(){
   return S.lineaCustom ? (S.lineaCustomTexto||'') : (LINEAS[S.lineaIdx]||'');
 }
+// Resalta en un texto las palabras significativas que también aparecen en el otro.
+function resaltarComunes(txt, otro){
+  var kb=clavesDe(otro);
+  return esc(txt).replace(/[A-Za-z\u00c0-\u017f]{5,}/g, function(w){
+    return kb.indexOf(normTxt(w).replace(/\s/g,''))!==-1 ? '<mark>'+w+'</mark>' : w;
+  });
+}
+// Primer analisis: el problema central debe estar contenido en el proposito.
+function analisisCentralProposito(){
+  var efe=S.efectoCentral||'', prop=S.proposito||'';
+  if(!efe.trim() || !prop.trim()){
+    return { cls:'no', n:0,
+      txt:'Falta uno de los dos. Complet\u00e1lo antes de redactar el problema general.' };
+  }
+  var n=compartidas(efe,prop);
+  if(n>=2) return { cls:'ok', n:n,
+    txt:'Coinciden: el prop\u00f3sito recoge lo que el Ishikawa se\u00f1ala como problema central. Puedes redactar.' };
+  if(n===1) return { cls:'med', n:n,
+    txt:'Se tocan en un solo t\u00e9rmino. Revisa si el prop\u00f3sito apunta de verdad a ese problema, o si le falta nombrarlo.' };
+  return { cls:'no', n:0,
+    txt:'No hablan de lo mismo. El proyecto apunta al problema central, as\u00ed que uno de los dos est\u00e1 mal planteado: corrige el prop\u00f3sito (paso 3) o el problema central (paso 6).' };
+}
 function panelInsumos(){
   function card(t,v,falta){
     return '<div class="insCard"><b>'+t+'</b><span>'+(v?esc(v):'<i style="color:#a8501e;">'+falta+'</i>')+'</span></div>';
@@ -832,9 +875,9 @@ function panelCoherencia(pg){
   var lin=lineaTexto(), efe=S.efectoCentral||'', prop=S.proposito||'';
   return '<div class="cohBox">'+
     chip(/\u00bf/.test(pg) && /\?/.test(pg), 'Redactado como pregunta')+
-    chip(!!lin  && compartidas(pg,lin) >=1, 'Recoge la l\u00ednea de investigaci\u00f3n')+
-    chip(!!efe  && compartidas(pg,efe) >=1, 'Recoge el problema central')+
-    chip(!!prop && compartidas(pg,prop)>=1, 'Coherente con el prop\u00f3sito')+
+    chip(!!lin  && compartidas(pg,lin) >=1, 'Recoge la l\u00ednea')+
+    chip(!!prop && compartidas(pg,prop)>=1, 'Recoge el prop\u00f3sito')+
+    chip(!!efe  && compartidas(pg,efe) >=1, 'Sigue apuntando al problema central')+
     '</div>';
 }
 function refrescarCoherencia(){
