@@ -130,13 +130,37 @@
   .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
   .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
   @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
+  .authWrap{position:fixed;inset:0;background:#f7f5f0;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+  .authCard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:32px 30px;max-width:430px;width:100%;text-align:center;}
+  .authCard h2{margin:0 0 6px;font-size:20px;}
+  .authCard p{font-size:13.5px;color:#6a746f;line-height:1.5;margin:0 0 20px;}
+  .authBtn{display:flex;justify-content:center;min-height:44px;}
+  .authErr{color:#a8501e;font-size:13px;margin-top:14px;}
+  .userBar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:#6a746f;margin-bottom:10px;}
+  .userBar b{color:var(--ink);}
 </style>
 </head>
 <body>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- ============ PORTADA DE INGRESO ============ -->
+<div class="authWrap" id="authWrap">
+  <div class="authCard">
+    <div class="kicker" style="justify-content:center;">URP · INGENIERÍA INDUSTRIAL</div>
+    <h2>Planteamiento investigativo</h2>
+    <p>Ingresa con tu correo institucional. Solo verás los planteamientos de tu grupo.</p>
+    <div class="authBtn" id="gbtn"></div>
+    <div class="authErr" id="authErr" style="display:none;"></div>
+  </div>
+</div>
 <div class="wrap">
   <div class="kicker">URP · INGENIERÍA · LÍNEAS DE INVESTIGACIÓN 2026–2030</div>
   <h1>Del problema empresarial al planteamiento</h1>
   <p class="sub">Define problema y delimitaciones, fija el propósito, ancla en una línea oficial, arma el tema, formula el problema general y derívalo en un Ishikawa.</p>
+
+  <div class="userBar" id="userBar" style="display:none;">
+    <span id="userTxt"></span>
+    <button class="btnMini" style="padding:4px 10px;font-size:12px;" onclick="salirSesion()">Salir</button>
+  </div>
 
   <div class="tabs">
     <button class="tab on" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
@@ -174,6 +198,12 @@ var PROXY_URL = "https://script.google.com/macros/s/AKfycbyeMZERRsQNsSUsdKet60Iq
 var IA_ACTIVA = true;
 
 // Field IDs de QuintaDB (para leer registros en la vista de lista)
+// ⬇⬇⬇  RELLENA ESTA LÍNEA (el mismo Client ID que pusiste en el Codigo.gs)  ⬇⬇⬇
+var CLIENT_ID = 'PEGA_AQUI_TU_CLIENT_ID.apps.googleusercontent.com';
+
+// Sesión: el sid corto lo emite el proxy tras validar el token de Google.
+var SESION = { sid:'', email:'', docente:false };
+
 var FIELD = {
   problema_empresarial : 'a2lZZdKmjctPLGBfJcGJWS',
   empresa              : 'cCDSkvW6TcNyo-WRq7bCk4',
@@ -195,7 +225,8 @@ var FIELD = {
   numero_grupo         : 'cprSkAWRDdR4kRpmksqw82',
   coordinador          : 'cCWQqVWOfdSikDWOLHt8kq',
   estructura           : 'cbW64-W5XcTRq3nmk4emkk',
-  consecuencia         : 'dcPMhdICnnW6C5WRaHuSk7'
+  consecuencia         : 'dcPMhdICnnW6C5WRaHuSk7',
+  correos              : 'dcO8kblWrbW5JdTZBdVgri'
 };
 
 // ============================================================
@@ -284,6 +315,7 @@ var S = {
   tema:'', problemaGeneral:'', efectoCentral:'', consecuenciaSintoma:'',
   categorias: CATEGORIAS.slice(),   // 6M editables
   causas:{}, especificos:[],
+  correoCompanero:'',
   nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
   paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
   priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
@@ -389,6 +421,10 @@ function render(){
       '<input id="f_ngrupo" value="'+esc(S.numeroGrupo)+'" placeholder="Ej. 3"></div>'+
       '<div><label>Coordinador(a) de grupo</label>'+
       '<input id="f_coord" value="'+esc(S.coordinador)+'" placeholder="Nombres y apellidos"></div></div>'+
+
+      '<label>Correo del compañero(a) de grupo</label>'+
+      '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="compañero@urp.edu.pe">'+
+      '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar este planteamiento. Si trabajas solo, déjalo vacío.</p>'+
 
       '<div class="actions"><span></span><button class="btn" onclick="p0next()">Iniciar planteamiento →</button></div></div>';
   }
@@ -759,6 +795,7 @@ function go(n){ S.paso=n; render(); window.scrollTo(0,0); }
 // ---- navegación con captura de campos ----
 function p0next(){
   S.ciclo=val('f_ciclo'); S.numeroGrupo=val('f_ngrupo'); S.coordinador=val('f_coord');
+  S.correoCompanero=val('f_correo2').trim().toLowerCase();
   if(!S.ciclo)               return toast('Selecciona el ciclo',true);
   if(!S.numeroGrupo.trim())  return toast('Indica el N° de grupo',true);
   if(!S.coordinador.trim())  return toast('Indica el/la coordinador(a) del grupo',true);
@@ -1502,7 +1539,8 @@ function guardar(){
     numero_grupo:S.numeroGrupo,
     coordinador:S.coordinador,
     estructura:serializarEstado(),
-    consecuencia:S.consecuenciaSintoma
+    consecuencia:S.consecuenciaSintoma,
+    correos:[SESION.email, S.correoCompanero].filter(function(x){ return x; }).join(', ')
   };
 
   function restore(){
@@ -1531,6 +1569,46 @@ function guardar(){
 
 // JSONP helper: inyecta un <script> con callback para saltar CORS
 var _jsonpId=0;
+// ============================================================
+//  INGRESO CON GOOGLE
+// ============================================================
+function iniciarGoogle(){
+  if (typeof google === 'undefined' || !google.accounts || !google.accounts.id){
+    return setTimeout(iniciarGoogle, 300);   // el script de Google aún no cargó
+  }
+  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: alRecibirCredencial });
+  google.accounts.id.renderButton(document.getElementById('gbtn'),
+    { theme:'outline', size:'large', text:'signin_with', width:280 });
+}
+
+function alRecibirCredencial(resp){
+  var err = document.getElementById('authErr');
+  err.style.display='none';
+  jsonpCall({ action:'login', token:encodeURIComponent(resp.credential) }, function(r){
+    if (r && r.ok){
+      SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
+      document.getElementById('authWrap').style.display='none';
+      var ub=document.getElementById('userBar');
+      ub.style.display='flex';
+      document.getElementById('userTxt').innerHTML =
+        (SESION.docente ? '<b>Docente</b> · ' : '') + esc(SESION.email);
+      render();
+    } else {
+      err.textContent = 'No se pudo validar tu cuenta. Revisa que uses tu correo institucional.';
+      err.style.display='block';
+    }
+  }, function(){
+    err.textContent = 'Error de red al ingresar. Intenta de nuevo.';
+    err.style.display='block';
+  });
+}
+
+function salirSesion(){
+  SESION = { sid:'', email:'', docente:false };
+  try { google.accounts.id.disableAutoSelect(); } catch(e){}
+  location.reload();
+}
+
 function jsonpCall(params, onOk, onErr){
   _jsonpId++;
   var cbName='_pi_cb_'+_jsonpId;
@@ -1538,6 +1616,7 @@ function jsonpCall(params, onOk, onErr){
   window[cbName]=function(data){ cleanup(); if(onOk)onOk(data); };
   function cleanup(){ clearTimeout(timer); try{delete window[cbName];}catch(e){} if(sc&&sc.parentNode)sc.parentNode.removeChild(sc); }
   var qs='callback='+cbName;
+  if (params.action !== 'login' && SESION.sid) qs += '&sid=' + SESION.sid;
   for(var k in params){ qs+='&'+k+'='+params[k]; }
   var sc=document.createElement('script');
   sc.src=PROXY_URL+'?'+qs;
@@ -1604,6 +1683,9 @@ function continuarEdicion(recId){
   // La consecuencia/síntoma ya tiene campo propio en QuintaDB: si el JSON de
   // "Estructura completa" no la trajo, se toma de ese campo.
   if(!S.consecuenciaSintoma) S.consecuenciaSintoma = g('consecuencia');
+  // el compañero es el otro correo del registro
+  S.correoCompanero = String(g('correos')||'').toLowerCase()
+      .split(/[;,\s]+/).filter(function(x){ return x && x!==SESION.email; })[0] || '';
 
   if(!reconstruido){
     // Fallback: reconstruir lo básico desde los campos de texto sueltos
@@ -1644,8 +1726,8 @@ function toast(msg,err){
   toastTimer=setTimeout(function(){ t.className='toast'+(err?' err':''); },3000);
 }
 
-// init
-render();
+// init: la portada de ingreso tapa la app hasta que el proxy valide la cuenta
+iniciarGoogle();
 </script>
 </body>
 </html>
