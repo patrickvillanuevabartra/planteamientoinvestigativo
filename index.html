@@ -1628,7 +1628,6 @@ function pad(n){ return n<10?'0'+n:''+n; }
 // ============================================================
 //  LISTAR (GET al proxy)
 // ============================================================
-var _recordsCache={};
 function cargarLista(){
   var cont=document.getElementById('listaCont');
   cont.innerHTML='<p class="note">Cargando…</p>';
@@ -1637,10 +1636,8 @@ function cargarLista(){
     var recs = (res.data && res.data.records) ? res.data.records : [];
     if(!recs.length){ cont.innerHTML='<p class="note">Aún no hay planteamientos guardados.</p>'; return; }
     var h='';
-    _recordsCache={};
     // más recientes primero
     recs.slice().reverse().forEach(function(rec){
-      _recordsCache[rec.id]=rec;
       var v=rec.values||{};
       function g(k){ return v[FIELD[k]]||''; }
       var ciclo=g('ciclo'), ngrupo=g('numero_grupo'), coord=g('coordinador');
@@ -1661,10 +1658,23 @@ function cargarLista(){
   }, function(){ cont.innerHTML='<p class="hintWarn">Error de red al cargar.</p>'; });
 }
 
-// Reconstruye el estado desde un registro guardado y abre el flujo para seguir editando
+// "Continuar edición": el listado ya NO trae la estructura completa, así que
+// aquí se pide el registro entero al proxy y recién entonces se reconstruye.
 function continuarEdicion(recId){
-  var rec=_recordsCache[recId];
-  if(!rec){ toast('No se encontró el registro',true); return; }
+  toast('Cargando planteamiento…');
+  jsonpCall({ action:'registro', record_id:recId }, function(res){
+    if(!res || !res.ok || !res.data || !res.data.record){
+      toast('No se pudo cargar el planteamiento'+((res&&res.error)?': '+res.error:''),true);
+      return;
+    }
+    aplicarRegistro(res.data.record, recId);
+  }, function(){
+    toast('Error de red al cargar el planteamiento',true);
+  });
+}
+
+// Reconstruye el estado desde un registro guardado y abre el flujo para seguir editando
+function aplicarRegistro(rec, recId){
   var v=rec.values||{};
   function g(k){ return v[FIELD[k]]||''; }
 
