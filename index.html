@@ -576,7 +576,9 @@ function render(){
       '<tr><td>Falta de gestión del desempeño</td><td>Los resultados del proceso no se analizan</td></tr>'+
       '<tr><td>Falta de capacitación en el proceso</td><td>El personal ejecuta con criterios no homogéneos</td></tr>'+
       '</tbody></table>'+
-      'Los ejemplos de la derecha no son inventados: salen del propio caso de la Empresa Alfa, del cap\u00edtulo donde el estudio describe c\u00f3mo trabaja el \u00e1rea.</div>'+
+      'Los ejemplos de la derecha no son inventados: salen del propio caso de la Empresa Alfa, del cap\u00edtulo donde el estudio describe c\u00f3mo trabaja el \u00e1rea.'+
+      '<p style="margin-top:14px;"><b>Y no confundas la consecuencia con la causa.</b> Si algo ocurre <i>porque</i> pasa otra cosa que ya est\u00e1 en tu diagrama, es un efecto intermedio, no una causa. En el caso: la <i>demora en las aprobaciones</i> ocurre porque cada \u00e1rea aplica criterios distintos y porque el tr\u00e1mite depende de varias \u00e1reas a la vez. Se corrige eso; la demora cede sola.</p>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Importa sobre todo en el Pareto: si mides la consecuencia y su causa como si fueran dos causas distintas, cuentas el mismo problema dos veces y se te va la prioridad al s\u00edntoma.</p></div>'+
 
       '<div class="grid6" style="margin-top:16px;">'+boxes+'</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'+
@@ -683,16 +685,17 @@ function render(){
       '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada '+rotuloNivel()+' (cu\u00e1ntas veces se observ\u00f3, seg\u00fan tu ficha de registro).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_par" style="display:none;">'+
-      '<b>Caso de la Empresa Alfa — Análisis de Pareto (Tabla 1).</b> Se registró la frecuencia relativa de cada causa del proceso de adquisición (juicio experto):'+
-      '<table class="ejParTable"><thead><tr><th>Causa</th><th>%</th><th>% acum.</th></tr></thead><tbody>'+
-      '<tr class="ejHot"><td>C1 · Demoras en aprobaciones</td><td>30%</td><td>30%</td></tr>'+
-      '<tr class="ejHot"><td>C2 · Falta de planificación</td><td>25%</td><td>55%</td></tr>'+
-      '<tr class="ejHot"><td>C3 · Información dispersa</td><td>20%</td><td><b>75%</b></td></tr>'+
-      '<tr><td>C4 · Reprocesos por errores</td><td>12%</td><td>87%</td></tr>'+
-      '<tr><td>C5 · Falta de seguimiento</td><td>8%</td><td>95%</td></tr>'+
-      '<tr><td>C6 · Otros</td><td>5%</td><td>100%</td></tr>'+
+      '<b>Caso de la Empresa Alfa — Análisis de Pareto.</b> Cada fila es <b>una causa del Ishikawa</b>, escrita igual que allá; entre paréntesis, el rótulo corto con que se la nombra en el informe. Las frecuencias son ilustrativas: lo que importa es el método.'+
+      '<table class="ejParTable"><thead><tr><th>Causa (tal como está en el Ishikawa)</th><th>%</th><th>% acum.</th></tr></thead><tbody>'+
+      '<tr class="ejHot"><td>Las actividades se ejecutan de forma variable según quién las realiza <span style="color:#8a7f6d;">(procesos no estandarizados)</span></td><td>30%</td><td>30%</td></tr>'+
+      '<tr class="ejHot"><td>La información se registra en Excel y Outlook sin integración <span style="color:#8a7f6d;">(información dispersa)</span></td><td>25%</td><td>55%</td></tr>'+
+      '<tr class="ejHot"><td>El seguimiento de las solicitudes es limitado <span style="color:#8a7f6d;">(desempeño no medido)</span></td><td>20%</td><td><b>75%</b></td></tr>'+
+      '<tr><td>Dependencia de múltiples áreas (ingeniería, logística, importaciones)</td><td>15%</td><td>90%</td></tr>'+
+      '<tr><td>Demora en cotizaciones de proveedores <span style="color:#8a7f6d;">(incumplimiento de proveedores)</span></td><td>7%</td><td>97%</td></tr>'+
+      '<tr><td>Registro manual de información</td><td>3%</td><td>100%</td></tr>'+
       '</tbody></table>'+
-      'Las <b>3 causas críticas (C1+C2+C3 = 75%)</b>, resaltadas, concentran el grueso del problema y son las que se priorizan → derivan en los 3 problemas específicos, cada uno con su herramienta (BPMN, RACI/SOP, KPIs bajo SCOR).</div>'+
+      'Las <b>3 causas críticas (75%)</b>, resaltadas, son las mismas que aparecen en ámbar en el Ishikawa del paso 6. De ahí salen los 3 problemas específicos, cada uno con su herramienta: BPMN, automatización (RPA + ERP) y KPIs bajo SCOR.'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">El Pareto se calcula <b>sobre las causas de tu Ishikawa</b>, no sobre una lista aparte. Si el texto de una fila no coincide con el del Ishikawa, es que algo se reescribió por el camino.</p></div>'+
       '<table class="parTable"><thead><tr><th>'+(porSubcausa()?'Subcausa':'Causa')+' (de tu Ishikawa)</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table>'+
       '<div class="blockLbl" style="margin-top:20px;">\u25c6 Selecciona las 3 '+rotuloNivel(true)+' priorizadas</div>'+
