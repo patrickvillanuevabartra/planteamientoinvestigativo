@@ -1656,7 +1656,9 @@ function jsonpCall(params, onOk, onErr){
   };
 
   var qs='callback='+cbName;
-  if (params.action !== 'login' && SESION.sid) qs += '&sid=' + SESION.sid;
+  // El parámetro va como "ses": si se llama "sid", Google devuelve 400 y la
+  // respuesta nunca llega (era la causa del "Error de red al cargar").
+  if (params.action !== 'login' && SESION.sid) qs += '&ses=' + SESION.sid;
   for(var k in params){ qs+='&'+k+'='+params[k]; }
   sc.src=PROXY_URL+'?'+qs;
 
