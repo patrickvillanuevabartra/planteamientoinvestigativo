@@ -195,7 +195,11 @@
 var PROXY_URL = "https://script.google.com/macros/s/AKfycbyeMZERRsQNsSUsdKet60IqndE2QWc_rORm0n6dFml7Gnf9-8ZEp71ZSuuWKurQM2JV/exec";
 
 // Habilitar cuando actives la IA en el proxy (ruta action=ia).
-var IA_ACTIVA = true;
+// Sugerencia con IA vía API de Anthropic (de pago). Apagada: en su lugar la app
+// muestra un panel que le pasa al alumno una indicación lista para copiar y
+// enlaces al asistente que prefiera. Si algún día se carga la clave en el
+// proxy (ANTHROPIC_API_KEY), basta con volver a poner true.
+var IA_ACTIVA = false;
 
 // Field IDs de QuintaDB (para leer registros en la vista de lista)
 // ⬇⬇⬇  RELLENA ESTA LÍNEA (el mismo Client ID que pusiste en el Codigo.gs)  ⬇⬇⬇
@@ -522,7 +526,9 @@ function render(){
           '<div style="margin-top:10px;">'+
           '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
           '<span class="note" style="margin:0;">Debe ser un paraguas conceptual: amplio, no una herramienta concreta.</span>'+
-          (IA_ACTIVA?'<button type="button" class="ejBtn" id="btnIALinea" onclick="sugerirLineaIA()">✦ sugerir con IA</button>':'')+'</div>'+
+          (IA_ACTIVA?'<button type="button" class="ejBtn" id="btnIALinea" onclick="sugerirLineaIA()">✦ sugerir con IA</button>':'')+
+          '<button type="button" class="ejBtn" onclick="toggleEj(\'ia\')">✦ ayuda con IA</button></div>'+
+          panelAyudaIA()+
           '<textarea rows="2" id="f_lcustom" oninput="S.lineaCustomTexto=this.value" placeholder="Ej. Excelencia operacional en la gestión de procesos de abastecimiento" style="margin-top:6px;">'+esc(S.lineaCustomTexto)+'</textarea>'+
           '</div>'
           : '')+
@@ -833,6 +839,73 @@ function p4next(){
     S.adoptada={texto:LINEAS[S.lineaIdx], origen:'oficial'};
   }
   S.tema=armarTema(); go(5);
+}
+
+// ------------------------------------------------------------------
+//  AYUDA CON IA (sin costo para la escuela)
+//  No se llama a ninguna API: se le arma al alumno la indicacion y se
+//  le abre el asistente que prefiera. El alumno pega el resultado en el
+//  campo y lo adapta; la decision sigue siendo suya.
+// ------------------------------------------------------------------
+function promptLineaIA(){
+  var lin = LINEAS.map(function(l,i){ return (i+1)+'. '+limpiarLinea(l); }).join('\n');
+  return 'Actua como asesor de tesis de Ingenieria Industrial.\n\n' +
+    'CONTEXTO DE MI PROYECTO\n' +
+    'Empresa: ' + (S.empresa||'(completar)') + '\n' +
+    'Problema empresarial: ' + (S.problemaEmpresa||'(completar)') + '\n' +
+    'Proposito de la investigacion: ' + (S.proposito||'(completar)') + '\n\n' +
+    'LINEAS OFICIALES DE INVESTIGACION DE MI ESCUELA (2026-2030)\n' + lin + '\n\n' +
+    'LO QUE NECESITO\n' +
+    '1. Dime si mi problema encaja en alguna de las lineas oficiales de arriba y en cual.\n' +
+    '2. Si no encaja en ninguna, propon UNA "linea paraguas" propia: un concepto\n' +
+    '   amplio y academico que abarque el problema. No una herramienta ni una\n' +
+    '   tecnica concreta (BPMN, RPA, KPI y similares son herramientas, no lineas).\n' +
+    '   Maximo 15 palabras.\n' +
+    '3. Explicame en dos o tres lineas por que esa es la linea correcta, para que\n' +
+    '   yo pueda justificarla ante mi docente.';
+}
+
+function panelAyudaIA(){
+  var enlaces = [['Claude','https://claude.ai/new'],
+                 ['ChatGPT','https://chatgpt.com'],
+                 ['Gemini','https://gemini.google.com']];
+  var h = '<div class="ejBox" id="ej_ia" style="display:none;">';
+  h += '<b>Puedes apoyarte en una IA para explorar tu linea paraguas.</b>';
+  h += '<p class="note" style="font-size:12px;margin:6px 0 0;">La IA <b>sugiere</b>, no decide. '
+     + 'Copia la indicacion, abrela en el asistente que prefieras, y trae la respuesta al campo '
+     + 'de abajo <b>adaptandola con tus palabras</b>. Debes poder sustentar por que esa es tu linea.</p>';
+  h += '<textarea id="f_promptIA" rows="7" readonly style="margin-top:8px;font-size:12px;'
+     + 'background:#fff;">' + esc(promptLineaIA()) + '</textarea>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">';
+  h += '<button type="button" class="ejBtn" onclick="copiarPromptIA()">copiar indicacion</button>';
+  h += '<span class="note" style="margin:0;font-size:12px;">luego abre:</span>';
+  for (var i=0;i<enlaces.length;i++){
+    h += '<a class="ejBtn" style="text-decoration:none;" target="_blank" rel="noopener" href="'
+       + enlaces[i][1] + '">' + enlaces[i][0] + ' \u2197</a>';
+  }
+  h += '</div></div>';
+  return h;
+}
+
+function copiarPromptIA(){
+  var ta = document.getElementById('f_promptIA');
+  if(!ta) return;
+  var texto = ta.value;
+  function ok(){ toast('Indicacion copiada \u2014 pegala en la IA que prefieras'); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(texto).then(ok, manual);
+  } else { manual(); }
+  function manual(){
+    // Respaldo para navegadores que no dan permiso al portapapeles
+    try {
+      ta.removeAttribute('readonly');
+      ta.focus(); ta.select();
+      var hecho = document.execCommand('copy');
+      ta.setAttribute('readonly','readonly');
+      if (hecho) { ok(); return; }
+    } catch(e){}
+    toast('Selecciona el texto del cuadro y copialo con Ctrl+C', true);
+  }
 }
 
 // Sugerir una línea paraguas con IA (vía proxy, ruta action=ia)
