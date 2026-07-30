@@ -129,6 +129,11 @@
   .grupoBar .acts{display:flex;gap:8px;}
   .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
   .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
+  .mc{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;}
+  .mc th{background:#2f3b37;color:#fff;text-align:left;padding:8px 10px;font-weight:600;font-size:12px;}
+  .mc td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;line-height:1.45;}
+  .mc tbody tr:nth-child(odd) td{background:#fafbfa;}
+  .mcTag{font-weight:700;color:var(--teal);white-space:nowrap;}
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
   .btnDel:hover{background:#fbf1ee;}
   @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
@@ -233,7 +238,16 @@ var FIELD = {
   coordinador          : 'cCWQqVWOfdSikDWOLHt8kq',
   estructura           : 'cbW64-W5XcTRq3nmk4emkk',
   consecuencia         : 'dcPMhdICnnW6C5WRaHuSk7',
-  correos              : 'dcO8kblWrbW5JdTZBdVgri'
+  correos              : 'dcO8kblWrbW5JdTZBdVgri',
+  // Pasos 10-12
+  objetivo_general        : 'ddPSknwmjpW6VcOCklD8oN',
+  objetivos_especificos   : 'ddQCk1omjdW746ECoXmLTL',
+  hipotesis_general       : 'a_sulcSbDcTyopW7_cIdT3',
+  hipotesis_especificas   : 'apWOxdOtniWPv9WQNcUSk8',
+  variable_independiente  : 'a1DMPMmmjkW4NdGCotwSoI',
+  variable_dependiente    : 'ackbaguI9dSiolW5VdNCkv',
+  indicador_general       : 'cCh8oJWPTdSyXZtSoGdc48',
+  indicadores_especificos : 'dcLWmTW5vjplu5rGddUSoJ'
 };
 
 // ============================================================
@@ -256,7 +270,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","General","Pareto","Específicos"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","General","Pareto","Específicos","Objetivos","Hipótesis","Matriz"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -327,6 +341,8 @@ function estadoInicial(){
     nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
     paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
     priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
+    // Pasos 10-12: objetivos, hipótesis y matriz de consistencia
+    objetivoGeneral:'', varInd:'', varDep:'', indicadorGeneral:'', hipotesisGeneral:'',
     estudiante:'', curso:'', recordId:null
   };
   e.categorias.forEach(function(c){ e.causas[c]=[]; });   // cada causa: {txt, subs:[]}
@@ -791,7 +807,7 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN) reduce el tiempo de atención…? · Herramienta: BPMN. PE2: ¿De qué manera la definición de responsabilidades (RACI/SOP) reduce el tiempo…? · Herramienta: RACI/SOP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) reduce el tiempo…? · Herramienta: KPIs bajo SCOR.</div>'+
+      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
       '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (registrada al inicio)</div>'+
       '<div class="coordsBox" style="background:#eef5f4;">'+
@@ -802,6 +818,100 @@ function render(){
       '<div style="margin-top:6px;font-size:13px;color:#6a746f;">'+esc(CURSO_FIJO)+' · '+esc(PROFESOR_FIJO)+'</div>'+
       '<button type="button" class="ejBtn" style="margin-top:8px;" onclick="go(0)">editar datos del grupo</button></div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al Pareto</button>'+
+      '<button class="btn" onclick="go(10)">Continuar → Objetivos</button></div></div>';
+  }
+  else if(S.paso===10){
+    armarEspecificos();
+    var oe='';
+    S.especificos.forEach(function(e,i){
+      oe+='<div class="peItem"><div class="peHead"><span class="peTag">OE'+(i+1)+'</span>'+
+          '<span class="peCat">'+esc(e.herramienta||'sin herramienta')+'</span></div>'+
+          '<div class="note" style="margin:0 0 6px;">↳ PE'+(i+1)+': '+esc(e.problema||'—')+'</div>'+
+          '<textarea rows="2" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
+          '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOE('+i+')">proponer borrador</button></div>';
+    });
+    if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
+    h='<div class="card"><h2>10 · Objetivos</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería mediante la aplicación de la gestión por procesos y la mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
+      '<b>OE1:</b> Estandarizar el flujo de trabajo mediante el modelado BPMN (AS-IS → TO-BE) para reducir el tiempo de ciclo del proceso de atención.<br>'+
+      '<b>OE2:</b> Automatizar las tareas repetitivas mediante RPA integrado al ERP para reducir los reprocesos.<br>'+
+      '<b>OE3:</b> Implementar indicadores bajo el modelo SCOR para incrementar la cobertura de control del proceso.<br><br>'+
+      '<i>Fíjate que cada objetivo específico mejora algo distinto. Si los tres dicen lo mismo que el general, están mal.</i></div>'+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
+      '<div class="coordsBox" style="background:#f4f6f2;"><div class="note" style="margin:0 0 6px;">↳ PG: '+esc(S.problemaGeneral||'—')+'</div></div>'+
+      '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
+      '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
+      '<p class="note" style="font-size:12px;margin-top:8px;">El borrador arranca con «Determinar de qué manera…», que siempre es válido. Mejor aún: empieza con un <b>verbo de intervención</b> —Reducir, Estandarizar, Automatizar, Implementar— y nombra la herramienta.</p>'+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Objetivos específicos</div>'+ oe +
+      '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver a Específicos</button>'+
+      '<button class="btn" onclick="go(11)">Continuar → Hipótesis</button></div></div>';
+  }
+  else if(S.paso===11){
+    armarEspecificos();
+    var he='';
+    S.especificos.forEach(function(e,i){
+      he+='<div class="peItem"><div class="peHead"><span class="peTag">HE'+(i+1)+'</span>'+
+          '<span class="peCat">VI: '+esc(e.herramienta||'—')+'</span></div>'+
+          '<div class="note" style="margin:0 0 6px;">↳ OE'+(i+1)+': '+esc(e.objetivo||'—')+'</div>'+
+          '<label>Variable dependiente — ¿qué mejora?</label>'+
+          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso">'+
+          '<label>Indicador de esa variable</label>'+
+          '<input value="'+esc(e.indicador||'')+'" oninput="S.especificos['+i+'].indicador=this.value" placeholder="Ej. % de reducción del tiempo de ciclo (meta 20–25%)">'+
+          '<label>Hipótesis específica</label>'+
+          '<textarea rows="2" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea>'+
+          '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHE('+i+')">proponer borrador</button></div>';
+    });
+    if(!he) he='<p class="note">Aún no hay objetivos específicos. Vuelve al paso 10.</p>';
+    h='<div class="card"><h2>11 · Variables e hipótesis</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">La hipótesis es una <b>afirmación</b>, nunca una pregunta. Necesita variable independiente (lo que aplicas), variable dependiente (lo que mejora) y el contexto.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'hip\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_hip" style="display:none;"><b>HG:</b> La aplicación de la gestión por procesos y la mejora continua reduce significativamente el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
+      '<b>HE1:</b> El rediseño del flujo de trabajo mediante BPMN reduce significativamente el tiempo de ciclo del proceso de atención.<br>'+
+      '<b>HE2:</b> La automatización mediante RPA integrado al ERP reduce significativamente los reprocesos.<br>'+
+      '<b>HE3:</b> La implementación de indicadores bajo el modelo SCOR incrementa significativamente la cobertura de control.<br><br>'+
+      '<i>Indicador general de ejemplo: % de reducción = (Tiempo de atención antes − Tiempo de atención después) / Tiempo de atención antes × 100. Meta ≥ 40%.</i></div>'+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales</div>'+
+      '<div class="row2"><div><label>Variable independiente (lo que aplicas)</label>'+
+      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
+      '<div><label>Variable dependiente (lo que mejora)</label>'+
+      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
+      '<label>Indicador de la variable dependiente</label>'+
+      '<input value="'+esc(S.indicadorGeneral)+'" oninput="S.indicadorGeneral=this.value" placeholder="Ej. % de reducción del tiempo de atención (meta ≥ 40%)">'+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis general</div>'+
+      '<textarea rows="3" oninput="S.hipotesisGeneral=this.value" placeholder="Hipótesis general…">'+esc(S.hipotesisGeneral)+'</textarea>'+
+      '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHG()">proponer borrador</button>'+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis específicas</div>'+ he +
+      '<div class="actions"><button class="btnGhost" onclick="go(10)">← Volver a Objetivos</button>'+
+      '<button class="btn" onclick="go(12)">Continuar → Matriz</button></div></div>';
+  }
+  else if(S.paso===12){
+    armarEspecificos();
+    var filas = filasMatriz();
+    var t='<div style="overflow-x:auto;"><table class="mc"><thead><tr>'+
+          '<th></th><th>Problema</th><th>Objetivo</th><th>Hipótesis</th><th>Variables</th><th>Indicador (VD)</th></tr></thead><tbody>';
+    filas.forEach(function(f){
+      t+='<tr><td class="mcTag">'+esc(f.tag)+'</td><td>'+esc(f.problema||'—')+'</td><td>'+esc(f.objetivo||'—')+'</td>'+
+         '<td>'+esc(f.hipotesis||'—')+'</td><td>'+esc(f.variables||'—')+'</td><td>'+esc(f.indicador||'—')+'</td></tr>';
+    });
+    t+='</tbody></table></div>';
+    var faltan = filas.filter(function(f){ return !f.objetivo || !f.hipotesis || !f.indicador; }).length;
+    var aviso = faltan ? '<p class="hintWarn">Hay '+faltan+' fila(s) incompleta(s). La matriz solo sirve si está completa.</p>' : '';
+    h='<div class="card"><h2>12 · Matriz de consistencia</h2>'+
+      '<p class="note">Esta matriz no se llena: se arma sola con lo que ya escribiste. Léela por filas — si una fila no se sostiene, el problema está arriba, no aquí.</p>'+
+      aviso + t +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">'+
+      '<button type="button" class="ejBtn" onclick="copiarMatriz()">copiar para Excel</button></div>'+
+      '<textarea id="f_matrizTSV" style="position:absolute;left:-9999px;top:0;" readonly>'+esc(matrizTSV())+'</textarea>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(11)">← Volver a Hipótesis</button>'+
       '<button class="btn" onclick="guardar()" id="btnGuardar">Guardar en QuintaDB</button></div></div>';
   }
   c.innerHTML=h;
@@ -1534,16 +1644,138 @@ function renombrarCategoria(ci,nuevo){
 
 // Construye 3 problemas específicos desde las subcausas priorizadas en el Pareto
 // (preservando problema/herramienta ya editados por subcausa).
+// ============================================================
+//  PASOS 10-12 · Objetivos, hipótesis y matriz de consistencia
+//  Los "borradores" son eso: un punto de partida. El alumno los
+//  edita y debe poder sustentarlos. No son textos finales.
+// ============================================================
+
+function limpiarPregunta(t){
+  return String(t||'').trim()
+    .replace(/^\s*¿\s*/,'')
+    .replace(/\s*\?\s*$/,'')
+    .replace(/^de\s+qu[eé]\s+manera\s+/i,'')
+    .trim();
+}
+
+function contextoEmpresa(){
+  var e = S.empresa ? ('en la '+S.empresa) : 'en la empresa';
+  return e + ', en el periodo ' + periodo() + '.';
+}
+
+function borradorObjetivo(pregunta){
+  var r = limpiarPregunta(pregunta);
+  return r ? ('Determinar de qué manera ' + r + '.') : '';
+}
+
+function proponerOG(){
+  if(!S.problemaGeneral){ toast('Primero formula el problema general (paso 7)', true); return; }
+  S.objetivoGeneral = borradorObjetivo(S.problemaGeneral);
+  render(); toast('Borrador propuesto — edítalo con tus palabras');
+}
+
+function proponerOE(i){
+  var e = S.especificos[i];
+  if(!e || !e.problema){ toast('Ese problema específico está vacío (paso 9)', true); return; }
+  e.objetivo = borradorObjetivo(e.problema);
+  render(); toast('Borrador propuesto — edítalo con tus palabras');
+}
+
+function borradorHipotesis(vi, vd){
+  if(!vi || !vd) return '';
+  return vi.charAt(0).toUpperCase() + vi.slice(1) +
+         ' mejora significativamente ' + vd + ' ' + contextoEmpresa();
+}
+
+function proponerHG(){
+  if(!S.varInd || !S.varDep){ toast('Declara primero las dos variables generales', true); return; }
+  S.hipotesisGeneral = borradorHipotesis(S.varInd, S.varDep);
+  render(); toast('Borrador propuesto — ajusta el verbo si no es "mejora"');
+}
+
+function proponerHE(i){
+  var e = S.especificos[i];
+  if(!e){ return; }
+  if(!e.herramienta || !e.vd){ toast('Faltan la herramienta (paso 9) o la variable dependiente', true); return; }
+  e.hipotesis = borradorHipotesis('la aplicación de '+e.herramienta, e.vd);
+  render(); toast('Borrador propuesto — ajusta el verbo si no es "mejora"');
+}
+
+// Filas de la matriz: la general y una por cada específico.
+function filasMatriz(){
+  var f = [{
+    tag:'General',
+    problema:S.problemaGeneral||'',
+    objetivo:S.objetivoGeneral||'',
+    hipotesis:S.hipotesisGeneral||'',
+    variables:(S.varInd||'—')+' → '+(S.varDep||'—'),
+    indicador:S.indicadorGeneral||''
+  }];
+  S.especificos.forEach(function(e,i){
+    f.push({
+      tag:'E'+(i+1),
+      problema:e.problema||'',
+      objetivo:e.objetivo||'',
+      hipotesis:e.hipotesis||'',
+      variables:(e.herramienta||'—')+' → '+(e.vd||'—'),
+      indicador:e.indicador||''
+    });
+  });
+  return f;
+}
+
+// Texto separado por tabuladores: al pegarlo en Excel cae en celdas.
+function matrizTSV(){
+  var enc = ['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)'].join('\t');
+  var filas = filasMatriz().map(function(f){
+    return [f.tag,f.problema,f.objetivo,f.hipotesis,f.variables,f.indicador]
+           .map(function(x){ return String(x||'').replace(/[\t\r\n]+/g,' '); }).join('\t');
+  });
+  return [enc].concat(filas).join('\n');
+}
+
+function copiarMatriz(){
+  var ta = document.getElementById('f_matrizTSV');
+  if(!ta) return;
+  function ok(){ toast('Matriz copiada — pégala en Excel con Ctrl+V'); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(ok, manual);
+  } else { manual(); }
+  function manual(){
+    try {
+      ta.style.position='static'; ta.style.left='auto';
+      ta.removeAttribute('readonly'); ta.focus(); ta.select();
+      var hecho = document.execCommand('copy');
+      ta.setAttribute('readonly','readonly');
+      ta.style.position='absolute'; ta.style.left='-9999px';
+      if(hecho){ ok(); return; }
+    } catch(e){}
+    toast('No se pudo copiar automáticamente. Usa Ctrl+C.', true);
+  }
+}
+
 function armarEspecificos(){
   var previos={};
-  S.especificos.forEach(function(e){ if(e.sub) previos[e.categoria+'|'+e.causa+'|'+e.sub]=e; });
+  // Se indexa siempre (aunque no haya subcausa): si no, cada re-render borraba
+  // lo escrito cuando el Pareto trabaja a nivel de causa.
+  S.especificos.forEach(function(e){ previos[e.categoria+'|'+e.causa+'|'+(e.sub||'')]=e; });
   var lista=[];
   S.priorizadas.forEach(function(p){
     if(!p) return;
-    var k=p.categoria+'|'+p.causa+'|'+p.sub;
-    lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub, problema:'', herramienta:''});
+    var k=p.categoria+'|'+p.causa+'|'+(p.sub||'');
+    lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub,
+                             problema:'', herramienta:'', objetivo:'', vd:'',
+                             hipotesis:'', indicador:''});
   });
   S.especificos=lista;
+}
+
+// Vuelca un campo de S.especificos a texto, uno por línea, con su rótulo.
+// Ej.: serializarLista('objetivo','OE') -> "OE1 ...\nOE2 ..."
+function serializarLista(campo, rotulo){
+  return S.especificos.map(function(e,i){
+    return rotulo+(i+1)+': '+(e[campo]||'');
+  }).filter(function(l){ return l.split(': ')[1]; }).join('\n');
 }
 
 // Serializa los específicos a texto (uno por línea) para el campo de QuintaDB
@@ -1574,7 +1806,11 @@ function serializarEstado(){
     nivelPareto:S.nivelPareto,
     paretoFreq:S.paretoFreq,
     priorizadas:S.priorizadas,
-    especificos:S.especificos
+    especificos:S.especificos,
+    objetivoGeneral:S.objetivoGeneral,
+    varInd:S.varInd, varDep:S.varDep,
+    indicadorGeneral:S.indicadorGeneral,
+    hipotesisGeneral:S.hipotesisGeneral
   });
 }
 
@@ -1596,6 +1832,11 @@ function restaurarEstado(json){
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
   if(d.especificos){ S.especificos=d.especificos; }
+  S.objetivoGeneral   = d.objetivoGeneral   || '';
+  S.varInd            = d.varInd            || '';
+  S.varDep            = d.varDep            || '';
+  S.indicadorGeneral  = d.indicadorGeneral  || '';
+  S.hipotesisGeneral  = d.hipotesisGeneral  || '';
   return true;
 }
 
@@ -1639,6 +1880,14 @@ function guardar(){
     ciclo:S.ciclo,
     numero_grupo:S.numeroGrupo,
     coordinador:S.coordinador,
+    objetivo_general:S.objetivoGeneral,
+    objetivos_especificos:serializarLista('objetivo','OE'),
+    hipotesis_general:S.hipotesisGeneral,
+    hipotesis_especificas:serializarLista('hipotesis','HE'),
+    variable_independiente:S.varInd,
+    variable_dependiente:S.varDep,
+    indicador_general:S.indicadorGeneral,
+    indicadores_especificos:serializarLista('indicador','IND'),
     estructura:serializarEstado(),
     consecuencia:S.consecuenciaSintoma,
     correos:[SESION.email, S.correoCompanero].filter(function(x){ return x; }).join(', ')
