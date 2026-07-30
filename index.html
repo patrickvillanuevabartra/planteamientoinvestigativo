@@ -129,6 +129,8 @@
   .grupoBar .acts{display:flex;gap:8px;}
   .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
   .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
+  .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
+  .btnDel:hover{background:#fbf1ee;}
   @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
   .authWrap{position:fixed;inset:0;background:#f7f5f0;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
   .authCard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:32px 30px;max-width:430px;width:100%;text-align:center;}
@@ -165,6 +167,7 @@
   <div class="tabs">
     <button class="tab on" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
     <button class="tab" id="tabLista" onclick="mostrarTab('lista')">Planteamientos guardados</button>
+    <button class="btnMini" style="margin-left:auto;align-self:center;" onclick="nuevoPlanteamiento()">＋ Nuevo desde cero</button>
   </div>
 
   <!-- ============ VISTA FLUJO ============ -->
@@ -307,25 +310,50 @@ function extraerCoords(url){
 // ============================================================
 //  ESTADO
 // ============================================================
-var S = {
-  paso:0,
-  // Registro del grupo (paso 0)
-  ciclo:'', numeroGrupo:'', coordinador:'',
-  // Descripción del problema — 5 aspectos exigidos por el Manual URP 2020 (p.8)
-  probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
-  problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
-  pretest:'', test:'', postest:'',
-  proposito:'', lineaIdx:null, adoptada:null, lineaCustom:false, lineaCustomTexto:'',
-  tema:'', problemaGeneral:'', efectoCentral:'', consecuenciaSintoma:'',
-  categorias: CATEGORIAS.slice(),   // 6M editables
-  causas:{}, especificos:[],
-  correoCompanero:'',
-  nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
-  paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
-  priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
-  estudiante:'', curso:'', recordId:null
-};
-S.categorias.forEach(function(c){ S.causas[c]=[]; });   // cada causa: {txt, subs:[]}
+function estadoInicial(){
+  var e = {
+    paso:0,
+    // Registro del grupo (paso 0)
+    ciclo:'', numeroGrupo:'', coordinador:'',
+    // Descripción del problema — 5 aspectos exigidos por el Manual URP 2020 (p.8)
+    probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
+    problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
+    pretest:'', test:'', postest:'',
+    proposito:'', lineaIdx:null, adoptada:null, lineaCustom:false, lineaCustomTexto:'',
+    tema:'', problemaGeneral:'', efectoCentral:'', consecuenciaSintoma:'',
+    categorias: CATEGORIAS.slice(),   // 6M editables
+    causas:{}, especificos:[],
+    correoCompanero:'',
+    nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
+    paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
+    priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
+    estudiante:'', curso:'', recordId:null
+  };
+  e.categorias.forEach(function(c){ e.causas[c]=[]; });   // cada causa: {txt, subs:[]}
+  return e;
+}
+
+var S = estadoInicial();
+
+// Deja S en blanco SIN cambiar la referencia global.
+function reiniciarEstado(){
+  var limpio = estadoInicial();
+  for (var k in S) { if (S.hasOwnProperty(k)) delete S[k]; }
+  for (var k2 in limpio) { if (limpio.hasOwnProperty(k2)) S[k2] = limpio[k2]; }
+}
+
+// "Nuevo desde cero": el botón de la pestaña solo cambia de vista, no borra.
+// Esto sí arranca un planteamiento en blanco, avisando antes.
+function nuevoPlanteamiento(){
+  var hayAlgo = !!(S.recordId || S.problemaEmpresa || S.empresa || S.proposito ||
+                   S.tema || S.problemaGeneral || S.coordinador);
+  if (hayAlgo && !confirm('Vas a empezar un planteamiento NUEVO, en blanco.\n\n'+
+      'Lo que tengas en pantalla sin guardar se pierde. ¿Continuar?')) return;
+  reiniciarEstado();
+  mostrarTab('flujo');
+  go(0);
+  toast('Planteamiento nuevo — empieza por los datos del grupo');
+}
 
 function lineaTexto(){
   if(S.lineaCustom) return S.lineaCustomTexto ? S.lineaCustomTexto.trim() : null;
@@ -1769,6 +1797,7 @@ function cargarLista(){
     var recs = (res.data && res.data.records) ? res.data.records : [];
     if(!recs.length){ cont.innerHTML='<p class="note">Aún no hay planteamientos guardados.</p>'; return; }
     var h='';
+    _etiquetas={};
     // más recientes primero
     recs.slice().reverse().forEach(function(rec){
       var v=rec.values||{};
@@ -1776,6 +1805,7 @@ function cargarLista(){
       var ciclo=g('ciclo'), ngrupo=g('numero_grupo'), coord=g('coordinador');
       var grupoLinea = (ngrupo?('Grupo '+ngrupo):'') + (coord?(' · '+coord):'');
       if(!grupoLinea) grupoLinea = g('estudiante_grupo')||'—';
+      _etiquetas[rec.id] = (grupoLinea||'') + (g('empresa')?(' — '+g('empresa')):'');
       h+='<div class="listItem">'+
          '<div class="listMeta">'+
          (ciclo?'<span class="badge">'+esc(ciclo)+'</span>':'')+
@@ -1784,13 +1814,37 @@ function cargarLista(){
          '<span>'+esc(g('fecha_registro')||'')+'</span></div>'+
          '<div class="listTema">'+esc(g('tema')||g('problema_general')||'(sin tema)')+'</div>'+
          '<div class="listPg">'+esc(g('problema_general')||'')+'</div>'+
-         '<button class="btnMini" style="margin-top:10px;" onclick="continuarEdicion(\''+rec.id+'\')">Continuar edición →</button>'+
-         '</div>';
+         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+
+         '<button class="btnMini" onclick="continuarEdicion(&quot;'+rec.id+'&quot;)">Continuar edición →</button>'+
+         '<button class="btnDel" onclick="eliminarPlanteamiento(&quot;'+rec.id+'&quot;)">Eliminar</button>'+
+         '</div></div>';
     });
     cont.innerHTML=h;
   }, function(f){
     cont.innerHTML='<p class="hintWarn">Error de red al cargar.<br><small>'+
                    esc(textoFallo(f))+'</small></p>';
+  });
+}
+
+// Etiquetas del listado, solo para el mensaje de confirmación al eliminar.
+var _etiquetas={};
+
+function eliminarPlanteamiento(recId){
+  var et = _etiquetas[recId] ? ('\n\n'+_etiquetas[recId]) : '';
+  if(!confirm('Vas a ELIMINAR este planteamiento.'+et+
+     '\n\nEsta acción no se puede deshacer. ¿Continuar?')) return;
+  toast('Eliminando…');
+  jsonpCall({ action:'eliminar', record_id:recId }, function(res){
+    if(!res || !res.ok){
+      toast('No se pudo eliminar'+((res&&res.error)?': '+res.error:''), true);
+      return;
+    }
+    // Si era el que estaba abierto en el formulario, se limpia la pantalla.
+    if(S.recordId === recId) reiniciarEstado();
+    toast('✓ Planteamiento eliminado');
+    cargarLista();
+  }, function(f){
+    toast('Error de red al eliminar. '+textoFallo(f), true);
   });
 }
 
