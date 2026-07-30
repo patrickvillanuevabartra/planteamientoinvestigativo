@@ -1609,19 +1609,77 @@ function salirSesion(){
   location.reload();
 }
 
+// Guarda el detalle del ultimo fallo para poder mostrarlo en pantalla.
+var ULTIMO_FALLO = null;
+
+// jsonpCall con diagnostico: distingue los tres modos de fallo posibles y
+// escribe el motivo en ULTIMO_FALLO ademas de la consola.
+//   A) el <script> no carga            -> fallo HTTP / red (p.ej. 400, 403, 500)
+//   B) carga pero no llama al callback -> respondio algo que no es nuestro JSONP
+//                                         (tipicamente una pagina HTML de Google)
+//   C) no pasa nada en 20 s            -> se quedo colgado
 function jsonpCall(params, onOk, onErr){
   _jsonpId++;
   var cbName='_pi_cb_'+_jsonpId;
-  var timer=setTimeout(function(){ cleanup(); if(onErr)onErr(); }, 20000);
-  window[cbName]=function(data){ cleanup(); if(onOk)onOk(data); };
-  function cleanup(){ clearTimeout(timer); try{delete window[cbName];}catch(e){} if(sc&&sc.parentNode)sc.parentNode.removeChild(sc); }
+  var t0=new Date().getTime();
+  var cargo=false, cerrado=false;
+  var sc=document.createElement('script');
+
+  function cleanup(){
+    clearTimeout(timer);
+    try{ delete window[cbName]; }catch(e){ window[cbName]=undefined; }
+    if(sc&&sc.parentNode) sc.parentNode.removeChild(sc);
+  }
+
+  function fallar(motivo){
+    if(cerrado) return; cerrado=true;
+    var ms=new Date().getTime()-t0;
+    var url=sc.src;
+    cleanup();
+    ULTIMO_FALLO={ motivo:motivo, ms:ms, url:url, accion:(params.action||'listar') };
+    try{
+      console.error('[jsonpCall] '+motivo+'  ·  '+ms+' ms  ·  accion: '+(params.action||'listar'));
+      console.error('[jsonpCall] URL completa: '+url);
+    }catch(e){}
+    if(onErr) onErr(ULTIMO_FALLO);
+  }
+
+  var timer=setTimeout(function(){
+    fallar(cargo ? 'respondio, pero el contenido no era la respuesta esperada'
+                 : 'no respondio en 20 s');
+  }, 20000);
+
+  window[cbName]=function(data){
+    if(cerrado) return; cerrado=true;
+    cleanup();
+    if(onOk) onOk(data);
+  };
+
   var qs='callback='+cbName;
   if (params.action !== 'login' && SESION.sid) qs += '&sid=' + SESION.sid;
   for(var k in params){ qs+='&'+k+'='+params[k]; }
-  var sc=document.createElement('script');
   sc.src=PROXY_URL+'?'+qs;
-  sc.onerror=function(){ cleanup(); if(onErr)onErr(); };
+
+  sc.onerror=function(){
+    fallar('el navegador no pudo cargar la respuesta (fallo HTTP o de red)');
+  };
+  // Si el script se ejecuto pero el callback no corrio, lo que llego no era
+  // nuestro JSONP. Se comprueba en el tick siguiente, sin esperar los 20 s.
+  sc.onload=function(){
+    cargo=true;
+    setTimeout(function(){
+      fallar('respondio, pero el contenido no era la respuesta esperada '+
+             '(probablemente una pagina de Google, no nuestro JSON)');
+    }, 60);
+  };
+
   document.body.appendChild(sc);
+}
+
+// Frase corta para pintar debajo del mensaje de error en pantalla.
+function textoFallo(f){
+  if(!f || !f.motivo) return '';
+  return 'Motivo: '+f.motivo+' ('+f.ms+' ms). Detalle completo en la consola (F12).';
 }
 function pad(n){ return n<10?'0'+n:''+n; }
 
@@ -1655,7 +1713,10 @@ function cargarLista(){
          '</div>';
     });
     cont.innerHTML=h;
-  }, function(){ cont.innerHTML='<p class="hintWarn">Error de red al cargar.</p>'; });
+  }, function(f){
+    cont.innerHTML='<p class="hintWarn">Error de red al cargar.<br><small>'+
+                   esc(textoFallo(f))+'</small></p>';
+  });
 }
 
 // "Continuar edición": el listado ya NO trae la estructura completa, así que
