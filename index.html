@@ -26,9 +26,9 @@
   .stepper{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
            padding:16px 0 18px;margin-bottom:24px;}
   .rutaTop{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px;}
-  .rutaPaso{font-size:12px;font-weight:600;color:var(--ink);letter-spacing:.01em;}
+  .rutaPaso{font-size:13.5px;font-weight:600;color:var(--ink);letter-spacing:.01em;}
   .rutaPaso b{color:var(--teal);}
-  .rutaPct{font-size:11px;color:#8a948f;font-variant-numeric:tabular-nums;}
+  .rutaPct{font-size:12px;color:#8a948f;font-variant-numeric:tabular-nums;}
   /* Carril por fases: cada tramo lleva el color de su fase y se llena solo.
      Así la propia barra enseña el código de color, sin leyenda aparte. */
   .rail{display:flex;gap:3px;margin-bottom:18px;}
@@ -37,25 +37,25 @@
                transition:width .5s cubic-bezier(.22,.61,.36,1);}
 
   /* Cada fase es un área cerrada, con su tinte y su borde. */
-  .fases{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:12px;align-items:start;}
+  .fases{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;align-items:start;}
   .fase{background:var(--fb);border:1px solid var(--fl);border-radius:11px;
         padding:11px 12px 13px;transition:box-shadow .2s ease,border-color .2s ease;}
   .fase.actual{border-color:var(--f);box-shadow:0 4px 16px rgba(28,42,51,.10);}
-  .faseTit{display:flex;align-items:flex-start;gap:7px;margin-bottom:9px;
-           min-height:26px;line-height:1.35;
-           font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  .faseTit{display:flex;align-items:flex-start;gap:7px;margin-bottom:10px;
+           min-height:28px;line-height:1.35;
+           font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
            font-weight:700;color:var(--f);}
   .faseDot{width:7px;height:7px;border-radius:50%;background:var(--f);
            flex-shrink:0;margin-top:3px;}
   .fasePasos{display:flex;gap:6px;flex-wrap:wrap;}
 
-  .pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 15px 6px 6px;
         border-radius:99px;border:1px solid var(--fl);background:#fff;color:#7d8782;
-        font-family:'Poppins',sans-serif;font-size:12.5px;line-height:1;cursor:pointer;
+        font-family:'Poppins',sans-serif;font-size:14px;line-height:1;cursor:pointer;
         white-space:nowrap;transition:transform .16s ease,border-color .16s ease,
         background .16s ease,color .16s ease,box-shadow .16s ease;}
-  .pill .num{width:21px;height:21px;border-radius:50%;display:grid;place-items:center;
-             font-size:11px;font-weight:600;background:#f1f4f0;color:#98a29c;
+  .pill .num{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;
+             font-size:12.5px;font-weight:600;background:#f1f4f0;color:#98a29c;
              flex-shrink:0;transition:inherit;}
   .pill:hover{transform:translateY(-2px);border-color:var(--f);color:var(--ink);
               box-shadow:0 3px 10px rgba(28,42,51,.12);}
