@@ -37,14 +37,16 @@
                transition:width .5s cubic-bezier(.22,.61,.36,1);}
 
   /* Cada fase es un área cerrada, con su tinte y su borde. */
-  .fases{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;}
+  .fases{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:12px;align-items:start;}
   .fase{background:var(--fb);border:1px solid var(--fl);border-radius:11px;
         padding:11px 12px 13px;transition:box-shadow .2s ease,border-color .2s ease;}
   .fase.actual{border-color:var(--f);box-shadow:0 4px 16px rgba(28,42,51,.10);}
-  .faseTit{display:flex;align-items:center;gap:7px;margin-bottom:9px;
+  .faseTit{display:flex;align-items:flex-start;gap:7px;margin-bottom:9px;
+           min-height:26px;line-height:1.35;
            font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
            font-weight:700;color:var(--f);}
-  .faseDot{width:7px;height:7px;border-radius:50%;background:var(--f);flex-shrink:0;}
+  .faseDot{width:7px;height:7px;border-radius:50%;background:var(--f);
+           flex-shrink:0;margin-top:3px;}
   .fasePasos{display:flex;gap:6px;flex-wrap:wrap;}
 
   .pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;
@@ -457,12 +459,15 @@ function mostrarTab(cual){
 // misma fase responden a la misma pregunta, y así la fila nunca queda con
 // dos píldoras perdidas en los extremos.
 var FASES = [
-  // El color va de cálido a frío siguiendo el recorrido intelectual: se empieza
-  // en el desorden de la empresa y se termina en la matriz formalizada.
-  { titulo:'Problema',    desde:1,  hasta:3,  color:'#b4552f', tinte:'#f8ece6', linea:'#e8cfc2' },
-  { titulo:'Encuadre',    desde:4,  hasta:5,  color:'#8d7526', tinte:'#f7f2e3', linea:'#e3d9b9' },
-  { titulo:'Causas',      desde:6,  hasta:9,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
-  { titulo:'Formulación', desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
+  // Los tramos son contiguos, así que 6-9 mezcla análisis (Ishikawa, Pareto) con
+  // formulación (problema general y específicos). El nombre cubre las dos cosas:
+  // es la fase donde el problema se analiza Y se redacta.
+  // El color va de cálido a frío siguiendo el recorrido: del desorden de la
+  // empresa a la matriz formalizada.
+  { titulo:'Diagnóstico',            desde:1,  hasta:3,  color:'#b4552f', tinte:'#f8ece6', linea:'#e8cfc2' },
+  { titulo:'Encuadre',               desde:4,  hasta:5,  color:'#8d7526', tinte:'#f7f2e3', linea:'#e3d9b9' },
+  { titulo:'Problema',               desde:6,  hasta:9,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
+  { titulo:'Objetivos e hipótesis',  desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
 ];
 
 function faseDe(n){
