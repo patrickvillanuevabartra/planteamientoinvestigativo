@@ -68,6 +68,13 @@
             box-shadow:0 4px 14px rgba(28,42,51,.24);}
   .pill.now .num{background:var(--f);color:#fff;}
   .pill.now:hover{transform:none;box-shadow:0 4px 14px rgba(28,42,51,.24);}
+  /* Hitos: el primer y el último paso llevan marca fija, para que el inicio y el
+     fin del recorrido se vean siempre, sin depender de dónde esté el alumno. */
+  .pill.hito{border-width:1.5px;border-color:var(--f);}
+  .pill.hito .num{background:var(--f);color:#fff;}
+  .hitoLbl{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+           font-weight:700;color:var(--f);opacity:.85;margin-left:1px;}
+  .pill.now .hitoLbl{color:#fff;opacity:.75;}
   @media(prefers-reduced-motion:reduce){
     .pill,.railSegFill{transition:none;}
     .pill:hover{transform:none;}
@@ -462,12 +469,13 @@ var FASES = [
   // Los tramos son contiguos, así que 6-9 mezcla análisis (Ishikawa, Pareto) con
   // formulación (problema general y específicos). El nombre cubre las dos cosas:
   // es la fase donde el problema se analiza Y se redacta.
-  // El color va de cálido a frío siguiendo el recorrido: del desorden de la
-  // empresa a la matriz formalizada.
+  // El recorrido abre y cierra en la misma familia de color: la matriz de
+  // consistencia verifica que todo siga apuntando al problema del que se partió.
+  // El cierre es un tono más profundo que la apertura, para distinguirlos.
   { titulo:'Diagnóstico',            desde:1,  hasta:3,  color:'#b4552f', tinte:'#f8ece6', linea:'#e8cfc2' },
   { titulo:'Encuadre',               desde:4,  hasta:5,  color:'#8d7526', tinte:'#f7f2e3', linea:'#e3d9b9' },
   { titulo:'Problema',               desde:6,  hasta:9,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
-  { titulo:'Objetivos, hipótesis y matriz', desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
+  { titulo:'Objetivos, hipótesis y matriz', desde:10, hasta:12, color:'#8e3f1f', tinte:'#f5e5dc', linea:'#e0c3b3' }
 ];
 
 function faseDe(n){
@@ -509,11 +517,15 @@ function renderStepper(){
          '<div class="fasePasos">';
     for(var n=f.desde; n<=f.hasta; n++){
       var cls = n===S.paso ? 'now' : (n<S.paso ? 'done' : '');
+      var hito = (n===1) ? 'inicio' : (n===total ? 'fin' : '');
+      if(hito) cls += ' hito';
       h += '<button type="button" class="pill '+cls+'" onclick="irAPaso('+n+')" '+
-           'title="Ir al paso '+n+': '+esc(PASOS_NOMBRES[n-1])+'"'+
+           'title="Ir al paso '+n+': '+esc(PASOS_NOMBRES[n-1])+
+           (hito?' ('+hito+' del recorrido)':'')+'"'+
            (n===S.paso?' aria-current="step"':'')+'>'+
            '<span class="num">'+n+'</span>'+
-           '<span class="txt">'+esc(PASOS_NOMBRES[n-1])+'</span></button>';
+           '<span class="txt">'+esc(PASOS_NOMBRES[n-1])+'</span>'+
+           (hito?'<span class="hitoLbl">'+hito+'</span>':'')+'</button>';
     }
     h += '</div></div>';
   });
