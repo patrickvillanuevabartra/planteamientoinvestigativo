@@ -643,10 +643,10 @@ function render(){
   else if(S.paso===3){
     h='<div class="card"><h2>03 · Propósito de la investigación</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">¿Qué busca lograr la investigación? Escríbelo en tus palabras, en infinitivo (empieza con un verbo: reducir, optimizar, mejorar…) y nombra el indicador que se quiere mover.</p>'+
+      '<p class="note" style="margin:0;">¿Qué busca lograr la investigación? Escríbelo en tus palabras, en infinitivo (empieza con un verbo: reducir, disminuir, incrementar) y nombra el indicador que se quiere mover. Evita <b>optimizar</b> o <b>mejorar</b>: no dicen si el indicador sube o baja, y sin dirección no se puede medir. Aquí no va la herramienta — esa entra en el tema (paso 5).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
-      'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la Empresa Alfa S.A.C.'+
+      'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda en la Empresa Alfa S.A.C.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
       '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
@@ -695,7 +695,7 @@ function render(){
       '<p class="note" style="margin:0;">El tema combina tu prop\u00f3sito con la l\u00ednea, la empresa y el periodo. Puedes editarlo.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_tem" style="display:none;">'+
-      'Optimizaci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.'+
+      'Reducci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y la mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[lo que se quiere lograr]</b> mediante <b>[la l\u00ednea]</b> en <b>[d\u00f3nde]</b>, en <b>[el periodo]</b>. Es afirmativo y sin signos de pregunta.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Adaptado de un trabajo real del curso (car\u00e1tula del trabajo, reordenada seg\u00fan esta f\u00f3rmula); la empresa se mantiene en reserva.</p>'+
       '</div>'+
@@ -934,7 +934,7 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería mediante la aplicación de la gestión por procesos y la mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
+      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
       '<b>OE1:</b> Estandarizar el flujo de trabajo mediante el modelado BPMN (AS-IS → TO-BE) para reducir el tiempo de ciclo del proceso de atención.<br>'+
       '<b>OE2:</b> Automatizar las tareas repetitivas mediante RPA integrado al ERP para reducir los reprocesos.<br>'+
       '<b>OE3:</b> Implementar indicadores bajo el modelo SCOR para incrementar la cobertura de control del proceso.<br><br>'+
@@ -944,7 +944,7 @@ function render(){
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
-      '<p class="note" style="font-size:12px;margin-top:8px;">El borrador arranca con «Determinar de qué manera…», que siempre es válido. Mejor aún: empieza con un <b>verbo de intervención</b> —Reducir, Estandarizar, Automatizar, Implementar— y nombra la herramienta.</p>'+
+      '<p class="note" style="font-size:12px;margin-top:8px;">El objetivo general es tu <b>propósito</b> (paso 3) con el contexto añadido: mismo verbo, mismo indicador. <b>No lleva «mediante»</b> — la herramienta general ya está en el tema, y repetirla aquí hace que objetivo y tema digan lo mismo.<br>Los específicos sí nombran su herramienta, porque cada una aparece solo ahí.</p>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivos específicos</div>'+ oe +
       '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver a Específicos</button>'+
@@ -1773,10 +1773,14 @@ function borradorObjetivo(pregunta){
   return r ? ('Determinar de qué manera ' + r + '.') : '';
 }
 
+// El objetivo general nace del propósito (paso 3), no del problema general:
+// mismo verbo y mismo indicador, más el contexto. Así no se solapa con el tema.
 function proponerOG(){
-  if(!S.problemaGeneral){ toast('Primero formula el problema general (paso 8)', true); return; }
-  S.objetivoGeneral = borradorObjetivo(S.problemaGeneral);
-  render(); toast('Borrador propuesto — edítalo con tus palabras');
+  var pr = String(S.proposito||'').trim();
+  if(!pr){ toast('Primero escribe el propósito (paso 3)', true); return; }
+  pr = pr.replace(/\s*[.;]+\s*$/,'');
+  S.objetivoGeneral = pr + ' ' + contextoEmpresa();
+  render(); toast('Borrador tomado del propósito — revísalo');
 }
 
 function proponerOE(i){
@@ -1811,6 +1815,7 @@ function proponerHE(i){
 function visorDefinido(){
   var f = [];
   if (lineaTexto()) f.push(['L\u00ednea', lineaTexto()]);
+  if (S.proposito)  f.push(['Propósito', S.proposito]);
   if (S.tema)       f.push(['Tema', S.tema]);
   f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 8)']);
 
