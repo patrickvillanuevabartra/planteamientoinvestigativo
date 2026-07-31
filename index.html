@@ -129,6 +129,13 @@
   .grupoBar .acts{display:flex;gap:8px;}
   .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
   .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
+  .visor{background:#eef5f4;border:1px solid #d7e4e1;border-radius:5px;padding:12px 14px;margin:14px 0 4px;}
+  .visorTit{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:8px;}
+  .visorFila{display:flex;gap:12px;padding:5px 0;border-top:1px solid #dbe7e4;font-size:13.5px;line-height:1.5;}
+  .visorFila:first-of-type{border-top:none;}
+  .visorEt{flex:0 0 130px;color:#6a746f;font-weight:600;font-size:12px;padding-top:1px;}
+  .visorVal{flex:1;color:#333d38;}
+  @media(max-width:640px){ .visorFila{flex-direction:column;gap:2px;} .visorEt{flex:none;} }
   .mc{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;}
   .mc th{background:#2f3b37;color:#fff;text-align:left;padding:8px 10px;font-weight:600;font-size:12px;}
   .mc td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;line-height:1.45;}
@@ -809,14 +816,6 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Identificación (registrada al inicio)</div>'+
-      '<div class="coordsBox" style="background:#eef5f4;">'+
-      '<div style="display:flex;flex-wrap:wrap;gap:8px 24px;">'+
-      '<span><b>Ciclo:</b> '+esc(S.ciclo||'—')+'</span>'+
-      '<span><b>Grupo N°:</b> '+esc(S.numeroGrupo||'—')+'</span>'+
-      '<span><b>Coordinador(a):</b> '+esc(S.coordinador||'—')+'</span></div>'+
-      '<div style="margin-top:6px;font-size:13px;color:#6a746f;">'+esc(CURSO_FIJO)+' · '+esc(PROFESOR_FIJO)+'</div>'+
-      '<button type="button" class="ejBtn" style="margin-top:8px;" onclick="go(0)">editar datos del grupo</button></div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al Pareto</button>'+
       '<button class="btn" onclick="go(10)">Continuar → Objetivos</button></div></div>';
   }
@@ -841,8 +840,8 @@ function render(){
       '<b>OE3:</b> Implementar indicadores bajo el modelo SCOR para incrementar la cobertura de control del proceso.<br><br>'+
       '<i>Fíjate que cada objetivo específico mejora algo distinto. Si los tres dicen lo mismo que el general, están mal.</i></div>'+
 
+      visorDefinido()+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
-      '<div class="coordsBox" style="background:#f4f6f2;"><div class="note" style="margin:0 0 6px;">↳ PG: '+esc(S.problemaGeneral||'—')+'</div></div>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<p class="note" style="font-size:12px;margin-top:8px;">El borrador arranca con «Determinar de qué manera…», que siempre es válido. Mejor aún: empieza con un <b>verbo de intervención</b> —Reducir, Estandarizar, Automatizar, Implementar— y nombra la herramienta.</p>'+
@@ -877,6 +876,7 @@ function render(){
       '<b>HE3:</b> La implementación de indicadores bajo el modelo SCOR incrementa significativamente la cobertura de control.<br><br>'+
       '<i>Indicador general de ejemplo: % de reducción = (Tiempo de atención antes − Tiempo de atención después) / Tiempo de atención antes × 100. Meta ≥ 40%.</i></div>'+
 
+      visorDefinido()+
       '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales</div>'+
       '<div class="row2"><div><label>Variable independiente (lo que aplicas)</label>'+
       '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
@@ -1699,6 +1699,32 @@ function proponerHE(i){
   if(!e.herramienta || !e.vd){ toast('Faltan la herramienta (paso 9) o la variable dependiente', true); return; }
   e.hipotesis = borradorHipotesis('la aplicación de '+e.herramienta, e.vd);
   render(); toast('Borrador propuesto — ajusta el verbo si no es "mejora"');
+}
+
+// Visor de solo lectura: recuerda lo que ya quedó definido en los pasos
+// anteriores, para no tener que retroceder a consultarlo.
+function visorDefinido(){
+  var f = [];
+  if (lineaTexto()) f.push(['L\u00ednea', lineaTexto()]);
+  if (S.tema)       f.push(['Tema', S.tema]);
+  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 7)']);
+
+  var h = '<div class="visor"><div class="visorTit">Lo que ya definiste</div>';
+  f.forEach(function(x){
+    h += '<div class="visorFila"><span class="visorEt">'+esc(x[0])+'</span>'+
+         '<span class="visorVal">'+esc(x[1])+'</span></div>';
+  });
+  if (S.especificos.length){
+    S.especificos.forEach(function(e,i){
+      h += '<div class="visorFila"><span class="visorEt">PE'+(i+1)+
+           (e.herramienta ? ' \u00b7 '+esc(e.herramienta) : '')+'</span>'+
+           '<span class="visorVal">'+esc(e.problema||'\u2014 sin redactar (paso 9)')+'</span></div>';
+    });
+  } else {
+    h += '<div class="visorFila"><span class="visorEt">PE</span>'+
+         '<span class="visorVal">\u2014 a\u00fan no hay problemas espec\u00edficos (pasos 8 y 9)</span></div>';
+  }
+  return h + '</div>';
 }
 
 // Filas de la matriz: la general y una por cada específico.
