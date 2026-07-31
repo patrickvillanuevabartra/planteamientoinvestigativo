@@ -63,15 +63,20 @@
   /* ya recorrido: toma el color de su fase */
   .pill.done{border-color:var(--f);color:var(--f);}
   .pill.done .num{background:var(--f);color:#fff;}
+  /* Hitos: el primer y el último paso llevan el mismo formato oscuro, para que
+     el inicio y el fin del recorrido se vean siempre. Se declara antes que
+     .pill.now para que el paso actual conserve su anillo ámbar por encima. */
+  .pill.hito{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;
+             box-shadow:0 4px 14px rgba(28,42,51,.20);}
+  .pill.hito .num{background:var(--f);color:#fff;}
+  .pill.hito:hover{transform:none;color:#fff;box-shadow:0 4px 14px rgba(28,42,51,.20);}
   /* paso actual: el único oscuro de toda la ruta */
   .pill.now{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;
-            box-shadow:0 4px 14px rgba(28,42,51,.24);}
+            box-shadow:0 0 0 2px var(--paper),0 0 0 4px rgba(200,116,59,.55),
+                       0 4px 14px rgba(28,42,51,.24);}
   .pill.now .num{background:var(--f);color:#fff;}
-  .pill.now:hover{transform:none;box-shadow:0 4px 14px rgba(28,42,51,.24);}
-  /* Hitos: el primer y el último paso llevan marca fija, para que el inicio y el
-     fin del recorrido se vean siempre, sin depender de dónde esté el alumno. */
-  .pill.hito{border-width:1.5px;border-color:var(--f);}
-  .pill.hito .num{background:var(--f);color:#fff;}
+  .pill.now:hover{transform:none;box-shadow:0 0 0 2px var(--paper),
+                  0 0 0 4px rgba(200,116,59,.55),0 4px 14px rgba(28,42,51,.24);}
   .hitoLbl{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
            font-weight:700;color:var(--f);opacity:.85;margin-left:1px;}
   .pill.now .hitoLbl{color:#fff;opacity:.75;}
@@ -469,13 +474,12 @@ var FASES = [
   // Los tramos son contiguos, así que 6-9 mezcla análisis (Ishikawa, Pareto) con
   // formulación (problema general y específicos). El nombre cubre las dos cosas:
   // es la fase donde el problema se analiza Y se redacta.
-  // El recorrido abre y cierra en la misma familia de color: la matriz de
-  // consistencia verifica que todo siga apuntando al problema del que se partió.
-  // El cierre es un tono más profundo que la apertura, para distinguirlos.
+  // El color va de cálido a frío siguiendo el recorrido: del desorden de la
+  // empresa a la matriz formalizada.
   { titulo:'Diagnóstico',            desde:1,  hasta:3,  color:'#b4552f', tinte:'#f8ece6', linea:'#e8cfc2' },
   { titulo:'Encuadre',               desde:4,  hasta:5,  color:'#8d7526', tinte:'#f7f2e3', linea:'#e3d9b9' },
   { titulo:'Problema',               desde:6,  hasta:9,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
-  { titulo:'Objetivos, hipótesis y matriz', desde:10, hasta:12, color:'#8e3f1f', tinte:'#f5e5dc', linea:'#e0c3b3' }
+  { titulo:'Objetivos, hipótesis y matriz', desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
 ];
 
 function faseDe(n){
