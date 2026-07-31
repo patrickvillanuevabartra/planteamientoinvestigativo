@@ -77,9 +77,12 @@
   .pill.now .num{background:var(--f);color:#fff;}
   .pill.now:hover{transform:none;box-shadow:0 0 0 2px var(--paper),
                   0 0 0 4px rgba(200,116,59,.55),0 4px 14px rgba(28,42,51,.24);}
-  .hitoLbl{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
-           font-weight:700;color:var(--f);opacity:.85;margin-left:1px;}
-  .pill.now .hitoLbl{color:#fff;opacity:.75;}
+  /* La etiqueta va sobre fondo oscuro: necesita su propia cápsula clara para
+     leerse. En blanco al 75% de opacidad casi desaparecía. */
+  .hitoLbl{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+           color:var(--ink);background:#fff;border-radius:99px;padding:3px 8px;
+           margin-left:3px;line-height:1;}
+  .pill.hito .hitoLbl,.pill.now .hitoLbl{color:var(--ink);background:#fff;opacity:1;}
   @media(prefers-reduced-motion:reduce){
     .pill,.railSegFill{transition:none;}
     .pill:hover{transform:none;}
