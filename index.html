@@ -17,14 +17,56 @@
   h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:32px;line-height:1.15;margin:0 0 10px;}
   .sub{max-width:620px;color:#4a5a60;margin:0 0 24px;}
   /* stepper */
-  .stepper{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px;}
-  .step{display:flex;align-items:center;gap:6px;flex:1;min-width:84px;}
-  .stepClick{cursor:pointer;}
-  .stepClick:hover .dot{border-color:var(--ink);}
-  .dot{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-family:'Poppins',sans-serif;background:#fff;flex-shrink:0;}
-  .dot.on{border-color:var(--ink);background:var(--ink);color:#fff;}
-  .step span{font-size:11.5px;color:#8a948f;}
-  .step span.on{color:var(--ink);font-weight:600;}
+  /* ---- Ruta de pasos ----------------------------------------------------
+     Los 12 pasos son una cadena: cada uno se alimenta del anterior. Por eso
+     se dibujan como una ruta con fases, no como una fila suelta de puntos.
+     El defecto anterior era flex:1 en cada paso: con solo dos en la segunda
+     fila, cada uno se estiraba a media pantalla. Ahora las píldoras miden
+     lo que mide su texto y se agrupan por fase.                            */
+  .stepper{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+           padding:16px 0 18px;margin-bottom:24px;}
+  .rutaTop{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px;}
+  .rutaPaso{font-size:12px;font-weight:600;color:var(--ink);letter-spacing:.01em;}
+  .rutaPaso b{color:var(--teal);}
+  .rutaPct{font-size:11px;color:#8a948f;font-variant-numeric:tabular-nums;}
+  .rail{height:3px;background:#dde3dd;border-radius:99px;overflow:hidden;margin-bottom:16px;}
+  .railFill{height:100%;border-radius:99px;
+            background:linear-gradient(90deg,var(--teal) 0%,var(--teal) 62%,var(--amber) 100%);
+            transition:width .5s cubic-bezier(.22,.61,.36,1);}
+  .fases{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:flex-start;}
+  .fase{display:flex;flex-direction:column;gap:7px;}
+  .faseTit{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+           color:#98a29c;font-weight:700;padding-left:3px;}
+  .fasePasos{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 13px 6px 6px;
+        border-radius:99px;border:1px solid var(--line);background:#fff;color:#7d8782;
+        font-family:'Poppins',sans-serif;font-size:12.5px;line-height:1;cursor:pointer;
+        white-space:nowrap;transition:transform .16s ease,border-color .16s ease,
+        background .16s ease,color .16s ease,box-shadow .16s ease;}
+  .pill .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+             font-size:11.5px;font-weight:600;background:#f0f3ef;color:#8a948f;
+             flex-shrink:0;transition:inherit;}
+  .pill:hover{transform:translateY(-2px);border-color:var(--teal);color:var(--ink);
+              box-shadow:0 3px 10px rgba(47,109,106,.13);}
+  .pill:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  /* recorrido ya hecho */
+  .pill.done{border-color:#b9d2cf;background:#f2f8f7;color:var(--teal);}
+  .pill.done .num{background:var(--teal);color:#fff;}
+  /* paso actual: el único oscuro, para que salte a la vista */
+  .pill.now{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600;
+            box-shadow:0 4px 14px rgba(28,42,51,.22);}
+  .pill.now .num{background:var(--amber);color:#fff;}
+  .pill.now:hover{transform:none;box-shadow:0 4px 14px rgba(28,42,51,.22);}
+  @media(max-width:640px){
+    .fases{gap:12px 16px;}
+    .pill{font-size:12px;padding:6px 11px 6px 6px;}
+    .pill .txt{display:none;}
+    .pill.now .txt{display:inline;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .pill,.railFill{transition:none;}
+    .pill:hover{transform:none;}
+  }
   /* card */
   .card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:26px;margin-bottom:18px;box-shadow:0 1px 0 rgba(0,0,0,.03);}
   h2{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;margin:0 0 16px;}
@@ -408,17 +450,52 @@ function mostrarTab(cual){
   if(cual==='lista') cargarLista();
 }
 
+// Las cuatro fases del recorrido. Agrupar no es adorno: los pasos de una
+// misma fase responden a la misma pregunta, y así la fila nunca queda con
+// dos píldoras perdidas en los extremos.
+var FASES = [
+  { titulo:'Problema',    desde:1,  hasta:3  },
+  { titulo:'Encuadre',    desde:4,  hasta:5  },
+  { titulo:'Causas',      desde:6,  hasta:9  },
+  { titulo:'Formulación', desde:10, hasta:12 }
+];
+
+function faseDe(n){
+  for(var i=0;i<FASES.length;i++){
+    if(n>=FASES[i].desde && n<=FASES[i].hasta) return FASES[i].titulo;
+  }
+  return '';
+}
+
 function renderStepper(){
   var st=document.getElementById('stepper');
   if(S.paso<1){ st.innerHTML=''; st.style.display='none'; return; }
-  st.style.display='flex';
-  var h='';
-  for(var i=0;i<PASOS_NOMBRES.length;i++){
-    var n=i+1;
-    h+='<div class="step stepClick" onclick="irAPaso('+n+')" title="Ir al paso '+n+'"><div class="dot '+(n<=S.paso?'on':'')+'">'+n+'</div>'+
-       '<span class="'+(n===S.paso?'on':'')+'">'+PASOS_NOMBRES[i]+'</span></div>';
-  }
-  st.innerHTML=h;
+  st.style.display='block';
+
+  var total = PASOS_NOMBRES.length;
+  var pct   = Math.round(S.paso*100/total);
+
+  var h = '<div class="rutaTop">'+
+          '<span class="rutaPaso">Paso <b>'+S.paso+'</b> de '+total+
+          ' · '+esc(faseDe(S.paso))+'</span>'+
+          '<span class="rutaPct">'+pct+'%</span></div>'+
+          '<div class="rail"><div class="railFill" style="width:'+pct+'%;"></div></div>'+
+          '<div class="fases">';
+
+  FASES.forEach(function(f){
+    h += '<div class="fase"><div class="faseTit">'+esc(f.titulo)+'</div><div class="fasePasos">';
+    for(var n=f.desde; n<=f.hasta; n++){
+      var cls = n===S.paso ? 'now' : (n<S.paso ? 'done' : '');
+      h += '<button type="button" class="pill '+cls+'" onclick="irAPaso('+n+')" '+
+           'title="Ir al paso '+n+': '+esc(PASOS_NOMBRES[n-1])+'"'+
+           (n===S.paso?' aria-current="step"':'')+'>'+
+           '<span class="num">'+n+'</span>'+
+           '<span class="txt">'+esc(PASOS_NOMBRES[n-1])+'</span></button>';
+    }
+    h += '</div></div>';
+  });
+
+  st.innerHTML = h + '</div>';
 }
 
 // Navegación directa desde el menú de pasos (captura el paso actual antes de saltar)
