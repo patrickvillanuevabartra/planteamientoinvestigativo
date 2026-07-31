@@ -324,7 +324,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","General","Pareto","Específicos","Objetivos","Hipótesis","Matriz"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Objetivos","Hipótesis","Matriz"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -467,7 +467,7 @@ var FASES = [
   { titulo:'Diagnóstico',            desde:1,  hasta:3,  color:'#b4552f', tinte:'#f8ece6', linea:'#e8cfc2' },
   { titulo:'Encuadre',               desde:4,  hasta:5,  color:'#8d7526', tinte:'#f7f2e3', linea:'#e3d9b9' },
   { titulo:'Problema',               desde:6,  hasta:9,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
-  { titulo:'Objetivos e hipótesis',  desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
+  { titulo:'Objetivos, hipótesis y matriz', desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
 ];
 
 function faseDe(n){
@@ -526,7 +526,7 @@ function irAPaso(n){
   if(n===S.paso) return;
   capturarPasoActual();
   // Si vamos hacia (o más allá de) Pareto/Específicos, aseguramos derivar datos
-  if(n>=8) armarPareto();
+  if(n>=7) armarPareto();
   if(n>=9) armarEspecificos();
   go(n);
 }
@@ -647,7 +647,7 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
       'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y mejora continua en la Empresa Alfa S.A.C.'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 7).</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
       '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
@@ -757,7 +757,7 @@ function render(){
       '<p class="note" style="margin:0;">Al escribir cada causa, describe <b>algo que ocurre</b>, no algo que falta.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'red\')">gu\u00eda de redacci\u00f3n</button></div>'+
       '<div class="ejBox" id="ej_red" style="display:none;">'+
-      '<b>Evita las causas escritas en negativo.</b> \u201cFalta de\u2026\u201d, \u201cNo hay\u2026\u201d o \u201cAusencia de\u2026\u201d nombran lo que <i>no</i> existe, y eso no se puede observar ni contar. Si la reescribes como un hecho que ocurre, puedes medir su frecuencia en el Pareto (paso 8) y sabr\u00e1s exactamente qu\u00e9 corregir.'+
+      '<b>Evita las causas escritas en negativo.</b> \u201cFalta de\u2026\u201d, \u201cNo hay\u2026\u201d o \u201cAusencia de\u2026\u201d nombran lo que <i>no</i> existe, y eso no se puede observar ni contar. Si la reescribes como un hecho que ocurre, puedes medir su frecuencia en el Pareto (paso 7) y sabr\u00e1s exactamente qu\u00e9 corregir.'+
       '<table class="ejParTable"><thead><tr><th>Evita escribir\u2026</th><th>Escribe mejor\u2026</th></tr></thead><tbody>'+
       '<tr><td>Falta de estandarización del proceso</td><td>Las actividades se ejecutan de forma variable según quién las realiza</td></tr>'+
       '<tr><td>No existen procedimientos documentados</td><td>El proceso opera con procedimientos no documentados</td></tr>'+
@@ -778,11 +778,79 @@ function render(){
       '<button class="btnMini" onclick="agregarCategoria()">+ añadir categoría</button>'+
       '<button class="btnMini" onclick="descargarIshikawa()">⬇ descargar diagrama (PNG)</button></div>'+
       '<div class="actions"><button class="btnGhost" onclick="go(5)">← Volver al tema</button>'+
-      '<button class="btn" onclick="p6next()">Continuar al problema general →</button></div></div>';
+      '<button class="btn" onclick="p6next()">Continuar al Pareto →</button></div></div>';
   }
   else if(S.paso===7){
+    // Construye la tabla de Pareto sobre las subcausas
+    armarPareto();
+    var filas = paretoOrdenado();
+    var total = filas.reduce(function(a,f){ return a+f.freq; },0);
+    var acum=0, rows='';
+    filas.forEach(function(f,idx){
+      acum+=f.freq;
+      var pct = total? (f.freq/total*100):0;
+      var pacum = total? (acum/total*100):0;
+      var en80 = pacum<=80 || idx===0;
+      rows+='<tr class="'+(f.priorizada?'prRow':'')+'">'+
+        '<td>'+esc(f.etiqueta)+'<div class="prMeta">'+esc(f.meta)+'</div></td>'+
+        '<td style="text-align:center;"><input type="number" min="0" class="freqInp" value="'+f.freq+'" '+
+          'onchange="setFreq(\''+f.key+'\',this.value)"></td>'+
+        '<td style="text-align:center;">'+pct.toFixed(1)+'%</td>'+
+        '<td style="text-align:center;">'+pacum.toFixed(1)+'%</td>'+
+        '<td style="text-align:center;">'+(f.priorizada?'<span class="prTag">PE'+(f.prIdx+1)+'</span>':(en80?'<span class="p80">80%</span>':''))+'</td>'+
+      '</tr>';
+    });
+    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay '+rotuloNivel(true)+' en el Ishikawa. Vuelve al paso 7 y a\u00f1ade '+rotuloNivel(true)+'.</td></tr>';
+
+    // Selectores de las 3 priorizadas
+    var opts='<option value="">\u2014 elegir '+rotuloNivel()+' \u2014</option>';
+    filas.forEach(function(f){ opts+='<option value="'+esc(f.key)+'">'+esc(f.etiqueta)+' ('+f.freq+')</option>'; });
+    var selects='';
+    for(var pi=0; pi<3; pi++){
+      var cur = S.priorizadas[pi] ? subKey(S.priorizadas[pi].categoria,S.priorizadas[pi].causa,S.priorizadas[pi].sub||'') : '';
+      var optsSel = opts.replace('value="'+cur+'"','value="'+cur+'" selected');
+      selects+='<div style="margin-bottom:8px;"><label>Problema específico '+(pi+1)+'</label>'+
+        '<select onchange="setPriorizada('+pi+',this.value)">'+optsSel+'</select></div>';
+    }
+
+    h='<div class="card"><h2>07 · Priorización por Pareto</h2>'+
+      '<div class="coordsBox" style="background:#eef5f4;margin-bottom:14px;">'+
+      '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 7). '+
+      'Aqu\u00ed se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
+      'Las 3 que elijas ser\u00e1n tus 3 problemas espec\u00edficos.</div>'+
+      '<div class="blockLbl">\u25c6 \u00bfA qu\u00e9 nivel quieres priorizar?</div>'+
+      '<div class="lineList" style="margin-bottom:6px;">'+
+      '<button type="button" class="lineOpt '+(porSubcausa()?'':'sel')+'" onclick="setNivelPareto(\'causa\')">'+
+      '<span class="lineNum">1\u00ba</span><span><b>Causas</b> \u2014 lo que cuelga directo de cada espina (Ishikawa de 1.\u00ba nivel).</span></button>'+
+      '<button type="button" class="lineOpt '+(porSubcausa()?'sel':'')+'" onclick="setNivelPareto(\'subcausa\')">'+
+      '<span class="lineNum">2\u00ba</span><span><b>Subcausas</b> \u2014 el porqu\u00e9 de cada causa. Requiere haberlas cargado en el paso 7.</span></button></div>'+
+      '<p class="note" style="font-size:12.5px;">La categor\u00eda (M\u00e9todo, M\u00e1quina\u2026) no se prioriza: es un cajon de clasificaci\u00f3n, no una causa que puedas medir o corregir.</p>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada '+rotuloNivel()+' (cu\u00e1ntas veces se observ\u00f3, seg\u00fan tu ficha de registro).</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_par" style="display:none;">'+
+      '<b>Caso de la Empresa Alfa — Análisis de Pareto.</b> Cada fila es <b>una causa del Ishikawa</b>, escrita igual que allá; entre paréntesis, el rótulo corto con que se la nombra en el informe. Las frecuencias son ilustrativas: lo que importa es el método.'+
+      '<table class="ejParTable"><thead><tr><th>Causa (tal como está en el Ishikawa)</th><th>%</th><th>% acum.</th></tr></thead><tbody>'+
+      '<tr class="ejHot"><td>Las actividades se ejecutan de forma variable según quién las realiza <span style="color:#8a7f6d;">(procesos no estandarizados)</span></td><td>30%</td><td>30%</td></tr>'+
+      '<tr class="ejHot"><td>La información se registra en Excel y Outlook sin integración <span style="color:#8a7f6d;">(información dispersa)</span></td><td>25%</td><td>55%</td></tr>'+
+      '<tr class="ejHot"><td>El seguimiento de las solicitudes es limitado <span style="color:#8a7f6d;">(desempeño no medido)</span></td><td>20%</td><td><b>75%</b></td></tr>'+
+      '<tr><td>Dependencia de múltiples áreas (ingeniería, logística, importaciones)</td><td>15%</td><td>90%</td></tr>'+
+      '<tr><td>Demora en cotizaciones de proveedores <span style="color:#8a7f6d;">(incumplimiento de proveedores)</span></td><td>7%</td><td>97%</td></tr>'+
+      '<tr><td>Registro manual de información</td><td>3%</td><td>100%</td></tr>'+
+      '</tbody></table>'+
+      'Las <b>3 causas críticas (75%)</b>, resaltadas, son las mismas que aparecen en ámbar en el Ishikawa del paso 6. De ahí salen los 3 problemas específicos, cada uno con su herramienta: BPMN, automatización (RPA + ERP) y KPIs bajo SCOR.'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">El Pareto se calcula <b>sobre las causas de tu Ishikawa</b>, no sobre una lista aparte. Si el texto de una fila no coincide con el del Ishikawa, es que algo se reescribió por el camino.</p></div>'+
+      '<table class="parTable"><thead><tr><th>'+(porSubcausa()?'Subcausa':'Causa')+' (de tu Ishikawa)</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table>'+
+      '<div class="blockLbl" style="margin-top:20px;">\u25c6 Selecciona las 3 '+rotuloNivel(true)+' priorizadas</div>'+
+      '<p class="note">Sugerencia: elige las 3 de mayor frecuencia (las del 80%). Puedes ajustar con criterio.</p>'+
+      selects+
+      '<div class="actions"><button class="btnGhost" onclick="go(6)">← Volver al Ishikawa</button>'+
+      '<button class="btn" onclick="p7next()">Continuar al problema general →</button></div></div>';
+  }
+  else if(S.paso===8){
     var an = analisisCentralProposito();
-    h='<div class="card"><h2>07 · Problema general</h2>'+
+    h='<div class="card"><h2>08 · Problema general</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Se hace en dos momentos: <b>primero</b> compruebas que el propósito y el problema central digan lo mismo; <b>después</b> redactas la pregunta uniendo la línea de investigación con el propósito.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
@@ -826,75 +894,7 @@ function render(){
       '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
 
-      '<div class="actions"><button class="btnGhost" onclick="go(6)">← Volver al Ishikawa</button>'+
-      '<button class="btn" onclick="p7next()">Continuar al Pareto →</button></div></div>';
-  }
-  else if(S.paso===8){
-    // Construye la tabla de Pareto sobre las subcausas
-    armarPareto();
-    var filas = paretoOrdenado();
-    var total = filas.reduce(function(a,f){ return a+f.freq; },0);
-    var acum=0, rows='';
-    filas.forEach(function(f,idx){
-      acum+=f.freq;
-      var pct = total? (f.freq/total*100):0;
-      var pacum = total? (acum/total*100):0;
-      var en80 = pacum<=80 || idx===0;
-      rows+='<tr class="'+(f.priorizada?'prRow':'')+'">'+
-        '<td>'+esc(f.etiqueta)+'<div class="prMeta">'+esc(f.meta)+'</div></td>'+
-        '<td style="text-align:center;"><input type="number" min="0" class="freqInp" value="'+f.freq+'" '+
-          'onchange="setFreq(\''+f.key+'\',this.value)"></td>'+
-        '<td style="text-align:center;">'+pct.toFixed(1)+'%</td>'+
-        '<td style="text-align:center;">'+pacum.toFixed(1)+'%</td>'+
-        '<td style="text-align:center;">'+(f.priorizada?'<span class="prTag">PE'+(f.prIdx+1)+'</span>':(en80?'<span class="p80">80%</span>':''))+'</td>'+
-      '</tr>';
-    });
-    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay '+rotuloNivel(true)+' en el Ishikawa. Vuelve al paso 7 y a\u00f1ade '+rotuloNivel(true)+'.</td></tr>';
-
-    // Selectores de las 3 priorizadas
-    var opts='<option value="">\u2014 elegir '+rotuloNivel()+' \u2014</option>';
-    filas.forEach(function(f){ opts+='<option value="'+esc(f.key)+'">'+esc(f.etiqueta)+' ('+f.freq+')</option>'; });
-    var selects='';
-    for(var pi=0; pi<3; pi++){
-      var cur = S.priorizadas[pi] ? subKey(S.priorizadas[pi].categoria,S.priorizadas[pi].causa,S.priorizadas[pi].sub||'') : '';
-      var optsSel = opts.replace('value="'+cur+'"','value="'+cur+'" selected');
-      selects+='<div style="margin-bottom:8px;"><label>Problema específico '+(pi+1)+'</label>'+
-        '<select onchange="setPriorizada('+pi+',this.value)">'+optsSel+'</select></div>';
-    }
-
-    h='<div class="card"><h2>08 · Priorización por Pareto</h2>'+
-      '<div class="coordsBox" style="background:#eef5f4;margin-bottom:14px;">'+
-      '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 7). '+
-      'Aqu\u00ed se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
-      'Las 3 que elijas ser\u00e1n tus 3 problemas espec\u00edficos.</div>'+
-      '<div class="blockLbl">\u25c6 \u00bfA qu\u00e9 nivel quieres priorizar?</div>'+
-      '<div class="lineList" style="margin-bottom:6px;">'+
-      '<button type="button" class="lineOpt '+(porSubcausa()?'':'sel')+'" onclick="setNivelPareto(\'causa\')">'+
-      '<span class="lineNum">1\u00ba</span><span><b>Causas</b> \u2014 lo que cuelga directo de cada espina (Ishikawa de 1.\u00ba nivel).</span></button>'+
-      '<button type="button" class="lineOpt '+(porSubcausa()?'sel':'')+'" onclick="setNivelPareto(\'subcausa\')">'+
-      '<span class="lineNum">2\u00ba</span><span><b>Subcausas</b> \u2014 el porqu\u00e9 de cada causa. Requiere haberlas cargado en el paso 7.</span></button></div>'+
-      '<p class="note" style="font-size:12.5px;">La categor\u00eda (M\u00e9todo, M\u00e1quina\u2026) no se prioriza: es un cajon de clasificaci\u00f3n, no una causa que puedas medir o corregir.</p>'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada '+rotuloNivel()+' (cu\u00e1ntas veces se observ\u00f3, seg\u00fan tu ficha de registro).</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'par\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_par" style="display:none;">'+
-      '<b>Caso de la Empresa Alfa — Análisis de Pareto.</b> Cada fila es <b>una causa del Ishikawa</b>, escrita igual que allá; entre paréntesis, el rótulo corto con que se la nombra en el informe. Las frecuencias son ilustrativas: lo que importa es el método.'+
-      '<table class="ejParTable"><thead><tr><th>Causa (tal como está en el Ishikawa)</th><th>%</th><th>% acum.</th></tr></thead><tbody>'+
-      '<tr class="ejHot"><td>Las actividades se ejecutan de forma variable según quién las realiza <span style="color:#8a7f6d;">(procesos no estandarizados)</span></td><td>30%</td><td>30%</td></tr>'+
-      '<tr class="ejHot"><td>La información se registra en Excel y Outlook sin integración <span style="color:#8a7f6d;">(información dispersa)</span></td><td>25%</td><td>55%</td></tr>'+
-      '<tr class="ejHot"><td>El seguimiento de las solicitudes es limitado <span style="color:#8a7f6d;">(desempeño no medido)</span></td><td>20%</td><td><b>75%</b></td></tr>'+
-      '<tr><td>Dependencia de múltiples áreas (ingeniería, logística, importaciones)</td><td>15%</td><td>90%</td></tr>'+
-      '<tr><td>Demora en cotizaciones de proveedores <span style="color:#8a7f6d;">(incumplimiento de proveedores)</span></td><td>7%</td><td>97%</td></tr>'+
-      '<tr><td>Registro manual de información</td><td>3%</td><td>100%</td></tr>'+
-      '</tbody></table>'+
-      'Las <b>3 causas críticas (75%)</b>, resaltadas, son las mismas que aparecen en ámbar en el Ishikawa del paso 6. De ahí salen los 3 problemas específicos, cada uno con su herramienta: BPMN, automatización (RPA + ERP) y KPIs bajo SCOR.'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">El Pareto se calcula <b>sobre las causas de tu Ishikawa</b>, no sobre una lista aparte. Si el texto de una fila no coincide con el del Ishikawa, es que algo se reescribió por el camino.</p></div>'+
-      '<table class="parTable"><thead><tr><th>'+(porSubcausa()?'Subcausa':'Causa')+' (de tu Ishikawa)</th><th>Frec.</th><th>%</th><th>% acum.</th><th>Pareto</th></tr></thead>'+
-      '<tbody>'+rows+'</tbody></table>'+
-      '<div class="blockLbl" style="margin-top:20px;">\u25c6 Selecciona las 3 '+rotuloNivel(true)+' priorizadas</div>'+
-      '<p class="note">Sugerencia: elige las 3 de mayor frecuencia (las del 80%). Puedes ajustar con criterio.</p>'+
-      selects+
-      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al problema general</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Pareto</button>'+
       '<button class="btn" onclick="p8next()">Continuar a específicos →</button></div></div>';
   }
   else if(S.paso===9){
@@ -909,14 +909,14 @@ function render(){
           '<label>Herramienta enmarcada en la línea</label>'+
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
     });
-    if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 8) y prioriza 3.</p>';
+    if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
     h='<div class="card"><h2>09 · Problemas específicos y herramientas</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
-      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al Pareto</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al problema general</button>'+
       '<button class="btn" onclick="go(10)">Continuar → Objetivos</button></div></div>';
   }
   else if(S.paso===10){
@@ -1242,18 +1242,19 @@ function refrescarCoherencia(){
 }
 function p5next(){ S.tema=val('f_tema'); go(6); }
 // 06 Ishikawa -> 07 Problema general
+// 06 Ishikawa -> 07 Pareto
 function p6next(){
   var totalCausas=0;
   S.categorias.forEach(function(c){ totalCausas+=(S.causas[c]||[]).length; });
   if(!String(S.efectoCentral||'').trim()) return toast('Escribe el problema central (cabeza del pescado)',true);
   if(totalCausas===0) return toast('A\u00f1ade al menos una causa al Ishikawa',true);
-  go(7);
+  armarPareto(); go(7);
 }
-// 07 Problema general -> 08 Pareto
+// 07 Pareto -> 08 Problema general
 function p7next(){
-  S.problemaGeneral=val('f_pg');
-  if(!S.problemaGeneral.trim()) return toast('Redacta el problema general',true);
-  armarPareto(); armarEspecificos(); go(8);
+  var elegidas=S.priorizadas.filter(function(p){ return p; });
+  if(elegidas.length<3) return toast('Selecciona las 3 '+rotuloNivel(true)+' priorizadas',true);
+  armarEspecificos(); go(8);
 }
 
 // Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
@@ -1661,9 +1662,10 @@ function setPriorizada(pi,key){
   render();
 }
 
+// 08 Problema general -> 09 Problemas específicos
 function p8next(){
-  var elegidas=S.priorizadas.filter(function(p){ return p; });
-  if(elegidas.length<3) return toast('Selecciona las 3 '+rotuloNivel(true)+' priorizadas',true);
+  S.problemaGeneral=val('f_pg');
+  if(!S.problemaGeneral.trim()) return toast('Redacta el problema general',true);
   armarEspecificos(); go(9);
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
@@ -1697,10 +1699,13 @@ function capturarPasoActual(){
     case 5:
       if(document.getElementById('f_tema')) S.tema=val('f_tema');
       break;
-    case 6:
+    case 8:
+      // El problema general se redacta en el paso 8. Antes esto decía case 6 y
+      // nunca encontraba el campo: si el alumno escribía el PG y pulsaba
+      // Guardar sin pasar por Continuar, se perdía.
       if(document.getElementById('f_pg')) S.problemaGeneral=val('f_pg');
       break;
-    // 7 (Ishikawa), 8 (Pareto) y 9 (Específicos) guardan en el estado vía oninput/onchange directamente
+    // 6 (Ishikawa), 7 (Pareto) y 9 (Específicos) guardan en el estado vía oninput/onchange
   }
 }
 
@@ -1769,7 +1774,7 @@ function borradorObjetivo(pregunta){
 }
 
 function proponerOG(){
-  if(!S.problemaGeneral){ toast('Primero formula el problema general (paso 7)', true); return; }
+  if(!S.problemaGeneral){ toast('Primero formula el problema general (paso 8)', true); return; }
   S.objetivoGeneral = borradorObjetivo(S.problemaGeneral);
   render(); toast('Borrador propuesto — edítalo con tus palabras');
 }
@@ -1807,7 +1812,7 @@ function visorDefinido(){
   var f = [];
   if (lineaTexto()) f.push(['L\u00ednea', lineaTexto()]);
   if (S.tema)       f.push(['Tema', S.tema]);
-  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 7)']);
+  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 8)']);
 
   var h = '<div class="visor"><div class="visorTit">Lo que ya definiste</div>';
   f.forEach(function(x){
@@ -1822,7 +1827,7 @@ function visorDefinido(){
     });
   } else {
     h += '<div class="visorFila"><span class="visorEt">PE</span>'+
-         '<span class="visorVal">\u2014 a\u00fan no hay problemas espec\u00edficos (pasos 8 y 9)</span></div>';
+         '<span class="visorVal">\u2014 a\u00fan no hay problemas espec\u00edficos (pasos 7 a 9)</span></div>';
   }
   return h + '</div>';
 }
