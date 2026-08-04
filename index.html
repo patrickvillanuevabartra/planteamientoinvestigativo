@@ -955,7 +955,7 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
+      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería mediante la aplicación de la gestión por procesos y mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
       '<b>OE1:</b> Estandarizar el flujo de trabajo mediante el modelado BPMN (AS-IS → TO-BE) para reducir el tiempo de ciclo del proceso de atención.<br>'+
       '<b>OE2:</b> Automatizar las tareas repetitivas mediante RPA integrado al ERP para reducir los reprocesos.<br>'+
       '<b>OE3:</b> Implementar indicadores bajo el modelo SCOR para incrementar la cobertura de control del proceso.<br><br>'+
@@ -965,7 +965,7 @@ function render(){
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
-      '<p class="note" style="font-size:12px;margin-top:8px;">El objetivo general es tu <b>propósito</b> (paso 3) con el contexto añadido: mismo verbo, mismo indicador. <b>No lleva «mediante»</b> — la herramienta general ya está en el tema, y repetirla aquí hace que objetivo y tema digan lo mismo.<br>Los específicos sí nombran su herramienta, porque cada una aparece solo ahí.</p>'+
+      '<p class="note" style="font-size:12px;margin-top:8px;">El objetivo general toma el verbo y el indicador de tu <b>propósito</b> (paso 3), nombra el <b>medio</b> con «mediante» y cierra con empresa y periodo. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivos específicos</div>'+ oe +
       '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver a Específicos</button>'+
@@ -1800,8 +1800,15 @@ function proponerOG(){
   var pr = String(S.proposito||'').trim();
   if(!pr){ toast('Primero escribe el propósito (paso 3)', true); return; }
   pr = pr.replace(/\s*[.;]+\s*$/,'');
-  S.objetivoGeneral = pr + ' ' + contextoEmpresa();
-  render(); toast('Borrador tomado del propósito — revísalo');
+  // El medio sale de la variable independiente si ya está declarada (paso 11);
+  // si no, se deja marcado para que el alumno lo complete.
+  var medio = String(S.varInd||'').trim();
+  var falta = !medio;
+  S.objetivoGeneral = pr + ' mediante ' + (medio || '__(indica aquí el medio)__') +
+                      ' ' + contextoEmpresa();
+  render();
+  toast(falta ? 'Borrador listo — completa el medio que va tras «mediante»'
+              : 'Borrador tomado del propósito — revísalo', falta);
 }
 
 function proponerOE(i){
