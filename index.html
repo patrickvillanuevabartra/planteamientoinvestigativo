@@ -191,6 +191,15 @@
   .grupoBar .acts{display:flex;gap:8px;}
   .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
   .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
+  .varBox{background:#fbfaf6;border:1px solid #e2ddcd;border-left:3px solid var(--amber);
+          border-radius:6px;padding:10px 13px 13px;margin:8px 0 12px;}
+  .varTit{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+          color:var(--amber);margin-bottom:8px;}
+  .varFija{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;
+           padding:6px 0 8px;border-bottom:1px dashed #e2ddcd;margin-bottom:6px;}
+  .varEt{font-size:11px;font-weight:700;color:#8a7f5f;letter-spacing:.04em;}
+  .varVal{font-size:13.5px;color:#333d38;}
+  .oblig{font-weight:400;color:var(--amber);font-size:12px;}
   .visor{background:#eef5f4;border:1px solid #d7e4e1;border-radius:5px;padding:12px 14px;margin:14px 0 4px;}
   .visorTit{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:8px;}
   .visorFila{display:flex;gap:12px;padding:5px 0;border-top:1px solid #dbe7e4;font-size:13.5px;line-height:1.5;}
@@ -318,7 +327,8 @@ var FIELD = {
   variable_independiente  : 'a1DMPMmmjkW4NdGCotwSoI',
   variable_dependiente    : 'ackbaguI9dSiolW5VdNCkv',
   indicador_general       : 'cCh8oJWPTdSyXZtSoGdc48',
-  indicadores_especificos : 'dcLWmTW5vjplu5rGddUSoJ'
+  indicadores_especificos : 'dcLWmTW5vjplu5rGddUSoJ',
+  variables_especificas   : 'cKWROtm0TdriLzESkBwcKa'
 };
 
 // ============================================================
@@ -982,10 +992,15 @@ function render(){
       he+='<div class="peItem"><div class="peHead"><span class="peTag">HE'+(i+1)+'</span>'+
           '<span class="peCat">VI: '+esc(e.herramienta||'—')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ OE'+(i+1)+': '+esc(e.objetivo||'—')+'</div>'+
-          '<label>Variable dependiente — ¿qué mejora?</label>'+
+          '<div class="varBox">'+
+          '<div class="varTit">Variables e indicador de este específico</div>'+
+          '<div class="varFija"><span class="varEt">VI · lo que aplicas</span>'+
+          '<span class="varVal">'+esc(e.herramienta||'— define la herramienta en el paso 9')+'</span></div>'+
+          '<label>VD · lo que mejora</label>'+
           '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso">'+
-          '<label>Indicador de esa variable</label>'+
+          '<label>Indicador de la VD <span class="oblig">— así se medirá</span></label>'+
           '<input value="'+esc(e.indicador||'')+'" oninput="S.especificos['+i+'].indicador=this.value" placeholder="Ej. % de reducción del tiempo de ciclo (meta 20–25%)">'+
+          '</div>'+
           '<label>Hipótesis específica</label>'+
           '<textarea rows="2" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea>'+
           '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHE('+i+')">proponer borrador</button></div>';
@@ -1002,13 +1017,17 @@ function render(){
       '<i>Indicador general de ejemplo: % de reducción = (Tiempo de atención antes − Tiempo de atención después) / Tiempo de atención antes × 100. Meta ≥ 40%.</i></div>'+
 
       visorDefinido()+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales</div>'+
-      '<div class="row2"><div><label>Variable independiente (lo que aplicas)</label>'+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales e indicador</div>'+
+      '<div class="varBox">'+
+      '<div class="varTit">Estas dos variables sostienen la hipótesis general</div>'+
+      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
       '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
-      '<div><label>Variable dependiente (lo que mejora)</label>'+
+      '<div><label>VD · lo que mejora</label>'+
       '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
-      '<label>Indicador de la variable dependiente</label>'+
+      '<label>Indicador de la VD <span class="oblig">— así se medirá</span></label>'+
       '<input value="'+esc(S.indicadorGeneral)+'" oninput="S.indicadorGeneral=this.value" placeholder="Ej. % de reducción del tiempo de atención (meta ≥ 40%)">'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Escribe la fórmula y la meta, no solo el nombre. «% de reducción = (antes − después) / antes × 100. Meta ≥ 40%.» se puede medir; «eficiencia del proceso» no.</p>'+
+      '</div>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis general</div>'+
       '<textarea rows="3" oninput="S.hipotesisGeneral=this.value" placeholder="Hipótesis general…">'+esc(S.hipotesisGeneral)+'</textarea>'+
@@ -1950,6 +1969,15 @@ function armarEspecificos(){
   S.especificos=lista;
 }
 
+// Pares VI → VD de cada específico. La VI es la herramienta elegida en el paso 9.
+// Ej.: "VE1: BPMN → el tiempo de ciclo del proceso"
+function serializarVariables(){
+  return S.especificos.map(function(e,i){
+    if(!e.herramienta && !e.vd) return '';
+    return 'VE'+(i+1)+': '+(e.herramienta||'—')+' → '+(e.vd||'—');
+  }).filter(function(l){ return l; }).join('\n');
+}
+
 // Vuelca un campo de S.especificos a texto, uno por línea, con su rótulo.
 // Ej.: serializarLista('objetivo','OE') -> "OE1 ...\nOE2 ..."
 function serializarLista(campo, rotulo){
@@ -2068,6 +2096,7 @@ function guardar(){
     variable_dependiente:S.varDep,
     indicador_general:S.indicadorGeneral,
     indicadores_especificos:serializarLista('indicador','IND'),
+    variables_especificas:serializarVariables(),
     estructura:serializarEstado(),
     consecuencia:S.consecuenciaSintoma,
     correos:[SESION.email, S.correoCompanero].filter(function(x){ return x; }).join(', ')
