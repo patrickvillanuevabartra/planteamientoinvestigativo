@@ -452,13 +452,17 @@ function periodo(){
   return S.pretest||S.postest||'[periodo]';
 }
 function anio(){
-  var t=(S.pretest||S.test||S.postest||'');
-  var m=t.match(/(20\d{2}|19\d{2})/); return m?m[1]:'[año]';
+  // El año que identifica el estudio es el de su cierre; si falta, se busca hacia
+  // atrás y como último recurso se usa el año en curso.
+  var t=(S.postest||S.test||S.pretest||'');
+  var m=String(t).match(/(20\d{2}|19\d{2})/);
+  return m ? m[1] : String(new Date().getFullYear());
 }
 function armarTema(){
   if(!S.proposito || !lineaTexto()) return '';
   var p = S.proposito.trim().replace(/\.?\s*$/,'');
-  return p+' mediante '+lineaTexto()+' en la empresa '+(S.empresa||'[Empresa]')+', en el periodo '+periodo();
+  return p+' mediante '+lineaTexto()+' en la empresa '+(S.empresa||'[Empresa]')+
+         (ciudad()?', '+ciudad():'')+', '+anio();
 }
 
 // ============================================================
@@ -716,7 +720,7 @@ function render(){
       '<p class="note" style="margin:0;">El tema combina tu prop\u00f3sito con la l\u00ednea, la empresa y el periodo. Puedes editarlo.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_tem" style="display:none;">'+
-      'Reducci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y la mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.'+
+      'Reducci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y la mejora continua en la Empresa Alfa S.A.C., Lima, 2026.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[lo que se quiere lograr]</b> mediante <b>[la l\u00ednea]</b> en <b>[d\u00f3nde]</b>, en <b>[el periodo]</b>. Es afirmativo y sin signos de pregunta.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Adaptado de un trabajo real del curso (car\u00e1tula del trabajo, reordenada seg\u00fan esta f\u00f3rmula); la empresa se mantiene en reserva.</p>'+
       '</div>'+
@@ -884,7 +888,7 @@ function render(){
       '<tr><td>Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
       '</tbody></table>'+
       '<b>Problema general que redactó:</b><br>'+
-      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> permite <b>reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la Empresa Alfa S.A.C., en el periodo 2026?</i>'+
+      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> <b>reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Mira el verbo. El propósito decía <b>reducir</b> el tiempo de atención, y la pregunta vuelve a decir <b>reducir</b>. Si en tu pregunta aparece un verbo distinto al de tu propósito, alguno de los dos se te movió: revísalo antes de continuar.</p>'+
       '</div>'+
 
@@ -909,7 +913,7 @@ function render(){
       '<p class="note" style="margin:0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pgr\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pgr" style="display:none;">'+
-      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua permite reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., en el periodo 2026?</i>'+
+      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general del caso, tal como aparece en su matriz de consistencia.</p>'+
       '</div>'+
       '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
@@ -955,7 +959,7 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería mediante la aplicación de la gestión por procesos y mejora continua en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
+      '<div class="ejBox" id="ej_obj" style="display:none;"><b>OG:</b> Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería mediante la aplicación de la gestión por procesos y mejora continua en la Empresa Alfa S.A.C., Lima, 2026.<br><br>'+
       '<b>OE1:</b> Estandarizar el flujo de trabajo mediante el modelado BPMN (AS-IS → TO-BE) para reducir el tiempo de ciclo del proceso de atención.<br>'+
       '<b>OE2:</b> Automatizar las tareas repetitivas mediante RPA integrado al ERP para reducir los reprocesos.<br>'+
       '<b>OE3:</b> Implementar indicadores bajo el modelo SCOR para incrementar la cobertura de control del proceso.<br><br>'+
@@ -991,7 +995,7 @@ function render(){
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">La hipótesis es una <b>afirmación</b>, nunca una pregunta. Necesita variable independiente (lo que aplicas), variable dependiente (lo que mejora) y el contexto.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'hip\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_hip" style="display:none;"><b>HG:</b> La aplicación de la gestión por procesos y la mejora continua reduce significativamente el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., en el periodo 2026.<br><br>'+
+      '<div class="ejBox" id="ej_hip" style="display:none;"><b>HG:</b> La aplicación de la gestión por procesos y la mejora continua reduce significativamente el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., Lima, 2026.<br><br>'+
       '<b>HE1:</b> El rediseño del flujo de trabajo mediante BPMN reduce significativamente el tiempo de ciclo del proceso de atención.<br>'+
       '<b>HE2:</b> La automatización mediante RPA integrado al ERP reduce significativamente los reprocesos.<br>'+
       '<b>HE3:</b> La implementación de indicadores bajo el modelo SCOR incrementa significativamente la cobertura de control.<br><br>'+
@@ -1784,9 +1788,21 @@ function limpiarPregunta(t){
     .trim();
 }
 
+// Cierre estándar de problema, objetivos e hipótesis: empresa, ciudad y año.
+// La ventana exacta (pretest–postest) vive en la delimitación y en la matriz;
+// repetirla diez veces por planteamiento no aporta y pesa.
+function ciudad(){
+  var u = String(S.ubicacion||'').trim();
+  if(!u) return '';
+  // De "Av. X 123, Ate, Lima" nos quedamos con el último tramo con letras.
+  var partes = u.split(',').map(function(x){ return x.trim(); })
+                .filter(function(x){ return x && /[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(x); });
+  return partes.length ? partes[partes.length-1] : '';
+}
 function contextoEmpresa(){
   var e = S.empresa ? ('en la '+S.empresa) : 'en la empresa';
-  return e + ', en el periodo ' + periodo() + '.';
+  var c = ciudad();
+  return e + (c ? ', '+c : '') + ', ' + anio() + '.';
 }
 
 function borradorObjetivo(pregunta){
