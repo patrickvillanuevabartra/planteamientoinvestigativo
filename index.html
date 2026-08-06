@@ -214,7 +214,46 @@
   .mcTag{font-weight:700;color:var(--teal);white-space:nowrap;}
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
   .btnDel:hover{background:#fbf1ee;}
-  @media(max-width:680px){.grid6{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
+  .mcWrap{overflow-x:auto;}
+
+  /* ---------- Tablet y celular ---------- */
+  @media(max-width:680px){
+    .grid6{grid-template-columns:1fr 1fr;}
+    .row2,.row3{grid-template-columns:1fr;}
+    .wrap{padding:20px 14px 48px;}
+    h1{font-size:25px;}
+    .sub{font-size:14px;margin-bottom:18px;}
+    .tabs{flex-wrap:wrap;gap:6px;}
+    .tabs .btnMini{margin-left:0 !important;}
+    .tab{flex:1 1 auto;text-align:center;}
+    /* La matriz deja de ser tabla: cada fila es una tarjeta con sus rótulos */
+    .mcWrap{overflow-x:visible;}
+    .mc,.mc tbody,.mc tr,.mc td{display:block;width:100%;}
+    .mc thead{display:none;}
+    .mc tr{border:1px solid var(--line);border-radius:8px;margin-bottom:12px;
+           overflow:hidden;background:#fff;}
+    .mc td{border:none;border-top:1px solid #eceee9;padding:9px 12px;}
+    .mc tbody tr:nth-child(odd) td{background:transparent;}
+    .mc td:first-child{background:#2f3b37;border-top:none;}
+    .mc td.mcTag{color:#fff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;}
+    .mc td::before{content:attr(data-et);display:block;font-size:10px;font-weight:700;
+                   letter-spacing:.1em;text-transform:uppercase;color:#98a29c;margin-bottom:3px;}
+    .mc td.mcTag::before{display:none;}
+  }
+
+  /* ---------- Celular estrecho ---------- */
+  @media(max-width:480px){
+    .grid6{grid-template-columns:1fr;}
+    h1{font-size:22px;}
+    .card{padding:16px 14px;}
+    /* En la ruta solo se lee el paso actual; el resto queda como números */
+    .pill .txt{display:none;}
+    .pill.now .txt,.pill.hito .txt{display:inline;}
+    .pill{padding:6px 10px 6px 6px;}
+    .fases{gap:10px;}
+    .actions{flex-direction:column-reverse;gap:8px;}
+    .actions .btn,.actions .btnGhost{width:100%;}
+  }
   .authWrap{position:fixed;inset:0;background:#f7f5f0;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
   .authCard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:32px 30px;max-width:430px;width:100%;text-align:center;}
   .authCard h2{margin:0 0 6px;font-size:20px;}
@@ -1051,11 +1090,17 @@ function render(){
   else if(S.paso===12){
     armarEspecificos();
     var filas = filasMatriz();
-    var t='<div style="overflow-x:auto;"><table class="mc"><thead><tr>'+
-          '<th></th><th>Problema</th><th>Objetivo</th><th>Hipótesis</th><th>Variables</th><th>Indicador (VD)</th></tr></thead><tbody>';
+    // data-et permite que en móvil cada celda muestre su propio rótulo y la
+    // tabla se convierta en tarjetas apiladas, sin arrastrar en horizontal.
+    var COLS=['Problema','Objetivo','Hipótesis','Variables','Indicador (VD)'];
+    var t='<div class="mcWrap"><table class="mc"><thead><tr><th></th>';
+    COLS.forEach(function(c){ t+='<th>'+c+'</th>'; });
+    t+='</tr></thead><tbody>';
     filas.forEach(function(f){
-      t+='<tr><td class="mcTag">'+esc(f.tag)+'</td><td>'+esc(f.problema||'—')+'</td><td>'+esc(f.objetivo||'—')+'</td>'+
-         '<td>'+esc(f.hipotesis||'—')+'</td><td>'+esc(f.variables||'—')+'</td><td>'+esc(f.indicador||'—')+'</td></tr>';
+      var v=[f.problema,f.objetivo,f.hipotesis,f.variables,f.indicador];
+      t+='<tr><td class="mcTag" data-et="Fila">'+esc(f.tag)+'</td>';
+      v.forEach(function(x,k){ t+='<td data-et="'+esc(COLS[k])+'">'+esc(x||'—')+'</td>'; });
+      t+='</tr>';
     });
     t+='</tbody></table></div>';
     var faltan = filas.filter(function(f){ return !f.objetivo || !f.hipotesis || !f.indicador; }).length;
