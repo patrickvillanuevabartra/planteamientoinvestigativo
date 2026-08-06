@@ -351,7 +351,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Objetivos","Hipótesis","Matriz"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Variables","Indicadores","Matriz"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -961,11 +961,19 @@ function render(){
       oe+='<div class="peItem"><div class="peHead"><span class="peTag">OE'+(i+1)+'</span>'+
           '<span class="peCat">'+esc(e.herramienta||'sin herramienta')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ PE'+(i+1)+': '+esc(e.problema||'—')+'</div>'+
+          '<div class="varBox">'+
+          '<div class="varTit">Variables de este específico</div>'+
+          '<div class="varFija"><span class="varEt">VI · lo que aplicas</span>'+
+          '<span class="varVal">'+esc(e.herramienta||'— define la herramienta en el paso 9')+'</span></div>'+
+          '<label>VD · lo que mejora</label>'+
+          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso">'+
+          '</div>'+
+          '<label>Objetivo específico</label>'+
           '<textarea rows="2" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
           '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOE('+i+')">proponer borrador</button></div>';
     });
     if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
-    h='<div class="card"><h2>10 · Objetivos</h2>'+
+    h='<div class="card"><h2>10 · Variables y objetivos</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
@@ -976,6 +984,15 @@ function render(){
       '<i>Fíjate que cada objetivo específico mejora algo distinto. Si los tres dicen lo mismo que el general, están mal.</i></div>'+
 
       visorDefinido()+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales</div>'+
+      '<div class="varBox">'+
+      '<div class="varTit">Decláralas antes de redactar: el objetivo las necesita</div>'+
+      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
+      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
+      '<div><label>VD · lo que mejora</label>'+
+      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">La VI es lo que va tras «mediante» en el objetivo; la VD es lo que se reduce o incrementa. Sus indicadores se definen en el paso 11.</p>'+
+      '</div>'+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
@@ -983,7 +1000,7 @@ function render(){
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivos específicos</div>'+ oe +
       '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver a Específicos</button>'+
-      '<button class="btn" onclick="go(11)">Continuar → Hipótesis</button></div></div>';
+      '<button class="btn" onclick="go(11)">Continuar → Indicadores</button></div></div>';
   }
   else if(S.paso===11){
     armarEspecificos();
@@ -993,11 +1010,8 @@ function render(){
           '<span class="peCat">VI: '+esc(e.herramienta||'—')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ OE'+(i+1)+': '+esc(e.objetivo||'—')+'</div>'+
           '<div class="varBox">'+
-          '<div class="varTit">Variables e indicador de este específico</div>'+
-          '<div class="varFija"><span class="varEt">VI · lo que aplicas</span>'+
-          '<span class="varVal">'+esc(e.herramienta||'— define la herramienta en el paso 9')+'</span></div>'+
-          '<label>VD · lo que mejora</label>'+
-          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso">'+
+          '<div class="varFija"><span class="varEt">VD · declarada en el paso 10</span>'+
+          '<span class="varVal">'+esc(e.vd||'— sin declarar')+'</span></div>'+
           '<label>Indicador de la VD <span class="oblig">— así se medirá</span></label>'+
           '<input value="'+esc(e.indicador||'')+'" oninput="S.especificos['+i+'].indicador=this.value" placeholder="Ej. % de reducción del tiempo de ciclo (meta 20–25%)">'+
           '</div>'+
@@ -1006,7 +1020,7 @@ function render(){
           '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHE('+i+')">proponer borrador</button></div>';
     });
     if(!he) he='<p class="note">Aún no hay objetivos específicos. Vuelve al paso 10.</p>';
-    h='<div class="card"><h2>11 · Variables e hipótesis</h2>'+
+    h='<div class="card"><h2>11 · Indicadores e hipótesis</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">La hipótesis es una <b>afirmación</b>, nunca una pregunta. Necesita variable independiente (lo que aplicas), variable dependiente (lo que mejora) y el contexto.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'hip\')">ver ejemplo</button></div>'+
@@ -1017,13 +1031,10 @@ function render(){
       '<i>Indicador general de ejemplo: % de reducción = (Tiempo de atención antes − Tiempo de atención después) / Tiempo de atención antes × 100. Meta ≥ 40%.</i></div>'+
 
       visorDefinido()+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales e indicador</div>'+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Indicador general</div>'+
       '<div class="varBox">'+
-      '<div class="varTit">Estas dos variables sostienen la hipótesis general</div>'+
-      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
-      '<div><label>VD · lo que mejora</label>'+
-      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
+      '<div class="varFija"><span class="varEt">VD · declarada en el paso 10</span>'+
+      '<span class="varVal">'+esc(S.varDep||'— sin declarar')+'</span></div>'+
       '<label>Indicador de la VD <span class="oblig">— así se medirá</span></label>'+
       '<input value="'+esc(S.indicadorGeneral)+'" oninput="S.indicadorGeneral=this.value" placeholder="Ej. % de reducción del tiempo de atención (meta ≥ 40%)">'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Escribe la fórmula y la meta, no solo el nombre. «% de reducción = (antes − después) / antes × 100. Meta ≥ 40%.» se puede medir; «eficiencia del proceso» no.</p>'+
@@ -1034,7 +1045,7 @@ function render(){
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHG()">proponer borrador</button>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis específicas</div>'+ he +
-      '<div class="actions"><button class="btnGhost" onclick="go(10)">← Volver a Objetivos</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(10)">← Volver a Variables y objetivos</button>'+
       '<button class="btn" onclick="go(12)">Continuar → Matriz</button></div></div>';
   }
   else if(S.paso===12){
