@@ -977,25 +977,41 @@ function render(){
       '<p class="note" style="margin:0;">Antes de formular el problema, revisa qué se ha investigado ya. Esto respalda la herramienta que elegiste en el Pareto y confirma que la relación entre tus variables está estudiada.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'bib\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_bib" style="display:none;">'+
-      '<b>Pregunta preliminar:</b> ¿Cómo influye la gestión por procesos en el tiempo de atención de entrega en empresas de servicios?<br><br>'+
-      '<b>Fórmula:</b> ( "business process management" OR "process management" ) AND ( "lead time" OR "delivery time" ) AND ( "continuous improvement" )<br><br>'+
-      '<b>Base:</b> Scopus · 2019–2025 · artículos y revisiones en inglés y español<br><br>'+
-      '<b>Reporte:</b> VOSviewer — mapa de co-ocurrencia de palabras clave, 4 clústeres. Bibliometrix — producción anual y autores más citados.<br><br>'+
-      '<b>Hallazgos:</b> la relación entre gestión por procesos y tiempo de entrega aparece en 3 de los 4 clústeres; el clúster verde concentra los estudios de manufactura y el azul los de servicios, que es el caso de la empresa.</div>'+
+      '<div style="font-size:12.5px;margin-bottom:10px;">Ejemplo <b>adaptado</b> del caso Alfa. Fíjate en algo: se hace <b>una búsqueda por cada problema específico</b>, no una sola general. Así cada herramienta que elegiste en el Pareto queda respaldada por separado.</div>'+
+
+      '<b>A · Pregunta preliminar</b><br>'+
+      '¿En qué medida la gestión por procesos y la mejora continua reducen el tiempo de atención de entrega de bienes y/o servicios en empresas de servicios de ingeniería?<br>'+
+      '<i>Y una por cada específico:</i> ¿En qué medida el modelado BPMN reduce el tiempo de ciclo del proceso de atención? · ¿En qué medida la automatización RPA integrada al ERP reduce los reprocesos? · ¿En qué medida los indicadores bajo el modelo SCOR incrementan la cobertura de control?<br><br>'+
+
+      '<b>B · Fórmula de búsqueda</b><br>'+
+      '<code style="font-size:11.5px;display:block;background:#fff;border:1px solid var(--line);border-radius:3px;padding:7px 9px;margin:4px 0 6px;white-space:pre-wrap;">TITLE-ABS-KEY ( ( "business process management" OR "process management" OR "continuous improvement" )\nAND ( "lead time" OR "delivery time" OR "service delivery time" )\nAND ( "engineering services" OR "internal customer" ) )\nAND PUBYEAR &gt; 2018\nAND ( LIMIT-TO ( DOCTYPE , "ar" ) OR LIMIT-TO ( DOCTYPE , "re" ) )</code>'+
+      'Comillas para frases exactas · <b>OR</b> entre sinónimos del mismo concepto · <b>AND</b> entre conceptos distintos. Cada paréntesis es una de tus variables.<br><br>'+
+
+      '<b>C · Levantamiento de datos</b><br>'+
+      'Base: Scopus. Registros: 214 documentos (2019–2025), artículos y revisiones, inglés y español. Al exportar el CSV, marca las casillas de <b>citas, autores, palabras clave y afiliación</b>: sin esas columnas, Bibliometrix no puede construir los mapas.<br><br>'+
+
+      '<b>D · Construcción del material</b><br>'+
+      '<b>VOSviewer</b> — co-ocurrencia de palabras clave, umbral mínimo de 5 ocurrencias, 4 clústeres. <b>Bibliometrix</b> — mapa temático (temas motores, nicho, básicos y emergentes), análisis factorial y producción anual.<br>'+
+      '<i>El umbral importa:</i> muy bajo satura el mapa de términos irrelevantes; muy alto deja fuera tu propio tema. Entre 5 y 15 suele funcionar.<br><br>'+
+
+      '<b>E · Hallazgos, conclusiones y recomendaciones</b><br>'+
+      '<b>Hallazgos.</b> En el mapa temático, <i>process management</i> y <i>continuous improvement</i> aparecen como temas motores —alta densidad y alta centralidad—, lo que confirma que la línea está consolidada. <i>Lead time</i> se conecta con ellos a través de <i>process monitoring</i> y <i>six sigma</i>, que respalda medir el tiempo de atención como variable dependiente. La automatización con RPA aparece en un clúster emergente: hay menos literatura, así que conviene citar los pocos estudios recientes y no darla por probada.<br>'+
+      '<b>Conclusiones.</b> Las tres herramientas del Pareto tienen respaldo, pero con distinta madurez: BPMN y los KPIs están en temas consolidados; el RPA está en formación. La relación entre gestión por procesos y tiempo de entrega está documentada en servicios, no solo en manufactura, que es lo que hacía falta comprobar para el caso.<br>'+
+      '<b>Recomendaciones.</b> Priorizar los artículos del clúster de servicios para el marco teórico; usar los términos que la literatura ya emplea —<i>lead time</i> antes que <i>tiempo de espera</i>— al redactar el problema general; y guardar el CSV, porque el mismo archivo alimenta después el estado del arte.</div>'+
 
       visorDefinido()+
 
-      '<div class="blockLbl" style="margin-top:20px;">◆ Fase I · Cuestionamiento</div>'+
+      '<div class="blockLbl" style="margin-top:20px;">◆ A · Cuestionamiento</div>'+
       '<label>Pregunta de investigación preliminar</label>'+
       '<textarea rows="2" oninput="S.bibPregunta=this.value" placeholder="Parte de tu propósito y tus variables: ¿cómo influye X en Y?">'+esc(S.bibPregunta)+'</textarea>'+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">No es todavía el problema general: es la pregunta con la que vas a buscar literatura.</p>'+
 
-      '<div class="blockLbl" style="margin-top:18px;">◆ Fase II · Búsqueda eficiente</div>'+
+      '<div class="blockLbl" style="margin-top:18px;">◆ B · Búsqueda eficiente</div>'+
       '<label>Fórmula de búsqueda</label>'+
       '<textarea rows="3" oninput="S.bibFormula=this.value" placeholder=\'( "term1" OR "term2" ) AND ( "term3" )\'>'+esc(S.bibFormula)+'</textarea>'+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Usa comillas para frases exactas, <b>OR</b> entre sinónimos y <b>AND</b> entre conceptos distintos. Una fórmula bien armada es lo que separa 40 resultados útiles de 4000 inservibles.</p>'+
 
-      '<div class="blockLbl" style="margin-top:18px;">◆ Fase III · Levantamiento de datos</div>'+
+      '<div class="blockLbl" style="margin-top:18px;">◆ C · Levantamiento de datos</div>'+
       '<div class="row2"><div><label>Base de datos científica</label>'+
       '<input value="'+esc(S.bibBase)+'" oninput="S.bibBase=this.value" placeholder="Ej. Scopus, Web of Science, Dimensions"></div>'+
       '<div><label>Registros obtenidos</label>'+
@@ -1004,11 +1020,11 @@ function render(){
       '<input value="'+esc(S.bibCsv)+'" oninput="S.bibCsv=this.value" placeholder="Pega aquí el enlace de Drive a tu CSV (con permiso de lectura)">'+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Sube el CSV a tu Drive, dale permiso de lectura y pega el enlace. El aplicativo guarda el enlace, no el archivo.</p>'+
 
-      '<div class="blockLbl" style="margin-top:18px;">◆ Fase IV · Construcción del material de análisis</div>'+
+      '<div class="blockLbl" style="margin-top:18px;">◆ D · Construcción del material de análisis</div>'+
       '<label>Reporte de los programas (VOSviewer, Bibliometrix)</label>'+
       '<textarea rows="3" oninput="S.bibReporte=this.value" placeholder="Qué mapas y tablas generaste, y qué muestra cada uno…">'+esc(S.bibReporte)+'</textarea>'+
 
-      '<div class="blockLbl" style="margin-top:18px;">◆ Fase V · Informe técnico</div>'+
+      '<div class="blockLbl" style="margin-top:18px;">◆ E · Informe técnico</div>'+
       '<label>Hallazgos y resultados</label>'+
       '<textarea rows="3" oninput="S.bibHallazgos=this.value" placeholder="Qué encontraste y cómo respalda tu herramienta y tus variables…">'+esc(S.bibHallazgos)+'</textarea>'+
       '<label>Conclusiones y recomendaciones</label>'+
