@@ -507,6 +507,17 @@ function anio(){
   var m=String(t).match(/(20\d{2}|19\d{2})/);
   return m ? m[1] : String(new Date().getFullYear());
 }
+// Vuelve a componer el tema desde el propósito y la línea actuales, pisando lo
+// que hubiera. Se usa desde el paso 5 cuando el alumno cambió alguno de los dos
+// y quiere la versión nueva; si no, su edición manual se respeta.
+function rearmarTema(){
+  var t = armarTema();
+  if(!t){ toast('Faltan el propósito (paso 3) o la línea (paso 4)', true); return; }
+  S.tema = t;
+  render();
+  toast('Tema rearmado desde el propósito y la línea');
+}
+
 function armarTema(){
   if(!S.proposito || !lineaTexto()) return '';
   var p = S.proposito.trim().replace(/\.?\s*$/,'');
@@ -739,7 +750,7 @@ function render(){
       '<p class="note" style="margin:0;">Selecciona una de las l\u00edneas oficiales, o \u2014si tu tema no encaja en ninguna\u2014 construye una <b>l\u00ednea paraguas</b> propia (un concepto amplio que abarque el problema).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'lin\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_lin" style="display:none;">'+
-      '<b>Gesti\u00f3n de operaciones y mejora de procesos.</b>'+
+      '<b>Gesti\u00f3n por procesos y mejora continua.</b>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (apartado de l\u00ednea de investigaci\u00f3n); la empresa se mantiene en reserva.</p>'+
       '</div>'+
@@ -754,7 +765,8 @@ function render(){
           (IA_ACTIVA?'<button type="button" class="ejBtn" id="btnIALinea" onclick="sugerirLineaIA()">✦ sugerir con IA</button>':'')+
           '<button type="button" class="ejBtn" onclick="toggleEj(\'ia\')">✦ ayuda con IA</button></div>'+
           panelAyudaIA()+
-          '<textarea rows="2" id="f_lcustom" oninput="S.lineaCustomTexto=this.value" placeholder="Ej. Excelencia operacional en la gestión de procesos de abastecimiento" style="margin-top:6px;">'+esc(S.lineaCustomTexto)+'</textarea>'+
+          '<textarea rows="2" id="f_lcustom" oninput="S.lineaCustomTexto=this.value" '+
+          'placeholder="Ej. Gestión por procesos y mejora continua" style="margin-top:6px;">'+esc(S.lineaCustomTexto)+'</textarea>'+
           '</div>'
           : '')+
         '</div>'+
@@ -772,6 +784,15 @@ function render(){
       'Reducci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y la mejora continua en la Empresa Alfa S.A.C., Lima, 2026.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[lo que se quiere lograr]</b> mediante <b>[la l\u00ednea]</b> en <b>[d\u00f3nde]</b>, en <b>[el periodo]</b>. Es afirmativo y sin signos de pregunta.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Adaptado de un trabajo real del curso (car\u00e1tula del trabajo, reordenada seg\u00fan esta f\u00f3rmula); la empresa se mantiene en reserva.</p>'+
+      '</div>'+
+      '<div class="varBox">'+
+      '<div class="varTit">De aquí sale el tema</div>'+
+      '<div class="varFija"><span class="varEt">Propósito · paso 3</span>'+
+      '<span class="varVal">'+esc(S.proposito||'— sin definir')+'</span></div>'+
+      '<div class="varFija" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">'+
+      '<span class="varEt">Línea · paso 4</span>'+
+      '<span class="varVal">'+esc(lineaTexto()||'— sin elegir')+'</span></div>'+
+      '<button type="button" class="ejBtn" style="margin-top:9px;" onclick="rearmarTema()">rearmar desde estos datos</button>'+
       '</div>'+
       '<div class="temaResLbl">Tema</div>'+
       '<textarea rows="3" id="f_tema" style="font-family:Poppins,sans-serif;font-size:16px;">'+esc(S.tema)+'</textarea>'+
@@ -819,6 +840,12 @@ function render(){
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Pasa el mouse sobre una causa para leer su texto completo.</p>'+
       '</div>'+
 
+      '<div class="varBox">'+
+      '<div class="varTit">Tu tema · paso 5</div>'+
+      '<div class="varFija" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">'+
+      '<span class="varVal">'+esc(S.tema||'— sin definir')+'</span></div>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">El problema central es <b>lo contrario</b> de lo que el tema busca lograr: si el tema propone reducir un tiempo, aquí va que ese tiempo es alto. Deben hablar del mismo indicador.</p>'+
+      '</div>'+
       '<label style="margin-top:12px;">Problema central (cabeza del pescado)</label>'+
       '<textarea rows="2" id="f_efecto" oninput="S.efectoCentral=this.value" placeholder="Escribe el efecto/problema central del diagrama…">'+esc(efectoVal)+'</textarea>'+
       (efectoSugerido && !S.efectoCentral ? '<p class="note" style="margin:4px 0 0;font-size:12px;">Sugerido desde el paso 1 — puedes editarlo.</p>' : '')+
@@ -1187,11 +1214,11 @@ function p4next(){
 // ------------------------------------------------------------------
 function promptLineaIA(){
   var lin = LINEAS.map(function(l,i){ return (i+1)+'. '+limpiarLinea(l); }).join('\n');
+  // Sin datos del proyecto: el alumno describe su caso al asistente con sus
+  // propias palabras. Aqui solo se le da la lista oficial, que la IA no conoce.
   return 'Actua como asesor de tesis de Ingenieria Industrial.\n\n' +
-    'CONTEXTO DE MI PROYECTO\n' +
-    'Empresa: ' + (S.empresa||'(completar)') + '\n' +
-    'Problema empresarial: ' + (S.problemaEmpresa||'(completar)') + '\n' +
-    'Proposito de la investigacion: ' + (S.proposito||'(completar)') + '\n\n' +
+    'MI CASO\n' +
+    '(describe aqui tu empresa, el problema y lo que quieres lograr)\n\n' +
     'LINEAS OFICIALES DE INVESTIGACION DE MI ESCUELA (2026-2030)\n' + lin + '\n\n' +
     'LO QUE NECESITO\n' +
     '1. Dime si mi problema encaja en alguna de las lineas oficiales de arriba y en cual.\n' +
