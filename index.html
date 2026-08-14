@@ -13,6 +13,13 @@
   body{font-family:'Poppins',system-ui,sans-serif;background:var(--paper);color:var(--ink);
        margin:0;line-height:1.5;}
   .wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px;}
+  /* Rótulo de parte: este aplicativo es la primera de tres (Planteamiento ·
+     Estado del arte · Métodos y técnicas). Sitúa al alumno en el conjunto. */
+  .parte{display:flex;align-items:baseline;flex-wrap:wrap;gap:9px;margin-bottom:8px;
+         font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:var(--teal);}
+  .parteNum{background:var(--teal);color:#fff;border-radius:99px;padding:3px 10px;
+            font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+  @media(max-width:480px){ .parte{font-size:13.5px;} }
   .kicker{font-family:'Poppins',sans-serif;font-weight:600;font-size:12px;letter-spacing:.12em;color:var(--amber);margin-bottom:10px;}
   h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:32px;line-height:1.15;margin:0 0 10px;}
   .sub{max-width:620px;color:#4a5a60;margin:0 0 24px;}
@@ -278,10 +285,13 @@
 </div>
 <div class="wrap">
   <div class="kicker">URP · INGENIERÍA · LÍNEAS DE INVESTIGACIÓN 2026–2030</div>
+  <div class="parte"><span class="parteNum">Primera parte</span>Planteamiento de la investigación</div>
   <h1>Del problema empresarial al planteamiento</h1>
-  <p class="sub">Describe el problema de la empresa y fija tu propósito, encuádralo en una línea oficial
-  y en un tema, halla sus causas con Ishikawa y Pareto, formula problema, objetivos e hipótesis,
-  y cierra con la matriz de consistencia.</p>
+  <p class="sub">Describe el problema de la empresa, delimítalo y fija tu propósito; encuádralo en una
+  línea de investigación oficial y en un tema específico. Halla sus causas mediante Ishikawa y Pareto,
+  y apóyate en un análisis bibliométrico para respaldar el uso de herramientas y confirmar la relación
+  entre las variables. Finalmente, formula el problema, los objetivos y las hipótesis, y cierra con la
+  matriz de consistencia.</p>
 
   <div class="userBar" id="userBar" style="display:none;">
     <span id="userTxt"></span>
@@ -367,7 +377,16 @@ var FIELD = {
   variable_dependiente    : 'ackbaguI9dSiolW5VdNCkv',
   indicador_general       : 'cCh8oJWPTdSyXZtSoGdc48',
   indicadores_especificos : 'dcLWmTW5vjplu5rGddUSoJ',
-  variables_especificas   : 'cKWROtm0TdriLzESkBwcKa'
+  variables_especificas   : 'cKWROtm0TdriLzESkBwcKa',
+  // Paso 8 · análisis bibliométrico
+  bib_pregunta            : 'dcVGpcUSnmlik3WOBcOCok',
+  bib_formula             : 'apvmkpaCjmW5eDECkUW4PQ',
+  bib_base                : 'dcQ2XgWQzmjyoiFCoKW6uy',
+  bib_registros           : 'chWQNcPCjoWOVcI8kDuHnM',
+  bib_csv                 : 'c3WQOfyCncWOfqW5yPWPPy',
+  bib_reporte             : 'dcNa_dOCngW5LIW5ZdNxnQ',
+  bib_hallazgos           : 'dcTSobWQzdH6LJWQBcRxC0',
+  bib_conclusiones        : 'cbWRBcHmnmDOkTWO_dSSke'
 };
 
 // ============================================================
@@ -390,7 +409,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Variables y objetivos","Indicadores e hipótesis","Matriz"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","Bibliométrico","General","Específicos","Variables y objetivos","Indicadores e hipótesis","Matriz"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -461,7 +480,10 @@ function estadoInicial(){
     nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
     paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
     priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
-    // Pasos 10-12: objetivos, hipótesis y matriz de consistencia
+    // Paso 8: análisis bibliométrico (5 fases EMFOCO)
+    bibPregunta:'', bibFormula:'', bibBase:'', bibRegistros:'', bibCsv:'',
+    bibReporte:'', bibHallazgos:'', bibConclusiones:'',
+    // Pasos 11-13: objetivos, hipótesis y matriz de consistencia
     objetivoGeneral:'', varInd:'', varDep:'', indicadorGeneral:'', hipotesisGeneral:'',
     estudiante:'', curso:'', recordId:null
   };
@@ -547,8 +569,8 @@ var FASES = [
   // empresa a la matriz formalizada.
   { titulo:'Diagnóstico',            desde:1,  hasta:3,  color:'#b4552f', tinte:'#f8ece6', linea:'#e8cfc2' },
   { titulo:'Encuadre',               desde:4,  hasta:5,  color:'#8d7526', tinte:'#f7f2e3', linea:'#e3d9b9' },
-  { titulo:'Problema',               desde:6,  hasta:9,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
-  { titulo:'Consistencia',           desde:10, hasta:12, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
+  { titulo:'Problema',               desde:6,  hasta:10,  color:'#2f6d6a', tinte:'#e9f3f1', linea:'#c3ded9' },
+  { titulo:'Consistencia',           desde:11, hasta:13, color:'#3d5a80', tinte:'#eaeff6', linea:'#c9d6e8' }
 ];
 
 function faseDe(n){
@@ -686,7 +708,7 @@ function render(){
       '<span style="display:block;margin-top:6px;">Completa <b>al menos 3 de los 5</b> aspectos para poder continuar.</span></div>'+
 
       campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion')+
-      campoProb('2','Posibles causas raíz','cau','¿Qué comportamientos, decisiones o condiciones observables provocan el problema? Descríbelas como algo que ocurre (no como "falta de…" o "ausencia de…"). El Ishikawa del paso 7 las desarrollará.','f_cau','probCausas')+
+      campoProb('2','Posibles causas raíz','cau','¿Qué comportamientos, decisiones o condiciones observables provocan el problema? Descríbelas como algo que ocurre (no como "falta de…" o "ausencia de…"). El Ishikawa del paso 6 las desarrollará.','f_cau','probCausas')+
       campoProb('3','Consecuencias','con','¿Cuál o cuáles son las consecuencias del problema?','f_con','probConsecuencias')+
       campoProb('4','Dónde, cómo, cuándo y bajo qué condiciones se manifiesta','ctx','Describe el escenario concreto en que ocurre el problema.','f_ctx','probContexto')+
       campoProb('5','Magnitud del problema','mag','¿Cuál es su impacto económico, productivo, en el servicio al cliente, etc.? Usa cifras siempre que puedas.','f_mag','probMagnitud')+
@@ -732,7 +754,7 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
       'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda en la Empresa Alfa S.A.C.'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 9).</p>'+
       '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
@@ -751,7 +773,7 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'lin\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_lin" style="display:none;">'+
       '<b>Gesti\u00f3n por procesos y mejora continua.</b>'+
-      '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 10) \u2014 no en la l\u00ednea.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (apartado de l\u00ednea de investigaci\u00f3n); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="lineList">'+lo+
@@ -901,7 +923,7 @@ function render(){
         '<td style="text-align:center;">'+(f.priorizada?'<span class="prTag">PE'+(f.prIdx+1)+'</span>':(en80?'<span class="p80">80%</span>':''))+'</td>'+
       '</tr>';
     });
-    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay '+rotuloNivel(true)+' en el Ishikawa. Vuelve al paso 7 y a\u00f1ade '+rotuloNivel(true)+'.</td></tr>';
+    if(!filas.length) rows='<tr><td colspan="5" style="color:#8a948f;">No hay '+rotuloNivel(true)+' en el Ishikawa. Vuelve al paso 6 y a\u00f1ade '+rotuloNivel(true)+'.</td></tr>';
 
     // Selectores de las 3 priorizadas
     var opts='<option value="">\u2014 elegir '+rotuloNivel()+' \u2014</option>';
@@ -916,7 +938,7 @@ function render(){
 
     h='<div class="card"><h2>07 · Priorización por Pareto</h2>'+
       '<div class="coordsBox" style="background:#eef5f4;margin-bottom:14px;">'+
-      '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 7). '+
+      '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 6). '+
       'Aqu\u00ed se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
       'Las 3 que elijas ser\u00e1n tus 3 problemas espec\u00edficos.</div>'+
       '<div class="blockLbl">\u25c6 \u00bfA qu\u00e9 nivel quieres priorizar?</div>'+
@@ -924,7 +946,7 @@ function render(){
       '<button type="button" class="lineOpt '+(porSubcausa()?'':'sel')+'" onclick="setNivelPareto(\'causa\')">'+
       '<span class="lineNum">1\u00ba</span><span><b>Causas</b> \u2014 lo que cuelga directo de cada espina (Ishikawa de 1.\u00ba nivel).</span></button>'+
       '<button type="button" class="lineOpt '+(porSubcausa()?'sel':'')+'" onclick="setNivelPareto(\'subcausa\')">'+
-      '<span class="lineNum">2\u00ba</span><span><b>Subcausas</b> \u2014 el porqu\u00e9 de cada causa. Requiere haberlas cargado en el paso 7.</span></button></div>'+
+      '<span class="lineNum">2\u00ba</span><span><b>Subcausas</b> \u2014 el porqu\u00e9 de cada causa. Requiere haberlas cargado en el paso 6.</span></button></div>'+
       '<p class="note" style="font-size:12.5px;">La categor\u00eda (M\u00e9todo, M\u00e1quina\u2026) no se prioriza: es un cajon de clasificaci\u00f3n, no una causa que puedas medir o corregir.</p>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Asigna una <b>frecuencia</b> a cada '+rotuloNivel()+' (cu\u00e1ntas veces se observ\u00f3, seg\u00fan tu ficha de registro).</p>'+
@@ -950,8 +972,54 @@ function render(){
       '<button class="btn" onclick="p7next()">Continuar al problema general →</button></div></div>';
   }
   else if(S.paso===8){
+    h='<div class="card"><h2>08 · Análisis bibliométrico</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Antes de formular el problema, revisa qué se ha investigado ya. Esto respalda la herramienta que elegiste en el Pareto y confirma que la relación entre tus variables está estudiada.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'bib\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_bib" style="display:none;">'+
+      '<b>Pregunta preliminar:</b> ¿Cómo influye la gestión por procesos en el tiempo de atención de entrega en empresas de servicios?<br><br>'+
+      '<b>Fórmula:</b> ( "business process management" OR "process management" ) AND ( "lead time" OR "delivery time" ) AND ( "continuous improvement" )<br><br>'+
+      '<b>Base:</b> Scopus · 2019–2025 · artículos y revisiones en inglés y español<br><br>'+
+      '<b>Reporte:</b> VOSviewer — mapa de co-ocurrencia de palabras clave, 4 clústeres. Bibliometrix — producción anual y autores más citados.<br><br>'+
+      '<b>Hallazgos:</b> la relación entre gestión por procesos y tiempo de entrega aparece en 3 de los 4 clústeres; el clúster verde concentra los estudios de manufactura y el azul los de servicios, que es el caso de la empresa.</div>'+
+
+      visorDefinido()+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Fase I · Cuestionamiento</div>'+
+      '<label>Pregunta de investigación preliminar</label>'+
+      '<textarea rows="2" oninput="S.bibPregunta=this.value" placeholder="Parte de tu propósito y tus variables: ¿cómo influye X en Y?">'+esc(S.bibPregunta)+'</textarea>'+
+      '<p class="note" style="font-size:12px;margin:4px 0 0;">No es todavía el problema general: es la pregunta con la que vas a buscar literatura.</p>'+
+
+      '<div class="blockLbl" style="margin-top:18px;">◆ Fase II · Búsqueda eficiente</div>'+
+      '<label>Fórmula de búsqueda</label>'+
+      '<textarea rows="3" oninput="S.bibFormula=this.value" placeholder=\'( "term1" OR "term2" ) AND ( "term3" )\'>'+esc(S.bibFormula)+'</textarea>'+
+      '<p class="note" style="font-size:12px;margin:4px 0 0;">Usa comillas para frases exactas, <b>OR</b> entre sinónimos y <b>AND</b> entre conceptos distintos. Una fórmula bien armada es lo que separa 40 resultados útiles de 4000 inservibles.</p>'+
+
+      '<div class="blockLbl" style="margin-top:18px;">◆ Fase III · Levantamiento de datos</div>'+
+      '<div class="row2"><div><label>Base de datos científica</label>'+
+      '<input value="'+esc(S.bibBase)+'" oninput="S.bibBase=this.value" placeholder="Ej. Scopus, Web of Science, Dimensions"></div>'+
+      '<div><label>Registros obtenidos</label>'+
+      '<input value="'+esc(S.bibRegistros)+'" oninput="S.bibRegistros=this.value" placeholder="Ej. 187 documentos, 2019–2025"></div></div>'+
+      '<label>Enlace al archivo CSV exportado</label>'+
+      '<input value="'+esc(S.bibCsv)+'" oninput="S.bibCsv=this.value" placeholder="Pega aquí el enlace de Drive a tu CSV (con permiso de lectura)">'+
+      '<p class="note" style="font-size:12px;margin:4px 0 0;">Sube el CSV a tu Drive, dale permiso de lectura y pega el enlace. El aplicativo guarda el enlace, no el archivo.</p>'+
+
+      '<div class="blockLbl" style="margin-top:18px;">◆ Fase IV · Construcción del material de análisis</div>'+
+      '<label>Reporte de los programas (VOSviewer, Bibliometrix)</label>'+
+      '<textarea rows="3" oninput="S.bibReporte=this.value" placeholder="Qué mapas y tablas generaste, y qué muestra cada uno…">'+esc(S.bibReporte)+'</textarea>'+
+
+      '<div class="blockLbl" style="margin-top:18px;">◆ Fase V · Informe técnico</div>'+
+      '<label>Hallazgos y resultados</label>'+
+      '<textarea rows="3" oninput="S.bibHallazgos=this.value" placeholder="Qué encontraste y cómo respalda tu herramienta y tus variables…">'+esc(S.bibHallazgos)+'</textarea>'+
+      '<label>Conclusiones y recomendaciones</label>'+
+      '<textarea rows="3" oninput="S.bibConclusiones=this.value" placeholder="Qué concluyes de la revisión y qué recomiendas para tu proyecto…">'+esc(S.bibConclusiones)+'</textarea>'+
+
+      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Pareto</button>'+
+      '<button class="btn" onclick="p8next()">Continuar al problema general →</button></div></div>';
+  }
+  else if(S.paso===9){
     var an = analisisCentralProposito();
-    h='<div class="card"><h2>08 · Problema general</h2>'+
+    h='<div class="card"><h2>09 · Problema general</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Se hace en dos momentos: <b>primero</b> compruebas que el propósito y el problema central digan lo mismo; <b>después</b> redactas la pregunta uniendo la línea de investigación con el propósito.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
@@ -995,10 +1063,10 @@ function render(){
       '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
 
-      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Pareto</button>'+
-      '<button class="btn" onclick="p8next()">Continuar a específicos →</button></div></div>';
+      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al análisis bibliométrico</button>'+
+      '<button class="btn" onclick="p9next()">Continuar a específicos →</button></div></div>';
   }
-  else if(S.paso===9){
+  else if(S.paso===10){
     armarEspecificos();
     var pe='';
     S.especificos.forEach(function(e,i){
@@ -1011,16 +1079,16 @@ function render(){
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
     });
     if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
-    h='<div class="card"><h2>09 · Problemas específicos y herramientas</h2>'+
+    h='<div class="card"><h2>10 · Problemas específicos y herramientas</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
-      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al problema general</button>'+
-      '<button class="btn" onclick="go(10)">Continuar → Objetivos</button></div></div>';
+      '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver al problema general</button>'+
+      '<button class="btn" onclick="go(11)">Continuar → Objetivos</button></div></div>';
   }
-  else if(S.paso===10){
+  else if(S.paso===11){
     armarEspecificos();
     var oe='';
     S.especificos.forEach(function(e,i){
@@ -1030,7 +1098,7 @@ function render(){
           '<div class="varBox">'+
           '<div class="varTit">Variables de este específico</div>'+
           '<div class="varFija"><span class="varEt">VI · lo que aplicas</span>'+
-          '<span class="varVal">'+esc(e.herramienta||'— define la herramienta en el paso 9')+'</span></div>'+
+          '<span class="varVal">'+esc(e.herramienta||'— define la herramienta en el paso 10')+'</span></div>'+
           '<label>VD · lo que mejora</label>'+
           '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso">'+
           '</div>'+
@@ -1038,8 +1106,8 @@ function render(){
           '<textarea rows="2" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
           '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOE('+i+')">proponer borrador</button></div>';
     });
-    if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
-    h='<div class="card"><h2>10 · Variables y objetivos</h2>'+
+    if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 10.</p>';
+    h='<div class="card"><h2>11 · Variables y objetivos</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
@@ -1057,7 +1125,7 @@ function render(){
       '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
       '<div><label>VD · lo que mejora</label>'+
       '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">La VI es lo que va tras «mediante» en el objetivo; la VD es lo que se reduce o incrementa. Sus indicadores se definen en el paso 11.</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">La VI es lo que va tras «mediante» en el objetivo; la VD es lo que se reduce o incrementa. Sus indicadores se definen en el paso 12.</p>'+
       '</div>'+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
@@ -1065,10 +1133,10 @@ function render(){
       '<p class="note" style="font-size:12px;margin-top:8px;">El objetivo general toma el verbo y el indicador de tu <b>propósito</b> (paso 3), nombra el <b>medio</b> con «mediante» y cierra con empresa y periodo. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivos específicos</div>'+ oe +
-      '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver a Específicos</button>'+
-      '<button class="btn" onclick="go(11)">Continuar → Indicadores</button></div></div>';
+      '<div class="actions"><button class="btnGhost" onclick="go(10)">← Volver a Específicos</button>'+
+      '<button class="btn" onclick="go(12)">Continuar → Indicadores</button></div></div>';
   }
-  else if(S.paso===11){
+  else if(S.paso===12){
     armarEspecificos();
     var he='';
     S.especificos.forEach(function(e,i){
@@ -1086,7 +1154,7 @@ function render(){
           '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHE('+i+')">proponer borrador</button></div>';
     });
     if(!he) he='<p class="note">Aún no hay objetivos específicos. Vuelve al paso 10.</p>';
-    h='<div class="card"><h2>11 · Indicadores e hipótesis</h2>'+
+    h='<div class="card"><h2>12 · Indicadores e hipótesis</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">La hipótesis es una <b>afirmación</b>, nunca una pregunta. Necesita variable independiente (lo que aplicas), variable dependiente (lo que mejora) y el contexto.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'hip\')">ver ejemplo</button></div>'+
@@ -1111,10 +1179,10 @@ function render(){
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHG()">proponer borrador</button>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis específicas</div>'+ he +
-      '<div class="actions"><button class="btnGhost" onclick="go(10)">← Volver a Variables y objetivos</button>'+
-      '<button class="btn" onclick="go(12)">Continuar → Matriz</button></div></div>';
+      '<div class="actions"><button class="btnGhost" onclick="go(11)">← Volver a Variables y objetivos</button>'+
+      '<button class="btn" onclick="go(13)">Continuar → Matriz</button></div></div>';
   }
-  else if(S.paso===12){
+  else if(S.paso===13){
     armarEspecificos();
     var filas = filasMatriz();
     // data-et permite que en móvil cada celda muestre su propio rótulo y la
@@ -1132,13 +1200,13 @@ function render(){
     t+='</tbody></table></div>';
     var faltan = filas.filter(function(f){ return !f.objetivo || !f.hipotesis || !f.indicador; }).length;
     var aviso = faltan ? '<p class="hintWarn">Hay '+faltan+' fila(s) incompleta(s). La matriz solo sirve si está completa.</p>' : '';
-    h='<div class="card"><h2>12 · Matriz de consistencia</h2>'+
+    h='<div class="card"><h2>13 · Matriz de consistencia</h2>'+
       '<p class="note">Esta matriz no se llena: se arma sola con lo que ya escribiste. Léela por filas — si una fila no se sostiene, el problema está arriba, no aquí.</p>'+
       aviso + t +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">'+
       '<button type="button" class="ejBtn" onclick="copiarMatriz()">copiar para Excel</button></div>'+
       '<textarea id="f_matrizTSV" style="position:absolute;left:-9999px;top:0;" readonly>'+esc(matrizTSV())+'</textarea>'+
-      '<div class="actions"><button class="btnGhost" onclick="go(11)">← Volver a Hipótesis</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(12)">← Volver a Hipótesis</button>'+
       '<button class="btn" onclick="guardar()" id="btnGuardar">Guardar en QuintaDB</button></div></div>';
   }
   c.innerHTML=h;
@@ -1377,11 +1445,17 @@ function p6next(){
   if(totalCausas===0) return toast('A\u00f1ade al menos una causa al Ishikawa',true);
   armarPareto(); go(7);
 }
-// 07 Pareto -> 08 Problema general
+// 07 Pareto -> 08 Análisis bibliométrico
 function p7next(){
   var elegidas=S.priorizadas.filter(function(p){ return p; });
   if(elegidas.length<3) return toast('Selecciona las 3 '+rotuloNivel(true)+' priorizadas',true);
   armarEspecificos(); go(8);
+}
+// 08 Análisis bibliométrico -> 09 Problema general
+function p8next(){
+  if(!String(S.bibPregunta||'').trim()) return toast('Escribe la pregunta de investigación preliminar',true);
+  if(!String(S.bibFormula||'').trim()) return toast('Escribe la fórmula de búsqueda',true);
+  go(9);
 }
 
 // Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
@@ -1790,10 +1864,11 @@ function setPriorizada(pi,key){
 }
 
 // 08 Problema general -> 09 Problemas específicos
-function p8next(){
+// 09 Problema general -> 10 Problemas específicos
+function p9next(){
   S.problemaGeneral=val('f_pg');
   if(!S.problemaGeneral.trim()) return toast('Redacta el problema general',true);
-  armarEspecificos(); go(9);
+  armarEspecificos(); go(10);
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
 
@@ -1826,8 +1901,8 @@ function capturarPasoActual(){
     case 5:
       if(document.getElementById('f_tema')) S.tema=val('f_tema');
       break;
-    case 8:
-      // El problema general se redacta en el paso 8. Antes esto decía case 6 y
+    case 9:
+      // El problema general se redacta en el paso 9.
       // nunca encontraba el campo: si el alumno escribía el PG y pulsaba
       // Guardar sin pasar por Continuar, se perdía.
       if(document.getElementById('f_pg')) S.problemaGeneral=val('f_pg');
@@ -1931,7 +2006,7 @@ function proponerOG(){
 
 function proponerOE(i){
   var e = S.especificos[i];
-  if(!e || !e.problema){ toast('Ese problema específico está vacío (paso 9)', true); return; }
+  if(!e || !e.problema){ toast('Ese problema específico está vacío (paso 10)', true); return; }
   e.objetivo = borradorObjetivo(e.problema);
   render(); toast('Borrador propuesto — edítalo con tus palabras');
 }
@@ -1963,7 +2038,8 @@ function visorDefinido(){
   if (lineaTexto()) f.push(['L\u00ednea', lineaTexto()]);
   if (S.proposito)  f.push(['Propósito', S.proposito]);
   if (S.tema)       f.push(['Tema', S.tema]);
-  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 8)']);
+  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 9)']);
+  if (S.bibPregunta) f.push(['Pregunta bibliom.', S.bibPregunta]);
 
   var h = '<div class="visor"><div class="visorTit">Lo que ya definiste</div>';
   f.forEach(function(x){
@@ -1974,11 +2050,11 @@ function visorDefinido(){
     S.especificos.forEach(function(e,i){
       h += '<div class="visorFila"><span class="visorEt">PE'+(i+1)+
            (e.herramienta ? ' \u00b7 '+esc(e.herramienta) : '')+'</span>'+
-           '<span class="visorVal">'+esc(e.problema||'\u2014 sin redactar (paso 9)')+'</span></div>';
+           '<span class="visorVal">'+esc(e.problema||'\u2014 sin redactar (paso 10)')+'</span></div>';
     });
   } else {
     h += '<div class="visorFila"><span class="visorEt">PE</span>'+
-         '<span class="visorVal">\u2014 a\u00fan no hay problemas espec\u00edficos (pasos 7 a 9)</span></div>';
+         '<span class="visorVal">\u2014 a\u00fan no hay problemas espec\u00edficos (pasos 7 a 10)</span></div>';
   }
   return h + '</div>';
 }
@@ -2052,7 +2128,7 @@ function armarEspecificos(){
   S.especificos=lista;
 }
 
-// Pares VI → VD de cada específico. La VI es la herramienta elegida en el paso 9.
+// Pares VI → VD de cada específico. La VI es la herramienta elegida en el paso 10.
 // Ej.: "VE1: BPMN → el tiempo de ciclo del proceso"
 function serializarVariables(){
   return S.especificos.map(function(e,i){
@@ -2098,6 +2174,9 @@ function serializarEstado(){
     paretoFreq:S.paretoFreq,
     priorizadas:S.priorizadas,
     especificos:S.especificos,
+    bibPregunta:S.bibPregunta, bibFormula:S.bibFormula, bibBase:S.bibBase,
+    bibRegistros:S.bibRegistros, bibCsv:S.bibCsv, bibReporte:S.bibReporte,
+    bibHallazgos:S.bibHallazgos, bibConclusiones:S.bibConclusiones,
     objetivoGeneral:S.objetivoGeneral,
     varInd:S.varInd, varDep:S.varDep,
     indicadorGeneral:S.indicadorGeneral,
@@ -2123,6 +2202,14 @@ function restaurarEstado(json){
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
   if(d.especificos){ S.especificos=d.especificos; }
+  S.bibPregunta       = d.bibPregunta       || '';
+  S.bibFormula        = d.bibFormula        || '';
+  S.bibBase           = d.bibBase           || '';
+  S.bibRegistros      = d.bibRegistros      || '';
+  S.bibCsv            = d.bibCsv            || '';
+  S.bibReporte        = d.bibReporte        || '';
+  S.bibHallazgos      = d.bibHallazgos      || '';
+  S.bibConclusiones   = d.bibConclusiones   || '';
   S.objetivoGeneral   = d.objetivoGeneral   || '';
   S.varInd            = d.varInd            || '';
   S.varDep            = d.varDep            || '';
@@ -2180,6 +2267,14 @@ function guardar(){
     indicador_general:S.indicadorGeneral,
     indicadores_especificos:serializarLista('indicador','IND'),
     variables_especificas:serializarVariables(),
+    bib_pregunta:S.bibPregunta,
+    bib_formula:S.bibFormula,
+    bib_base:S.bibBase,
+    bib_registros:S.bibRegistros,
+    bib_csv:S.bibCsv,
+    bib_reporte:S.bibReporte,
+    bib_hallazgos:S.bibHallazgos,
+    bib_conclusiones:S.bibConclusiones,
     estructura:serializarEstado(),
     consecuencia:S.consecuenciaSintoma,
     correos:[SESION.email, S.correoCompanero].filter(function(x){ return x; }).join(', ')
