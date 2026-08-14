@@ -1029,6 +1029,10 @@ function render(){
       '<textarea rows="3" oninput="S.bibHallazgos=this.value" placeholder="Qué encontraste y cómo respalda tu herramienta y tus variables…">'+esc(S.bibHallazgos)+'</textarea>'+
       '<label>Conclusiones y recomendaciones</label>'+
       '<textarea rows="3" oninput="S.bibConclusiones=this.value" placeholder="Qué concluyes de la revisión y qué recomiendas para tu proyecto…">'+esc(S.bibConclusiones)+'</textarea>'+
+      '<div class="varBox" style="margin-top:12px;">'+
+      '<div class="varTit">Antes de continuar</div>'+
+      '<p class="note" style="margin:0;font-size:13px;">La <b>línea de investigación</b> que elegiste en el paso 4 debe sostenerse con lo que acabas de encontrar. Si los hallazgos muestran que la literatura aborda tu problema desde otro marco conceptual, o que tu línea apenas aparece en los mapas, vuelve al paso 4 y ajústala. La revisión bibliométrica no es un trámite posterior a la decisión: es lo que la respalda o la corrige.</p>'+
+      '</div>'+
 
       '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Pareto</button>'+
       '<button class="btn" onclick="p8next()">Continuar al problema general →</button></div></div>';
@@ -1037,7 +1041,7 @@ function render(){
     var an = analisisCentralProposito();
     h='<div class="card"><h2>09 · Problema general</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Se hace en dos momentos: <b>primero</b> compruebas que el propósito y el problema central digan lo mismo; <b>después</b> redactas la pregunta uniendo la línea de investigación con el propósito.</p>'+
+      '<p class="note" style="margin:0;">El planteamiento del problema general comprende dos momentos. <b>Verificación de coherencia:</b> comprobar que el propósito y el problema central expresen la misma idea. <b>Formulación de la pregunta:</b> redactar la interrogante principal alineada con el tema de investigación y contrastada con los hallazgos del análisis bibliométrico (paso 8).</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pg" style="display:none;">'+
       '<b>Cómo se arma, con el caso de la Empresa Alfa:</b>'+
@@ -1095,12 +1099,17 @@ function render(){
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
     });
     if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
+    var notaBib = '<div class="varBox" style="margin-top:14px;">'+
+      '<div class="varTit">Coherencia con el análisis bibliométrico</div>'+
+      '<p class="note" style="margin:0;font-size:13px;">Cada problema específico nombra una <b>herramienta</b>, y esa elección debe apoyarse en los hallazgos del paso 8: la literatura tiene que mostrar que esa herramienta se ha usado para el efecto que buscas. Si una de tus tres herramientas no aparece en los mapas o aparece en un tema apenas emergente, decláralo como una limitación del estudio o sustitúyela por otra que sí tenga respaldo.</p>'+
+      '</div>';
     h='<div class="card"><h2>10 · Problemas específicos y herramientas</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
       pe+
+      notaBib+
       '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver al problema general</button>'+
       '<button class="btn" onclick="go(11)">Continuar → Objetivos</button></div></div>';
   }
