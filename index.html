@@ -1121,8 +1121,8 @@ function render(){
           '<span class="peCat">'+esc(e.herramienta||'sin herramienta')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ PE'+(i+1)+': '+esc(e.problema||'—')+'</div>'+
           '<label>Objetivo específico</label>'+
+          '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
           '<textarea rows="2" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
-          '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
           '<div class="varBox" style="margin-top:10px;">'+
           '<div class="varTit">Variables que se desprenden de este objetivo</div>'+
           '<div class="row2"><div><label>VI · lo que aplicas</label>'+
@@ -1145,8 +1145,8 @@ function render(){
       visorDefinido()+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
       '<p class="note" style="font-size:12px;margin:0 0 6px;">Toma el verbo y el indicador de tu <b>propósito</b> (paso 3), nombra el <b>medio</b> con «mediante» y cierra con empresa, ciudad y año. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
+      '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
-      '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<div class="varBox" style="margin-top:12px;">'+
       '<div class="varTit">Variables que se desprenden del objetivo general</div>'+
       '<div class="row2"><div><label>VI · lo que aplicas</label>'+
@@ -1174,8 +1174,8 @@ function render(){
           '<input value="'+esc(e.indicador||'')+'" oninput="S.especificos['+i+'].indicador=this.value" placeholder="Ej. % de reducción del tiempo de ciclo (meta 20–25%)">'+
           '</div>'+
           '<label>Hipótesis específica</label>'+
-          '<textarea rows="2" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea>'+
-          '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHE('+i+')">proponer borrador</button></div>';
+          '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerHE('+i+')">proponer borrador</button>'+
+          '<textarea rows="2" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea></div>';
     });
     if(!he) he='<p class="note">Aún no hay objetivos específicos. Vuelve al paso 10.</p>';
     h='<div class="card"><h2>12 · Indicadores e hipótesis</h2>'+
@@ -1199,8 +1199,8 @@ function render(){
       '</div>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis general</div>'+
+      '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerHG()">proponer borrador</button>'+
       '<textarea rows="3" oninput="S.hipotesisGeneral=this.value" placeholder="Hipótesis general…">'+esc(S.hipotesisGeneral)+'</textarea>'+
-      '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHG()">proponer borrador</button>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis específicas</div>'+ he +
       '<div class="actions"><button class="btnGhost" onclick="go(11)">← Volver a Objetivos y variables</button>'+
