@@ -409,7 +409,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","Bibliométrico","General","Específicos","Objetivos y variables","Indicadores e hipótesis","Matriz"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Bibliométrico","Objetivos y variables","Indicadores e hipótesis","Matriz"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -754,7 +754,7 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
       'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda en la Empresa Alfa S.A.C.'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 9).</p>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
       '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
@@ -773,7 +773,7 @@ function render(){
       '<button type="button" class="ejBtn" onclick="toggleEj(\'lin\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_lin" style="display:none;">'+
       '<b>Gesti\u00f3n por procesos y mejora continua.</b>'+
-      '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 10) \u2014 no en la l\u00ednea.</p>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (apartado de l\u00ednea de investigaci\u00f3n); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="lineList">'+lo+
@@ -972,12 +972,88 @@ function render(){
       '<button class="btn" onclick="p7next()">Continuar al problema general →</button></div></div>';
   }
   else if(S.paso===8){
-    h='<div class="card"><h2>08 · Análisis bibliométrico</h2>'+
+    var an = analisisCentralProposito();
+    h='<div class="card"><h2>08 · Problema general</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">El planteamiento del problema general comprende dos momentos. <b>Verificación de coherencia:</b> comprobar que el propósito y el problema central expresen la misma idea. <b>Formulación de la pregunta:</b> redactar la interrogante principal alineada con el tema de investigación. La revisarás con los hallazgos del análisis bibliométrico en el paso 10.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pg" style="display:none;">'+
+      '<b>Cómo se arma, con el caso de la Empresa Alfa:</b>'+
+      '<table class="ejParTable"><tbody>'+
+      '<tr><td style="width:34%;">Problema central (Ishikawa)</td><td><i>Elevado</i> tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
+      '<tr><td>Propósito (paso 3)</td><td><i>Reducir</i> el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</td></tr>'+
+      '<tr><td>¿Hablan de lo mismo?</td><td>Sí: ambos giran sobre <b>tiempo de atención</b> en la <b>entrega</b> de <b>bienes y servicios</b>. Uno lo dice en negativo, el otro en positivo.</td></tr>'+
+      '<tr><td>Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
+      '</tbody></table>'+
+      '<b>Problema general que redactó:</b><br>'+
+      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> <b>reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Mira el verbo. El propósito decía <b>reducir</b> el tiempo de atención, y la pregunta vuelve a decir <b>reducir</b>. Si en tu pregunta aparece un verbo distinto al de tu propósito, alguno de los dos se te movió: revísalo antes de continuar.</p>'+
+      '</div>'+
+
+      '<div class="blockLbl" style="margin-top:16px;">◆ Primero · ¿El propósito y el problema central dicen lo mismo?</div>'+
+      '<p class="note" style="margin:0 0 2px;">Lee los dos textos de abajo y compáralos: van <mark>resaltadas</mark> las palabras que aparecen en los dos. Como el proyecto apunta al problema central, tu propósito tiene que estar hablando de eso mismo.</p>'+
+      '<div class="insBox">'+
+      '<div class="insCard"><b>Problema central — Ishikawa (paso 6)</b><span>'+
+      (S.efectoCentral ? resaltarComunes(S.efectoCentral, S.proposito||'') : '<i style="color:#a8501e;">sin definir</i>')+'</span></div>'+
+      '<div class="insCard"><b>Propósito (paso 3)</b><span>'+
+      (S.proposito ? resaltarComunes(S.proposito, S.efectoCentral||'') : '<i style="color:#a8501e;">sin definir</i>')+'</span></div>'+
+      '</div>'+
+      '<div class="cohV '+an.cls+'">'+an.txt+'</div>'+
+      (an.cls!=='ok' ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'+
+        '<button class="btnMini" onclick="go(3)">← corregir el propósito</button>'+
+        '<button class="btnMini" onclick="go(6)">← corregir el problema central</button></div>' : '')+
+
+      '<div class="blockLbl" style="margin-top:20px;">◆ Después · Redacta el problema general</div>'+
+      '<div class="cohV med" style="font-size:13.5px;">La pregunta es <b>la línea + el propósito ya alineado con el problema central</b>. El problema central no se copia dentro de la pregunta: es lo que garantiza que el propósito apunte a donde debe.</div>'+
+      '<div class="insBox" style="margin-top:10px;"><div class="insCard"><b>Línea de investigación (paso 4)</b><span>'+
+      (lineaTexto() ? esc(lineaTexto()) : '<i style="color:#a8501e;">sin definir</i>')+'</span></div></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:8px 0 6px;">'+
+      '<p class="note" style="margin:0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pgr\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pgr" style="display:none;">'+
+      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general del caso, tal como aparece en su matriz de consistencia.</p>'+
+      '</div>'+
+      '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
+      '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
+
+      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Pareto</button>'+
+      '<button class="btn" onclick="p8next()">Continuar a específicos →</button></div></div>';
+  }
+  else if(S.paso===9){
+    armarEspecificos();
+    var pe='';
+    S.especificos.forEach(function(e,i){
+      var subTxt = e.sub ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">subcausa priorizada: '+esc(e.sub)+'</div>' : '';
+      pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
+          '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
+          subTxt+
+          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea>'+
+          '<label>Herramienta enmarcada en la línea</label>'+
+          '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
+    });
+    if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
+    var notaBib = '<div class="varBox" style="margin-top:14px;">'+
+      '<div class="varTit">Estas herramientas son una propuesta, todavía no una decisión</div>'+
+      '<p class="note" style="margin:0;font-size:13px;">Las eliges ahora por criterio técnico, pero quien las confirma es la literatura. En el <b>paso 10</b> harás el análisis bibliométrico y comprobarás si cada una tiene respaldo para el efecto que buscas. Es normal volver aquí y cambiar alguna: eso no es un retroceso, es el método funcionando.</p>'+
+      '</div>';
+    h='<div class="card"><h2>09 · Problemas específicos y herramientas</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
+      pe+
+      notaBib+
+      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al problema general</button>'+
+      '<button class="btn" onclick="go(10)">Continuar → Análisis bibliométrico</button></div></div>';
+  }
+  else if(S.paso===10){
+    h='<div class="card"><h2>10 · Análisis bibliométrico</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Antes de formular el problema, revisa qué se ha investigado ya. Esto respalda la herramienta que elegiste en el Pareto y confirma que la relación entre tus variables está estudiada.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'bib\')">ver ejemplo</button></div>'+
       '<div class="ejBox" id="ej_bib" style="display:none;">'+
-      '<div style="font-size:12.5px;margin-bottom:10px;">Ejemplo <b>adaptado</b> del caso Alfa. Fíjate en algo: se hace <b>una búsqueda por cada problema específico</b>, no una sola general. Así cada herramienta que elegiste en el Pareto queda respaldada por separado.</div>'+
+      '<div style="font-size:12.5px;margin-bottom:10px;">Ejemplo <b>adaptado</b> del caso Alfa. Fíjate en algo: se hace <b>una búsqueda por cada problema específico</b>, no una sola general. Así cada herramienta que propusiste en el paso 9 queda confirmada —o descartada— por separado.</div>'+
 
       '<b>A · Pregunta preliminar</b><br>'+
       '¿En qué medida la gestión por procesos y la mejora continua reducen el tiempo de atención de entrega de bienes y/o servicios en empresas de servicios de ingeniería?<br>'+
@@ -1030,88 +1106,14 @@ function render(){
       '<label>Conclusiones y recomendaciones</label>'+
       '<textarea rows="3" oninput="S.bibConclusiones=this.value" placeholder="Qué concluyes de la revisión y qué recomiendas para tu proyecto…">'+esc(S.bibConclusiones)+'</textarea>'+
       '<div class="varBox" style="margin-top:12px;">'+
-      '<div class="varTit">Antes de continuar</div>'+
-      '<p class="note" style="margin:0;font-size:13px;">La <b>línea de investigación</b> que elegiste en el paso 4 debe sostenerse con lo que acabas de encontrar. Si los hallazgos muestran que la literatura aborda tu problema desde otro marco conceptual, o que tu línea apenas aparece en los mapas, vuelve al paso 4 y ajústala. La revisión bibliométrica no es un trámite posterior a la decisión: es lo que la respalda o la corrige.</p>'+
+      '<div class="varTit">Antes de continuar · qué debes revisar con estos hallazgos</div>'+
+      '<p class="note" style="margin:0 0 8px;font-size:13px;"><b>Las herramientas de tus problemas específicos (paso 9).</b> La literatura debe mostrar que cada una se ha usado para el efecto que buscas. Si alguna no aparece en los mapas, o aparece en un tema apenas emergente, tienes dos salidas: sustituirla por otra con respaldo, o mantenerla y declararlo como limitación del estudio. Los mapas también pueden sugerirte herramientas que no habías considerado.</p>'+
+      '<p class="note" style="margin:0 0 8px;font-size:13px;"><b>La línea de investigación (paso 4).</b> Si los hallazgos muestran que la literatura aborda tu problema desde otro marco conceptual, o que tu línea apenas figura en los mapas, vuelve al paso 4 y ajústala.</p>'+
+      '<p class="note" style="margin:0;font-size:13px;"><b>El problema general (paso 8).</b> Contrástalo con los términos que la literatura ya emplea. Si tu pregunta nombra el fenómeno de otra forma, conviene alinearla antes de pasar a los objetivos.</p>'+
       '</div>'+
 
-      '<div class="actions"><button class="btnGhost" onclick="go(7)">← Volver al Pareto</button>'+
-      '<button class="btn" onclick="p8next()">Continuar al problema general →</button></div></div>';
-  }
-  else if(S.paso===9){
-    var an = analisisCentralProposito();
-    h='<div class="card"><h2>09 · Problema general</h2>'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">El planteamiento del problema general comprende dos momentos. <b>Verificación de coherencia:</b> comprobar que el propósito y el problema central expresen la misma idea. <b>Formulación de la pregunta:</b> redactar la interrogante principal alineada con el tema de investigación y contrastada con los hallazgos del análisis bibliométrico (paso 8).</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_pg" style="display:none;">'+
-      '<b>Cómo se arma, con el caso de la Empresa Alfa:</b>'+
-      '<table class="ejParTable"><tbody>'+
-      '<tr><td style="width:34%;">Problema central (Ishikawa)</td><td><i>Elevado</i> tiempo de atención en la entrega de bienes y/o servicios</td></tr>'+
-      '<tr><td>Propósito (paso 3)</td><td><i>Reducir</i> el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</td></tr>'+
-      '<tr><td>¿Hablan de lo mismo?</td><td>Sí: ambos giran sobre <b>tiempo de atención</b> en la <b>entrega</b> de <b>bienes y servicios</b>. Uno lo dice en negativo, el otro en positivo.</td></tr>'+
-      '<tr><td>Línea de investigación</td><td>Gestión por procesos y mejora continua</td></tr>'+
-      '</tbody></table>'+
-      '<b>Problema general que redactó:</b><br>'+
-      '<i>¿De qué manera la <b>aplicación de la gestión por procesos y la mejora continua</b> <b>reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería</b> en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Mira el verbo. El propósito decía <b>reducir</b> el tiempo de atención, y la pregunta vuelve a decir <b>reducir</b>. Si en tu pregunta aparece un verbo distinto al de tu propósito, alguno de los dos se te movió: revísalo antes de continuar.</p>'+
-      '</div>'+
-
-      '<div class="blockLbl" style="margin-top:16px;">◆ Primero · ¿El propósito y el problema central dicen lo mismo?</div>'+
-      '<p class="note" style="margin:0 0 2px;">Lee los dos textos de abajo y compáralos: van <mark>resaltadas</mark> las palabras que aparecen en los dos. Como el proyecto apunta al problema central, tu propósito tiene que estar hablando de eso mismo.</p>'+
-      '<div class="insBox">'+
-      '<div class="insCard"><b>Problema central — Ishikawa (paso 6)</b><span>'+
-      (S.efectoCentral ? resaltarComunes(S.efectoCentral, S.proposito||'') : '<i style="color:#a8501e;">sin definir</i>')+'</span></div>'+
-      '<div class="insCard"><b>Propósito (paso 3)</b><span>'+
-      (S.proposito ? resaltarComunes(S.proposito, S.efectoCentral||'') : '<i style="color:#a8501e;">sin definir</i>')+'</span></div>'+
-      '</div>'+
-      '<div class="cohV '+an.cls+'">'+an.txt+'</div>'+
-      (an.cls!=='ok' ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'+
-        '<button class="btnMini" onclick="go(3)">← corregir el propósito</button>'+
-        '<button class="btnMini" onclick="go(6)">← corregir el problema central</button></div>' : '')+
-
-      '<div class="blockLbl" style="margin-top:20px;">◆ Después · Redacta el problema general</div>'+
-      '<div class="cohV med" style="font-size:13.5px;">La pregunta es <b>la línea + el propósito ya alineado con el problema central</b>. El problema central no se copia dentro de la pregunta: es lo que garantiza que el propósito apunte a donde debe.</div>'+
-      '<div class="insBox" style="margin-top:10px;"><div class="insCard"><b>Línea de investigación (paso 4)</b><span>'+
-      (lineaTexto() ? esc(lineaTexto()) : '<i style="color:#a8501e;">sin definir</i>')+'</span></div></div>'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:8px 0 6px;">'+
-      '<p class="note" style="margin:0;font-size:12.5px;">Fórmula: ¿De qué manera <b>[la línea]</b> <b>[el propósito, en presente]</b> en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'pgr\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_pgr" style="display:none;">'+
-      '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general del caso, tal como aparece en su matriz de consistencia.</p>'+
-      '</div>'+
-      '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
-      '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
-
-      '<div class="actions"><button class="btnGhost" onclick="go(8)">← Volver al análisis bibliométrico</button>'+
-      '<button class="btn" onclick="p9next()">Continuar a específicos →</button></div></div>';
-  }
-  else if(S.paso===10){
-    armarEspecificos();
-    var pe='';
-    S.especificos.forEach(function(e,i){
-      var subTxt = e.sub ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">subcausa priorizada: '+esc(e.sub)+'</div>' : '';
-      pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
-          '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
-          subTxt+
-          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea>'+
-          '<label>Herramienta enmarcada en la línea</label>'+
-          '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
-    });
-    if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
-    var notaBib = '<div class="varBox" style="margin-top:14px;">'+
-      '<div class="varTit">Coherencia con el análisis bibliométrico</div>'+
-      '<p class="note" style="margin:0;font-size:13px;">Cada problema específico nombra una <b>herramienta</b>, y esa elección debe apoyarse en los hallazgos del paso 8: la literatura tiene que mostrar que esa herramienta se ha usado para el efecto que buscas. Si una de tus tres herramientas no aparece en los mapas o aparece en un tema apenas emergente, decláralo como una limitación del estudio o sustitúyela por otra que sí tenga respaldo.</p>'+
-      '</div>';
-    h='<div class="card"><h2>10 · Problemas específicos y herramientas</h2>'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
-      '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
-      '<div class="ejBox" id="ej_pe" style="display:none;">PE1: ¿De qué manera el rediseño del flujo de trabajo (BPMN, AS-IS → TO-BE) reduce el tiempo de ciclo del proceso…? · Herramienta: BPMN (sus productos son el SOP y la matriz RACI). PE2: ¿De qué manera la automatización de tareas repetitivas (RPA integrado al ERP) reduce los reprocesos…? · Herramienta: RPA + ERP. PE3: ¿De qué manera el seguimiento de tiempos por etapa (KPIs bajo SCOR) incrementa la cobertura de control…? · Herramienta: KPIs bajo SCOR.</div>'+
-      pe+
-      notaBib+
-      '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver al problema general</button>'+
-      '<button class="btn" onclick="go(11)">Continuar → Objetivos</button></div></div>';
+      '<div class="actions"><button class="btnGhost" onclick="go(9)">← Volver a Específicos</button>'+
+      '<button class="btn" onclick="p10next()">Continuar → Objetivos</button></div></div>';
   }
   else if(S.paso===11){
     armarEspecificos();
@@ -1131,7 +1133,7 @@ function render(){
           '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso"></div></div>'+
           '</div></div>';
     });
-    if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 10.</p>';
+    if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
     h='<div class="card"><h2>11 · Objetivos y variables</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
@@ -1475,11 +1477,11 @@ function p7next(){
   if(elegidas.length<3) return toast('Selecciona las 3 '+rotuloNivel(true)+' priorizadas',true);
   armarEspecificos(); go(8);
 }
-// 08 Análisis bibliométrico -> 09 Problema general
-function p8next(){
+// 10 Análisis bibliométrico -> 11 Objetivos y variables
+function p10next(){
   if(!String(S.bibPregunta||'').trim()) return toast('Escribe la pregunta de investigación preliminar',true);
   if(!String(S.bibFormula||'').trim()) return toast('Escribe la fórmula de búsqueda',true);
-  go(9);
+  go(11);
 }
 
 // Genera (una vez) el PNG del Ishikawa de ejemplo de Valeria y lo inyecta en el recuadro
@@ -1888,11 +1890,11 @@ function setPriorizada(pi,key){
 }
 
 // 08 Problema general -> 09 Problemas específicos
-// 09 Problema general -> 10 Problemas específicos
-function p9next(){
+// 08 Problema general -> 09 Problemas específicos
+function p8next(){
   S.problemaGeneral=val('f_pg');
   if(!S.problemaGeneral.trim()) return toast('Redacta el problema general',true);
-  armarEspecificos(); go(10);
+  armarEspecificos(); go(9);
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
 
@@ -1925,8 +1927,8 @@ function capturarPasoActual(){
     case 5:
       if(document.getElementById('f_tema')) S.tema=val('f_tema');
       break;
-    case 9:
-      // El problema general se redacta en el paso 9.
+    case 8:
+      // El problema general se redacta en el paso 8.
       // nunca encontraba el campo: si el alumno escribía el PG y pulsaba
       // Guardar sin pasar por Continuar, se perdía.
       if(document.getElementById('f_pg')) S.problemaGeneral=val('f_pg');
@@ -2036,7 +2038,7 @@ function proponerOG(){
 
 function proponerOE(i){
   var e = S.especificos[i];
-  if(!e || !e.problema){ toast('Ese problema específico está vacío (paso 10)', true); return; }
+  if(!e || !e.problema){ toast('Ese problema específico está vacío (paso 9)', true); return; }
   e.objetivo = borradorObjetivo(e.problema);
   render(); toast('Borrador propuesto — edítalo con tus palabras');
 }
@@ -2068,7 +2070,7 @@ function visorDefinido(){
   if (lineaTexto()) f.push(['L\u00ednea', lineaTexto()]);
   if (S.proposito)  f.push(['Propósito', S.proposito]);
   if (S.tema)       f.push(['Tema', S.tema]);
-  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 9)']);
+  f.push(['Problema general', S.problemaGeneral || '\u2014 sin definir (paso 8)']);
   if (S.bibPregunta) f.push(['Pregunta bibliom.', S.bibPregunta]);
 
   var h = '<div class="visor"><div class="visorTit">Lo que ya definiste</div>';
@@ -2080,7 +2082,7 @@ function visorDefinido(){
     S.especificos.forEach(function(e,i){
       h += '<div class="visorFila"><span class="visorEt">PE'+(i+1)+
            (e.herramienta ? ' \u00b7 '+esc(e.herramienta) : '')+'</span>'+
-           '<span class="visorVal">'+esc(e.problema||'\u2014 sin redactar (paso 10)')+'</span></div>';
+           '<span class="visorVal">'+esc(e.problema||'\u2014 sin redactar (paso 9)')+'</span></div>';
     });
   } else {
     h += '<div class="visorFila"><span class="visorEt">PE</span>'+
