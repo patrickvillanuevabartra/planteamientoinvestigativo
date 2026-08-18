@@ -224,6 +224,23 @@
   .reqs{margin:6px 0 2px;padding-left:20px;list-style:lower-alpha;}
   .reqs li{margin:3px 0;line-height:1.5;}
   .reqs li::marker{color:#8a6d3b;font-weight:700;}
+  .recFila{display:flex;align-items:stretch;gap:6px;}
+  .recTipo-pdf{background:#f3eaf6;color:#6b3f80;}
+  .recAdmin{border:1px dashed #c9bfa4;border-radius:6px;background:#fbfaf6;
+            padding:11px 13px;margin-top:12px;}
+  .recLista{display:flex;flex-direction:column;gap:7px;}
+  .recItem{display:flex;align-items:center;gap:11px;text-decoration:none;
+           background:#fff;border:1px solid var(--line);border-radius:6px;
+           padding:9px 12px;transition:border-color .15s ease,background .15s ease;}
+  .recItem:hover{border-color:var(--teal);background:#f2f8f7;}
+  .recTipo{flex-shrink:0;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+           font-weight:700;border-radius:99px;padding:3px 8px;white-space:nowrap;}
+  .recTipo-video{background:#f8ece6;color:#b4552f;}
+  .recTipo-guía{background:#e9f3f1;color:var(--teal);}
+  .recTxt{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .recTit{font-size:13.5px;color:var(--ink);line-height:1.4;}
+  .recDesc{font-size:12px;color:#8a948f;line-height:1.4;}
+  .recFlecha{flex-shrink:0;color:#9aa39d;font-size:14px;}
   .rtBar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0;}
   .rtBtn{background:#fff;border:1px solid var(--line);border-bottom:none;border-radius:4px 4px 0 0;
          padding:4px 9px;font-size:12px;color:#6a746f;cursor:pointer;line-height:1.4;}
@@ -324,8 +341,10 @@
   <div class="tabs">
     <button class="tab on" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
     <button class="tab" id="tabLista" onclick="mostrarTab('lista')">Planteamientos guardados</button>
-    <button class="btnMini" style="margin-left:auto;align-self:center;" onclick="nuevoPlanteamiento()">＋ Nuevo desde cero</button>
+    <button class="btnMini" style="margin-left:auto;align-self:center;" onclick="toggleRecursos()">▷ Recursos</button>
+    <button class="btnMini" style="align-self:center;" onclick="nuevoPlanteamiento()">＋ Nuevo desde cero</button>
   </div>
+  <div id="panelRecursos" style="display:none;"></div>
 
   <!-- ============ VISTA FLUJO ============ -->
   <div id="vistaFlujo">
@@ -459,7 +478,9 @@ var EJEMPLO_PROB = {
 };
 function toggleEj(id){
   var el=document.getElementById('ej_'+id);
-  if(el) el.style.display = (el.style.display==='none'||!el.style.display) ? 'block' : 'none';
+  if(!el) return;
+  var abrir = (el.style.display==='none'||!el.style.display);
+  el.style.display = abrir ? 'block' : 'none';
 }
 
 function limpiarLinea(l){ return l.replace(/\s*\(T\)\s*$/,'').trim(); }
@@ -764,6 +785,173 @@ function rtEnlace(id){
   if(!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) url = 'https://' + url;
   document.execCommand('createLink', false, url);
   rtGuardar(el);
+}
+
+/* Tutoriales de Mendeley. Se abren en pestaña nueva para no perder lo
+   escrito: esta pantalla no guarda hasta que se pulsa Guardar. */
+var RECURSOS_MENDELEY = [
+  { t:'Gestor bibliográfico Mendeley — guía completa',
+    d:'Universidad de Lima · construir la biblioteca paso a paso',
+    u:'https://libguides.ulima.edu.pe/Mendeley/Construye_Biblioteca', tipo:'guía' },
+  { t:'Instalación de Mendeley',
+    d:'crear la cuenta e instalar el programa',
+    u:'https://youtu.be/JSJ-6fNDsXM', tipo:'video' },
+  { t:'Mendeley Reference Manager',
+    d:'colecciones, subcolecciones y cómo agregar documentos',
+    u:'https://youtu.be/ovN2-n7Dspk', tipo:'video' },
+  { t:'Mendeley Web Importer',
+    d:'importar referencias desde Scopus, Scholar y Scielo',
+    u:'https://youtu.be/jOxl-f50PF4', tipo:'video' },
+  { t:'Mendeley Cite',
+    d:'insertar citas y generar la lista de referencias en Word',
+    u:'https://youtu.be/yVNf7dQ5gaU', tipo:'video' }
+];
+
+/* ── PANEL GLOBAL DE RECURSOS ──
+   Vive fuera del recorrido: los recursos pueden ser de cualquier paso, así
+   que el botón está en la barra superior y se ve desde donde sea. */
+var PASOS_RECURSO = [
+  {v:'',   t:'General (todos los pasos)'},
+  {v:'1',  t:'1 · Problema'},   {v:'2',  t:'2 · Delimitación'},
+  {v:'3',  t:'3 · Propósito'},  {v:'4',  t:'4 · Línea'},
+  {v:'5',  t:'5 · Tema'},       {v:'6',  t:'6 · Ishikawa'},
+  {v:'7',  t:'7 · Pareto'},     {v:'8',  t:'8 · Problema general'},
+  {v:'9',  t:'9 · Específicos'},{v:'10', t:'10 · Bibliométrico'},
+  {v:'11', t:'11 · Objetivos y variables'},
+  {v:'12', t:'12 · Indicadores e hipótesis'},
+  {v:'13', t:'13 · Matriz'},    {v:'14', t:'14 · Referencias'}
+];
+
+function etiquetaPaso_(p){
+  var n = String(p||'').trim();
+  if(!n) return 'General';
+  for(var i=0;i<PASOS_RECURSO.length;i++) if(PASOS_RECURSO[i].v===n) return PASOS_RECURSO[i].t;
+  return 'Paso ' + n;
+}
+
+function toggleRecursos(){
+  var el = document.getElementById('panelRecursos');
+  if(!el) return;
+  var abrir = (el.style.display === 'none' || !el.style.display);
+  el.style.display = abrir ? 'block' : 'none';
+  if(abrir){ el.innerHTML = marcoRecursos_(); cargarRecursos(); }
+}
+
+function marcoRecursos_(){
+  var h = '<div class="card" style="margin-bottom:22px;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+          '<h2 style="margin:0;">Recursos y tutoriales</h2>'+
+          '<button type="button" class="ejBtn" onclick="toggleRecursos()">cerrar</button></div>'+
+          '<p class="note">Materiales de apoyo para cualquier paso del recorrido. Se abren en una pestaña nueva, así no pierdes lo que estés escribiendo.</p>'+
+          '<div class="blockLbl" style="margin-top:16px;">◆ Mendeley · gestor de referencias</div>'+
+          '<div class="recLista">';
+  RECURSOS_MENDELEY.forEach(function(r){
+    h += '<a class="recItem" href="'+esc(r.u)+'" target="_blank" rel="noopener">'+
+         '<span class="recTipo recTipo-'+r.tipo+'">'+(r.tipo==='video'?'▶ video':'guía')+'</span>'+
+         '<span class="recTxt"><span class="recTit">'+esc(r.t)+'</span>'+
+         '<span class="recDesc">'+esc(r.d)+'</span></span>'+
+         '<span class="recFlecha">↗</span></a>';
+  });
+  h += '</div><div id="recPublicados"></div>';
+
+  if(SESION.docente){
+    var ops = PASOS_RECURSO.map(function(p){
+      return '<option value="'+p.v+'">'+esc(p.t)+'</option>';
+    }).join('');
+    h += '<div class="recAdmin">'+
+         '<div class="varTit" style="color:#8a6d3b;">Publicar un recurso · solo docentes</div>'+
+         '<div class="row2"><div><label>Título</label>'+
+         '<input id="rec_titulo" placeholder="Ej. Guía rápida de Mendeley (PDF)"></div>'+
+         '<div><label>Tipo</label>'+
+         '<select id="rec_tipo"><option>Video</option><option>Guía</option><option>PDF</option></select></div></div>'+
+         '<div class="row2"><div><label>¿De qué paso es?</label>'+
+         '<select id="rec_paso">'+ops+'</select></div>'+
+         '<div><label>Orden</label>'+
+         '<input id="rec_orden" placeholder="1, 2, 3…" value="10"></div></div>'+
+         '<label>Descripción</label>'+
+         '<input id="rec_desc" placeholder="Una línea sobre qué cubre">'+
+         '<label>Enlace</label>'+
+         '<input id="rec_url" placeholder="https://drive.google.com/… (permiso de lectura)">'+
+         '<p class="note" style="font-size:12px;margin:4px 0 8px;">Si es un PDF, súbelo a Drive, dale permiso de lectura y pega aquí el enlace.</p>'+
+         '<button type="button" class="ejBtn" onclick="publicarRecurso()">publicar recurso</button>'+
+         '</div>';
+  }
+  return h + '</div>';
+}
+
+/* Recursos publicados por el docente, agrupados por paso. Crear y eliminar
+   los autoriza el proxy, no esta pantalla. */
+function cargarRecursos(){
+  var cont = document.getElementById('recPublicados');
+  if(!cont) return;
+  cont.innerHTML = '<p class="note" style="font-size:12px;margin:10px 0 0;">Cargando recursos…</p>';
+  jsonpCall({ action:'recursos' }, function(r){
+    if(!r || !r.ok){ cont.innerHTML=''; return; }
+    var lista = r.lista || [];
+    if(!lista.length){ cont.innerHTML=''; return; }
+
+    var grupos = {}, orden = [];
+    lista.forEach(function(x){
+      var k = String(x.paso||'').trim();
+      if(!grupos[k]){ grupos[k]=[]; orden.push(k); }
+      grupos[k].push(x);
+    });
+    orden.sort(function(a,b){ return (parseInt(a,10)||0) - (parseInt(b,10)||0); });
+
+    var h = '';
+    orden.forEach(function(k){
+      h += '<div class="blockLbl" style="margin-top:18px;">◆ '+esc(etiquetaPaso_(k))+'</div>'+
+           '<div class="recLista">';
+      grupos[k].forEach(function(x){
+        var t = String(x.tipo||'').toLowerCase();
+        var cls = (t.indexOf('video')!==-1) ? 'video' : (t.indexOf('pdf')!==-1 ? 'pdf' : 'guía');
+        var et  = (cls==='video') ? '▶ video' : (cls==='pdf' ? 'PDF' : 'guía');
+        h += '<div class="recFila">'+
+             '<a class="recItem" style="flex:1;" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+
+             '<span class="recTipo recTipo-'+cls+'">'+et+'</span>'+
+             '<span class="recTxt"><span class="recTit">'+esc(x.titulo||'(sin título)')+'</span>'+
+             '<span class="recDesc">'+esc(x.descripcion||'')+'</span></span>'+
+             '<span class="recFlecha">↗</span></a>'+
+             (SESION.docente ? '<button type="button" class="btnDel" style="padding:6px 9px;" '+
+               'title="Eliminar recurso" onclick="eliminarRecurso(\''+x.id+'\')">×</button>' : '')+
+             '</div>';
+      });
+      h += '</div>';
+    });
+    cont.innerHTML = h;
+  }, function(){ cont.innerHTML=''; });
+}
+
+function publicarRecurso(){
+  var url = val('rec_url').trim();
+  if(!url) return toast('Pega el enlace del recurso', true);
+  var params = {
+    action:'recurso_crear',
+    titulo: encodeURIComponent(val('rec_titulo').trim()),
+    descripcion: encodeURIComponent(val('rec_desc').trim()),
+    tipo: encodeURIComponent(document.getElementById('rec_tipo').value),
+    url: encodeURIComponent(url),
+    paso: document.getElementById('rec_paso').value,
+    orden: val('rec_orden').trim() || '10'
+  };
+  toast('Publicando…');
+  jsonpCall(params, function(r){
+    if(!r || !r.ok) return toast('No se pudo publicar'+((r&&r.error)?': '+r.error:''), true);
+    ['rec_titulo','rec_desc','rec_url'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value='';
+    });
+    toast('✓ Recurso publicado');
+    cargarRecursos();
+  }, function(f){ toast('Error de red al publicar. '+textoFallo(f), true); });
+}
+
+function eliminarRecurso(id){
+  if(!confirm('¿Eliminar este recurso? Dejará de verlo todo el curso.')) return;
+  jsonpCall({ action:'recurso_eliminar', record_id:id }, function(r){
+    if(!r || !r.ok) return toast('No se pudo eliminar'+((r&&r.error)?': '+r.error:''), true);
+    toast('Recurso eliminado');
+    cargarRecursos();
+  }, function(f){ toast('Error de red al eliminar. '+textoFallo(f), true); });
 }
 
 // ¿Se ha tocado algo de Mendeley? Sirve para marcar la píldora transversal.
