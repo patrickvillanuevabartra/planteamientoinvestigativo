@@ -221,6 +221,9 @@
   .mcTag{font-weight:700;color:var(--teal);white-space:nowrap;}
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
   .btnDel:hover{background:#fbf1ee;}
+  .reqs{margin:6px 0 2px;padding-left:20px;list-style:lower-alpha;}
+  .reqs li{margin:3px 0;line-height:1.5;}
+  .reqs li::marker{color:#8a6d3b;font-weight:700;}
   .rtBar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0;}
   .rtBtn{background:#fff;border:1px solid var(--line);border-bottom:none;border-radius:4px 4px 0 0;
          padding:4px 9px;font-size:12px;color:#6a746f;cursor:pointer;line-height:1.4;}
@@ -1379,26 +1382,37 @@ function render(){
   else if(S.paso===14){
     var REF = [
       ['refCuenta','Cuenta y perfil',
-       'Crea la cuenta con tu correo institucional y completa el perfil. Es la identidad con la que compartirás el grupo del equipo.',
+       'Crea tu cuenta con el correo institucional y configura tu perfil. Es la identidad con la que compartirás el grupo del equipo.',
        'Correo de la cuenta y nombre del perfil…'],
       ['refManager','Mendeley Reference Manager',
-       'La biblioteca donde vive todo. Organiza por carpetas —una por capítulo o por problema específico— para no terminar con 200 referencias sueltas.',
-       'Carpetas creadas y cuántas referencias tienes hasta ahora…'],
+       'Instala Mendeley Reference Manager y arma tu biblioteca:'+
+       '<ol class="reqs"><li>Crea al menos <b>cinco colecciones</b>.</li>'+
+       '<li>Crea al menos <b>dos subcolecciones</b> dentro de cada colección.</li>'+
+       '<li>Incluye documentación valiosa para tu proyecto en cada colección y subcolección, usando las <b>tres modalidades</b>: desde la computadora, manualmente e importando una biblioteca.</li></ol>',
+       'Nombra tus colecciones y subcolecciones, y di qué modalidad usaste en cada caso…'],
       ['refImporter','Mendeley Web Importer',
-       'La extensión del navegador que captura una referencia desde Scopus, Scielo o Google Académico sin escribirla a mano.',
-       'Desde qué bases importaste y qué dificultades tuviste…'],
+       'Instala Mendeley Web Importer e importa al menos <b>diez referencias</b> desde bases de datos académicas:'+
+       '<ol class="reqs"><li>Scopus</li><li>Google Scholar</li><li>Scielo</li></ol>',
+       'Cuántas referencias importaste de cada base y qué dificultades tuviste…'],
       ['refMetadatos','Metadatos',
-       'Lo que el importador captura viene con errores: autores incompletos, año en blanco, revista mal escrita. Corrígelos ahí, no en Word: un metadato malo se propaga a todas las citas.',
-       'Qué campos corregiste y en cuántas referencias…'],
+       'Modifica los metadatos de al menos <b>tres referencias</b>. Corrígelos en Mendeley y no en Word: un metadato mal escrito se propaga a todas las citas y a la lista final.',
+       'Qué campos corregiste (autor, año, revista…) y en qué referencias…'],
       ['refNotebook','Notebook',
-       'Notas y subrayados sobre los PDF. Aquí anotas para qué te sirve cada fuente y en qué parte del proyecto la vas a usar.',
-       'Qué anotaste y cómo lo organizaste…'],
+       'Abre el Notebook y organiza tus notas de lectura:'+
+       '<ol class="reqs"><li>Crea al menos <b>tres páginas</b>, una por cada problema específico.</li>'+
+       '<li>Arrastra al menos <b>cinco subrayados</b> desde los PDF a la página que corresponda: Mendeley conserva la fuente de cada uno.</li>'+
+       '<li>Escribe en cada página para qué te sirve el documento y en qué parte del proyecto lo vas a usar.</li></ol>',
+       'Cómo titulaste las páginas y qué anotaste en cada una…'],
       ['refGrupo','Grupo de trabajo',
-       'Un grupo privado compartido con tu equipo: la biblioteca se sincroniza y todos citan lo mismo. Sin esto, cada integrante arma su propia lista y las referencias no coinciden.',
-       'Nombre del grupo, integrantes y enlace de invitación…'],
+       'Crea un grupo de trabajo con tu equipo y genera evidencias de colaboración:'+
+       '<ol class="reqs"><li>Crea colecciones y subcolecciones.</li>'+
+       '<li>Agrega documentación.</li>'+
+       '<li>Agrega subrayados, comentarios y anotaciones generales.</li></ol>'+
+       'Sin el grupo, cada integrante arma su propia lista y las referencias del informe no coinciden.',
+       'Nombre del grupo, integrantes y enlace de invitación (selecciona el texto y usa 🔗 enlace)…'],
       ['refCite','Mendeley Cite',
-       'El complemento de Word que inserta las citas y genera la lista de referencias automáticamente. Usa el estilo que exige la escuela (APA 7).',
-       'Estilo usado y en qué documentos ya lo aplicaste…']
+       'Instala Mendeley Cite y genera al menos <b>cinco citas</b> con su lista de referencias. Usa el estilo que exige la escuela (APA 7).',
+       'En qué documentos lo aplicaste y qué estilo configuraste…']
     ];
     var campos='';
     REF.forEach(function(r,i){
