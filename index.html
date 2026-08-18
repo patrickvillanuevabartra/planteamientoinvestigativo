@@ -221,6 +221,26 @@
   .mcTag{font-weight:700;color:var(--teal);white-space:nowrap;}
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
   .btnDel:hover{background:#fbf1ee;}
+  .rtBar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0;}
+  .rtBtn{background:#fff;border:1px solid var(--line);border-bottom:none;border-radius:4px 4px 0 0;
+         padding:4px 9px;font-size:12px;color:#6a746f;cursor:pointer;line-height:1.4;}
+  .rtBtn:hover{color:var(--ink);background:#f4f6f2;}
+  .rt{border:1px solid var(--line);border-radius:0 4px 4px 4px;background:#fff;
+      padding:9px 11px;min-height:62px;font-size:16.5px;line-height:1.55;
+      font-family:inherit;color:var(--ink);outline:none;}
+  .rt:focus{border-color:var(--teal);box-shadow:0 0 0 2px rgba(47,109,106,.12);}
+  .rt:empty:before{content:attr(data-ayuda);color:#9aa39d;}
+  .rt a{color:var(--teal);text-decoration:underline;}
+  .rt ul,.rt ol{margin:4px 0 4px 20px;padding:0;}
+  .transv{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;
+          padding:11px 14px;border:1px dashed #b9b2a2;border-radius:11px;
+          background:#faf8f3;--f:#8a6d3b;--fl:#ddd2ba;}
+  .transv.actual{border-style:solid;border-color:var(--f);box-shadow:0 4px 16px rgba(28,42,51,.10);}
+  .transvEje{display:flex;align-items:center;gap:7px;font-size:9.5px;letter-spacing:.15em;
+             text-transform:uppercase;font-weight:700;color:var(--f);white-space:nowrap;}
+  .transvLinea{width:22px;height:2px;background:repeating-linear-gradient(90deg,var(--f) 0 4px,transparent 4px 7px);}
+  .transvNota{font-size:12.5px;color:#7d7466;flex:1;min-width:180px;}
+  @media(max-width:480px){ .transvNota{display:none;} }
   .mcWrap{overflow-x:auto;}
 
   /* ---------- Tablet y celular ---------- */
@@ -386,7 +406,15 @@ var FIELD = {
   bib_csv                 : 'c3WQOfyCncWOfqW5yPWPPy',
   bib_reporte             : 'dcNa_dOCngW5LIW5ZdNxnQ',
   bib_hallazgos           : 'dcTSobWQzdH6LJWQBcRxC0',
-  bib_conclusiones        : 'cbWRBcHmnmDOkTWO_dSSke'
+  bib_conclusiones        : 'cbWRBcHmnmDOkTWO_dSSke',
+  // Paso 14 · Referencias (Mendeley)
+  ref_cuenta              : 'dcOdGdEG5dQik_mCkyoCo9',
+  ref_manager             : 'ddMYiqkbzeWO9yl1ZdQGaE',
+  ref_importer            : 'bIWP0rW6noEz7dJI7dQsD1',
+  ref_metadatos           : 'a4WRBdMCnii4kShSo_WOTR',
+  ref_notebook            : 'cJW5pdRsrioy1QW6DEm8kY',
+  ref_grupo               : 'boBrbLsSjiW7KZWQFdTqnW',
+  ref_cite                : 'cAcWddJSjiWPb4WQhdV8k8'
 };
 
 // ============================================================
@@ -409,7 +437,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Bibliométrico","Objetivos y variables","Indicadores e hipótesis","Matriz"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","General","Específicos","Bibliométrico","Objetivos y variables","Indicadores e hipótesis","Matriz","Referencias"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -480,6 +508,9 @@ function estadoInicial(){
     nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
     paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
     priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
+    // Paso 14 · Referencias (Mendeley, eje transversal)
+    refCuenta:'', refManager:'', refImporter:'', refMetadatos:'',
+    refNotebook:'', refGrupo:'', refCite:'',
     // Paso 8: análisis bibliométrico (5 fases EMFOCO)
     bibPregunta:'', bibFormula:'', bibBase:'', bibRegistros:'', bibCsv:'',
     bibReporte:'', bibHallazgos:'', bibConclusiones:'',
@@ -561,6 +592,8 @@ function mostrarTab(cual){
 // Las cuatro fases del recorrido. Agrupar no es adorno: los pasos de una
 // misma fase responden a la misma pregunta, y así la fila nunca queda con
 // dos píldoras perdidas en los extremos.
+var PASOS_SECUENCIALES = 13;   // el 14 (Referencias) es transversal
+
 var FASES = [
   // Los tramos son contiguos, así que 6-9 mezcla análisis (Ishikawa, Pareto) con
   // formulación (problema general y específicos). El nombre cubre las dos cosas:
@@ -585,21 +618,24 @@ function renderStepper(){
   if(S.paso<1){ st.innerHTML=''; st.style.display='none'; return; }
   st.style.display='block';
 
-  var total = PASOS_NOMBRES.length;
-  var pct   = Math.round(S.paso*100/total);
+  var total = PASOS_SECUENCIALES;
+  var transv = S.paso > total;                       // Referencias
+  var pct   = transv ? 100 : Math.round(S.paso*100/total);
   var fAct  = faseDe(S.paso);
 
   // Carril: un tramo por fase, ancho proporcional a cuantos pasos tiene.
   var rail='';
   FASES.forEach(function(f){
     var n = f.hasta - f.desde + 1;
-    var hechos = Math.min(Math.max(S.paso - f.desde + 1, 0), n);
+    var hechos = transv ? n : Math.min(Math.max(S.paso - f.desde + 1, 0), n);
     rail += '<div class="railSeg" style="flex-grow:'+n+';--f:'+f.color+';--fl:'+f.linea+';">'+
             '<div class="railSegFill" style="width:'+Math.round(hechos*100/n)+'%;"></div></div>';
   });
 
   var h = '<div class="rutaTop">'+
-          '<span class="rutaPaso">Paso <b>'+S.paso+'</b> de '+total+' · '+esc(fAct)+'</span>'+
+          '<span class="rutaPaso">'+(transv
+            ? '<b>Referencias</b> · eje transversal'
+            : 'Paso <b>'+S.paso+'</b> de '+total+' · '+esc(fAct))+'</span>'+
           '<span class="rutaPct">'+pct+'%</span></div>'+
           '<div class="rail">'+rail+'</div>'+
           '<div class="fases">';
@@ -625,7 +661,112 @@ function renderStepper(){
     h += '</div></div>';
   });
 
-  st.innerHTML = h + '</div>';
+  h += '</div>';
+
+  // Banda transversal: no pertenece a ninguna fase porque acompaña los 13 pasos.
+  var clsT = transv ? 'now' : (referenciasIniciadas() ? 'done' : '');
+  h += '<div class="transv'+(transv?' actual':'')+'">'+
+       '<div class="transvEje"><span class="transvLinea"></span>eje transversal</div>'+
+       '<button type="button" class="pill '+clsT+'" onclick="irAPaso(14)" '+
+       'title="Referencias · acompaña los 13 pasos"'+(transv?' aria-current="step"':'')+'>'+
+       '<span class="num">14</span><span class="txt">Referencias</span></button>'+
+       '<span class="transvNota">Mendeley te acompaña desde el paso 1: cada fuente que uses se registra aquí.</span>'+
+       '</div>';
+
+  st.innerHTML = h;
+}
+
+// ============================================================
+//  EDITOR DE TEXTO ENRIQUECIDO
+//  Solo lo necesario: negrita, cursiva, viñetas y enlaces. El
+//  contenido se guarda como HTML, así el enlace queda dentro del
+//  texto y no en un campo aparte.
+// ============================================================
+
+// Solo se conservan estas etiquetas y, en los enlaces, solo href.
+// Lo demás se descarta: el HTML pegado desde Word trae estilos y
+// scripts que no deben acabar en la base de datos.
+var RT_TAGS = ['B','STRONG','I','EM','U','A','BR','DIV','P','UL','OL','LI','SPAN'];
+
+function limpiarHTML(html){
+  var cont = document.createElement('div');
+  cont.innerHTML = String(html||'');
+  (function limpia(nodo){
+    var hijos = Array.prototype.slice.call(nodo.childNodes);
+    hijos.forEach(function(n){
+      if(n.nodeType === 1){
+        if(RT_TAGS.indexOf(n.nodeName) === -1){
+          while(n.firstChild) nodo.insertBefore(n.firstChild, n);
+          nodo.removeChild(n);
+          return;
+        }
+        Array.prototype.slice.call(n.attributes).forEach(function(at){
+          var ok = (n.nodeName === 'A' && at.name === 'href' &&
+                    /^(https?:|mailto:)/i.test(at.value));
+          if(!ok) n.removeAttribute(at.name);
+        });
+        if(n.nodeName === 'A'){ n.setAttribute('target','_blank'); n.setAttribute('rel','noopener'); }
+        limpia(n);
+      } else if(n.nodeType !== 3){
+        nodo.removeChild(n);
+      }
+    });
+  })(cont);
+  return cont.innerHTML;
+}
+
+function editorRico(campo, valor, ayuda){
+  var id = 'rt_'+campo;
+  return '<div class="rtBar">'+
+    '<button type="button" class="rtBtn" title="Negrita"   onclick="rtCmd(\''+id+'\',\'bold\')"><b>B</b></button>'+
+    '<button type="button" class="rtBtn" title="Cursiva"   onclick="rtCmd(\''+id+'\',\'italic\')"><i>I</i></button>'+
+    '<button type="button" class="rtBtn" title="Viñetas"   onclick="rtCmd(\''+id+'\',\'insertUnorderedList\')">• —</button>'+
+    '<button type="button" class="rtBtn" title="Insertar enlace" onclick="rtEnlace(\''+id+'\')">🔗 enlace</button>'+
+    '<button type="button" class="rtBtn" title="Quitar enlace"   onclick="rtCmd(\''+id+'\',\'unlink\')">quitar</button>'+
+    '</div>'+
+    '<div class="rt" id="'+id+'" contenteditable="true" data-ayuda="'+esc(ayuda)+'" '+
+    'oninput="S.'+campo+'=limpiarHTML(this.innerHTML)" '+
+    'onblur="S.'+campo+'=limpiarHTML(this.innerHTML)">'+limpiarHTML(valor)+'</div>';
+}
+
+function rtFoco(id){
+  var el = document.getElementById(id);
+  if(el) el.focus();
+  return el;
+}
+
+function rtGuardar(el){
+  var campo = el.id.replace(/^rt_/,'');
+  S[campo] = limpiarHTML(el.innerHTML);
+}
+
+function rtCmd(id, cmd){
+  var el = rtFoco(id);
+  if(!el) return;
+  document.execCommand(cmd, false, null);
+  rtGuardar(el);
+}
+
+function rtEnlace(id){
+  var el = rtFoco(id);
+  if(!el) return;
+  var sel = window.getSelection();
+  if(!sel || sel.isCollapsed){
+    toast('Selecciona primero el texto que quieres enlazar', true);
+    return;
+  }
+  var url = prompt('Pega la dirección del enlace:', 'https://');
+  if(!url) return;
+  url = url.trim();
+  if(!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) url = 'https://' + url;
+  document.execCommand('createLink', false, url);
+  rtGuardar(el);
+}
+
+// ¿Se ha tocado algo de Mendeley? Sirve para marcar la píldora transversal.
+function referenciasIniciadas(){
+  return !!(S.refCuenta || S.refManager || S.refImporter || S.refMetadatos ||
+            S.refNotebook || S.refGrupo || S.refCite);
 }
 
 // Navegación directa desde el menú de pasos (captura el paso actual antes de saltar)
@@ -633,8 +774,8 @@ function irAPaso(n){
   if(n===S.paso) return;
   capturarPasoActual();
   // Si vamos hacia (o más allá de) Pareto/Específicos, aseguramos derivar datos
-  if(n>=7) armarPareto();
-  if(n>=9) armarEspecificos();
+  if(n>=7 && n<=PASOS_SECUENCIALES) armarPareto();
+  if(n>=9 && n<=PASOS_SECUENCIALES) armarEspecificos();
   go(n);
 }
 
@@ -1233,6 +1374,46 @@ function render(){
       '<button type="button" class="ejBtn" onclick="copiarMatriz()">copiar para Excel</button></div>'+
       '<textarea id="f_matrizTSV" style="position:absolute;left:-9999px;top:0;" readonly>'+esc(matrizTSV())+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(12)">← Volver a Hipótesis</button>'+
+      '<button class="btn" onclick="go(14)">Continuar → Referencias</button></div></div>';
+  }
+  else if(S.paso===14){
+    var REF = [
+      ['refCuenta','Cuenta y perfil',
+       'Crea la cuenta con tu correo institucional y completa el perfil. Es la identidad con la que compartirás el grupo del equipo.',
+       'Correo de la cuenta y nombre del perfil…'],
+      ['refManager','Mendeley Reference Manager',
+       'La biblioteca donde vive todo. Organiza por carpetas —una por capítulo o por problema específico— para no terminar con 200 referencias sueltas.',
+       'Carpetas creadas y cuántas referencias tienes hasta ahora…'],
+      ['refImporter','Mendeley Web Importer',
+       'La extensión del navegador que captura una referencia desde Scopus, Scielo o Google Académico sin escribirla a mano.',
+       'Desde qué bases importaste y qué dificultades tuviste…'],
+      ['refMetadatos','Metadatos',
+       'Lo que el importador captura viene con errores: autores incompletos, año en blanco, revista mal escrita. Corrígelos ahí, no en Word: un metadato malo se propaga a todas las citas.',
+       'Qué campos corregiste y en cuántas referencias…'],
+      ['refNotebook','Notebook',
+       'Notas y subrayados sobre los PDF. Aquí anotas para qué te sirve cada fuente y en qué parte del proyecto la vas a usar.',
+       'Qué anotaste y cómo lo organizaste…'],
+      ['refGrupo','Grupo de trabajo',
+       'Un grupo privado compartido con tu equipo: la biblioteca se sincroniza y todos citan lo mismo. Sin esto, cada integrante arma su propia lista y las referencias no coinciden.',
+       'Nombre del grupo, integrantes y enlace de invitación…'],
+      ['refCite','Mendeley Cite',
+       'El complemento de Word que inserta las citas y genera la lista de referencias automáticamente. Usa el estilo que exige la escuela (APA 7).',
+       'Estilo usado y en qué documentos ya lo aplicaste…']
+    ];
+    var campos='';
+    REF.forEach(function(r,i){
+      campos+='<div class="peItem"><div class="peHead">'+
+              '<span class="peTag">'+(i+1)+'</span>'+
+              '<span class="peCat">'+esc(r[1])+'</span></div>'+
+              '<p class="note" style="margin:0 0 7px;font-size:12.5px;">'+r[2]+'</p>'+
+              editorRico(r[0], S[r[0]]||'', r[3])+'</div>';
+    });
+    h='<div class="card"><h2>14 · Referencias · <span style="font-weight:400;color:#8a6d3b;">eje transversal</span></h2>'+
+      '<p class="note">Este paso no va después de los otros: va <b>a lo largo</b> de los trece. Cada fuente que consultes —al describir el problema, al elegir la línea, al hacer el análisis bibliométrico— se registra aquí en el momento, no al final. Dejarlo para el cierre es lo que obliga a reconstruir de memoria de dónde salió cada dato.</p>'+
+      '<div class="varBox"><div class="varTit">Dónde se nota</div>'+
+      '<p class="note" style="margin:0;font-size:13px;">El <b>paso 10</b> es el que más alimenta tu biblioteca: los documentos que salen de la búsqueda en Scopus se importan directo con el Web Importer y quedan listos para citar. Y el grupo de trabajo evita el problema clásico de entregar un informe donde cada integrante citó una edición distinta del mismo libro.</p></div>'+
+      campos+
+      '<div class="actions"><button class="btnGhost" onclick="go(13)">← Volver a la matriz</button>'+
       '<button class="btn" onclick="guardar()" id="btnGuardar">Guardar en QuintaDB</button></div></div>';
   }
   c.innerHTML=h;
@@ -2210,6 +2391,9 @@ function serializarEstado(){
     paretoFreq:S.paretoFreq,
     priorizadas:S.priorizadas,
     especificos:S.especificos,
+    refCuenta:S.refCuenta, refManager:S.refManager, refImporter:S.refImporter,
+    refMetadatos:S.refMetadatos, refNotebook:S.refNotebook,
+    refGrupo:S.refGrupo, refCite:S.refCite,
     bibPregunta:S.bibPregunta, bibFormula:S.bibFormula, bibBase:S.bibBase,
     bibRegistros:S.bibRegistros, bibCsv:S.bibCsv, bibReporte:S.bibReporte,
     bibHallazgos:S.bibHallazgos, bibConclusiones:S.bibConclusiones,
@@ -2238,6 +2422,13 @@ function restaurarEstado(json){
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
   if(d.especificos){ S.especificos=d.especificos; }
+  S.refCuenta         = d.refCuenta         || '';
+  S.refManager        = d.refManager        || '';
+  S.refImporter       = d.refImporter       || '';
+  S.refMetadatos      = d.refMetadatos      || '';
+  S.refNotebook       = d.refNotebook       || '';
+  S.refGrupo          = d.refGrupo          || '';
+  S.refCite           = d.refCite           || '';
   S.bibPregunta       = d.bibPregunta       || '';
   S.bibFormula        = d.bibFormula        || '';
   S.bibBase           = d.bibBase           || '';
@@ -2311,6 +2502,13 @@ function guardar(){
     bib_reporte:S.bibReporte,
     bib_hallazgos:S.bibHallazgos,
     bib_conclusiones:S.bibConclusiones,
+    ref_cuenta:S.refCuenta,
+    ref_manager:S.refManager,
+    ref_importer:S.refImporter,
+    ref_metadatos:S.refMetadatos,
+    ref_notebook:S.refNotebook,
+    ref_grupo:S.refGrupo,
+    ref_cite:S.refCite,
     estructura:serializarEstado(),
     consecuencia:S.consecuenciaSintoma,
     correos:[SESION.email, S.correoCompanero].filter(function(x){ return x; }).join(', ')
