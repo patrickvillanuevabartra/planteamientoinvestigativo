@@ -409,7 +409,7 @@ var LINEAS = [
   "Sistemas de información y tecnologías de información"
 ];
 var CATEGORIAS = ["Mano de obra","Maquinaria","Método","Material","Medición","Medio ambiente"];
-var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","Bibliométrico","General","Específicos","Variables y objetivos","Indicadores e hipótesis","Matriz"];
+var PASOS_NOMBRES = ["Problema","Delimitación","Propósito","Línea","Tema","Ishikawa","Pareto","Bibliométrico","General","Específicos","Objetivos y variables","Indicadores e hipótesis","Matriz"];
 
 // Datos institucionales fijos (no editables por el usuario)
 var CURSO_FIJO = "Taller de Investigación en Ingeniería I";
@@ -1120,19 +1120,19 @@ function render(){
       oe+='<div class="peItem"><div class="peHead"><span class="peTag">OE'+(i+1)+'</span>'+
           '<span class="peCat">'+esc(e.herramienta||'sin herramienta')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ PE'+(i+1)+': '+esc(e.problema||'—')+'</div>'+
-          '<div class="varBox">'+
-          '<div class="varTit">Variables de este específico</div>'+
-          '<div class="varFija"><span class="varEt">VI · lo que aplicas</span>'+
-          '<span class="varVal">'+esc(e.herramienta||'— define la herramienta en el paso 10')+'</span></div>'+
-          '<label>VD · lo que mejora</label>'+
-          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso">'+
-          '</div>'+
           '<label>Objetivo específico</label>'+
           '<textarea rows="2" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
-          '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOE('+i+')">proponer borrador</button></div>';
+          '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
+          '<div class="varBox" style="margin-top:10px;">'+
+          '<div class="varTit">Variables que se desprenden de este objetivo</div>'+
+          '<div class="row2"><div><label>VI · lo que aplicas</label>'+
+          '<input value="'+esc(e.vi||e.herramienta||'')+'" oninput="S.especificos['+i+'].vi=this.value" placeholder="Ej. el modelado BPMN"></div>'+
+          '<div><label>VD · lo que mejora</label>'+
+          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso"></div></div>'+
+          '</div></div>';
     });
     if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 10.</p>';
-    h='<div class="card"><h2>11 · Variables y objetivos</h2>'+
+    h='<div class="card"><h2>11 · Objetivos y variables</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
@@ -1143,19 +1143,18 @@ function render(){
       '<i>Fíjate que cada objetivo específico mejora algo distinto. Si los tres dicen lo mismo que el general, están mal.</i></div>'+
 
       visorDefinido()+
-      '<div class="blockLbl" style="margin-top:20px;">◆ Variables generales</div>'+
-      '<div class="varBox">'+
-      '<div class="varTit">Decláralas antes de redactar: el objetivo las necesita</div>'+
-      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
-      '<div><label>VD · lo que mejora</label>'+
-      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
-      '<p class="note" style="font-size:12px;margin:8px 0 0;">La VI es lo que va tras «mediante» en el objetivo; la VD es lo que se reduce o incrementa. Sus indicadores se definen en el paso 12.</p>'+
-      '</div>'+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<p class="note" style="font-size:12px;margin-top:8px;">El objetivo general toma el verbo y el indicador de tu <b>propósito</b> (paso 3), nombra el <b>medio</b> con «mediante» y cierra con empresa y periodo. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
+      '<div class="varBox" style="margin-top:12px;">'+
+      '<div class="varTit">Variables que se desprenden del objetivo general</div>'+
+      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
+      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
+      '<div><label>VD · lo que mejora</label>'+
+      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Léelas de tu propio objetivo: la <b>VI</b> es lo que va tras «mediante», la <b>VD</b> es lo que se reduce o incrementa. Sus indicadores se definen en el paso 12.</p>'+
+      '</div>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivos específicos</div>'+ oe +
       '<div class="actions"><button class="btnGhost" onclick="go(10)">← Volver a Específicos</button>'+
@@ -1166,7 +1165,7 @@ function render(){
     var he='';
     S.especificos.forEach(function(e,i){
       he+='<div class="peItem"><div class="peHead"><span class="peTag">HE'+(i+1)+'</span>'+
-          '<span class="peCat">VI: '+esc(e.herramienta||'—')+'</span></div>'+
+          '<span class="peCat">VI: '+esc(viDe(e)||'—')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ OE'+(i+1)+': '+esc(e.objetivo||'—')+'</div>'+
           '<div class="varBox">'+
           '<div class="varFija"><span class="varEt">VD · declarada en el paso 10</span>'+
@@ -1204,7 +1203,7 @@ function render(){
       '<button type="button" class="ejBtn" style="margin-top:6px;" onclick="proponerHG()">proponer borrador</button>'+
 
       '<div class="blockLbl" style="margin-top:20px;">◆ Hipótesis específicas</div>'+ he +
-      '<div class="actions"><button class="btnGhost" onclick="go(11)">← Volver a Variables y objetivos</button>'+
+      '<div class="actions"><button class="btnGhost" onclick="go(11)">← Volver a Objetivos y variables</button>'+
       '<button class="btn" onclick="go(13)">Continuar → Matriz</button></div></div>';
   }
   else if(S.paso===13){
@@ -2018,6 +2017,12 @@ function proponerOG(){
   var pr = String(S.proposito||'').trim();
   if(!pr){ toast('Primero escribe el propósito (paso 3)', true); return; }
   pr = pr.replace(/\s*[.;]+\s*$/,'');
+  // Si el propósito ya cierra con la empresa y/o el periodo, se recorta: de lo
+  // contrario el borrador repetía "…Empresa Alfa, 2026 mediante … Empresa Alfa, 2026".
+  pr = pr.replace(/\s*,?\s*en\s+(la\s+)?empresa\b[\s\S]*$/i,'')
+         .replace(/\s*,?\s*en\s+el\s+periodo\b[\s\S]*$/i,'')
+         .replace(/\s*,\s*[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ.\s]*,?\s*(19|20)\d{2}\s*\.?\s*$/,'')
+         .replace(/\s*[.,;]+\s*$/,'');
   // El medio sale de la variable independiente si ya está declarada (paso 11);
   // si no, se deja marcado para que el alumno lo complete.
   var medio = String(S.varInd||'').trim();
@@ -2051,8 +2056,8 @@ function proponerHG(){
 function proponerHE(i){
   var e = S.especificos[i];
   if(!e){ return; }
-  if(!e.herramienta || !e.vd){ toast('Faltan la herramienta (paso 9) o la variable dependiente', true); return; }
-  e.hipotesis = borradorHipotesis('la aplicación de '+e.herramienta, e.vd);
+  if(!viDe(e) || !e.vd){ toast('Faltan la variable independiente o la dependiente (paso 11)', true); return; }
+  e.hipotesis = borradorHipotesis('la aplicación de '+viDe(e), e.vd);
   render(); toast('Borrador propuesto — ajusta el verbo si no es "mejora"');
 }
 
@@ -2100,7 +2105,7 @@ function filasMatriz(){
       problema:e.problema||'',
       objetivo:e.objetivo||'',
       hipotesis:e.hipotesis||'',
-      variables:(e.herramienta||'—')+' → '+(e.vd||'—'),
+      variables:(viDe(e)||'—')+' → '+(e.vd||'—'),
       indicador:e.indicador||''
     });
   });
@@ -2147,7 +2152,7 @@ function armarEspecificos(){
     if(!p) return;
     var k=p.categoria+'|'+p.causa+'|'+(p.sub||'');
     lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub,
-                             problema:'', herramienta:'', objetivo:'', vd:'',
+                             problema:'', herramienta:'', objetivo:'', vi:'', vd:'',
                              hipotesis:'', indicador:''});
   });
   S.especificos=lista;
@@ -2157,10 +2162,14 @@ function armarEspecificos(){
 // Ej.: "VE1: BPMN → el tiempo de ciclo del proceso"
 function serializarVariables(){
   return S.especificos.map(function(e,i){
-    if(!e.herramienta && !e.vd) return '';
-    return 'VE'+(i+1)+': '+(e.herramienta||'—')+' → '+(e.vd||'—');
+    if(!viDe(e) && !e.vd) return '';
+    return 'VE'+(i+1)+': '+(viDe(e)||'—')+' → '+(e.vd||'—');
   }).filter(function(l){ return l; }).join('\n');
 }
+
+// La variable independiente de un específico: la que el alumno declaró en el
+// paso 11 y, si aún no la tocó, la herramienta que eligió en el paso 10.
+function viDe(e){ return String((e && (e.vi || e.herramienta)) || '').trim(); }
 
 // Vuelca un campo de S.especificos a texto, uno por línea, con su rótulo.
 // Ej.: serializarLista('objetivo','OE') -> "OE1 ...\nOE2 ..."
