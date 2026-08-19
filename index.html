@@ -429,6 +429,7 @@ var FIELD = {
   bib_reporte             : 'dcNa_dOCngW5LIW5ZdNxnQ',
   bib_hallazgos           : 'dcTSobWQzdH6LJWQBcRxC0',
   bib_conclusiones        : 'cbWRBcHmnmDOkTWO_dSSke',
+  titulo_proyecto         : 'cjWRXzo8jaW6FcHJRcVSko',
   // Paso 14 · Referencias (Mendeley)
   ref_cuenta              : 'dcOdGdEG5dQik_mCkyoCo9',
   ref_manager             : 'ddMYiqkbzeWO9yl1ZdQGaE',
@@ -519,7 +520,7 @@ function estadoInicial(){
   var e = {
     paso:0,
     // Registro del grupo (paso 0)
-    ciclo:'', numeroGrupo:'', coordinador:'',
+    ciclo:'', numeroGrupo:'', coordinador:'', tituloProyecto:'',
     // Descripción del problema — 5 aspectos exigidos por el Manual URP 2020 (p.8)
     probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
     problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
@@ -1007,6 +1008,10 @@ function render(){
       '<div style="font-weight:600;margin-bottom:8px;">'+esc(CURSO_FIJO)+'</div>'+
       '<div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Profesor</div>'+
       '<div style="font-weight:600;">'+esc(PROFESOR_FIJO)+'</div></div>'+
+
+      '<label>Título del proyecto</label>'+
+      '<textarea id="f_titulo" rows="2" placeholder="Un título provisional; lo afinarás en el paso 5">'+esc(S.tituloProyecto)+'</textarea>'+
+      '<p class="note" style="font-size:12px;margin:4px 0 14px;">Escríbelo aunque todavía no lo tengas claro: sirve para identificar tu proyecto en el listado y en Red de Experimentos. En el <b>paso 5</b> el aplicativo arma el <b>tema</b>, que es su versión final y más precisa.</p>'+
 
       '<label>Ciclo</label>'+
       '<select id="f_ciclo" onchange="S.ciclo=this.value">'+ciclosOpt+'</select>'+
@@ -1642,6 +1647,7 @@ function go(n){ S.paso=n; render(); window.scrollTo(0,0); }
 
 // ---- navegación con captura de campos ----
 function p0next(){
+  S.tituloProyecto = val('f_titulo');
   S.ciclo=val('f_ciclo'); S.numeroGrupo=val('f_ngrupo'); S.coordinador=val('f_coord');
   S.correoCompanero=val('f_correo2').trim().toLowerCase();
   if(!S.ciclo)               return toast('Selecciona el ciclo',true);
@@ -2285,6 +2291,12 @@ function val(id){ var e=document.getElementById(id); return e?e.value:''; }
 // Guardar/Actualizar o Editar no pierdan cambios no confirmados con Continuar.
 function capturarPasoActual(){
   switch(S.paso){
+    case 0:
+      if(document.getElementById('f_titulo')) S.tituloProyecto=val('f_titulo');
+      if(document.getElementById('f_ngrupo')) S.numeroGrupo=val('f_ngrupo');
+      if(document.getElementById('f_coord'))  S.coordinador=val('f_coord');
+      if(document.getElementById('f_correo2')) S.correoCompanero=val('f_correo2');
+      break;
     case 1:
       if(document.getElementById('f_pob')) S.probPoblacion=val('f_pob');
       if(document.getElementById('f_cau')) S.probCausas=val('f_cau');
@@ -2599,6 +2611,7 @@ function serializarEstado(){
     bibPregunta:S.bibPregunta, bibFormula:S.bibFormula, bibBase:S.bibBase,
     bibRegistros:S.bibRegistros, bibCsv:S.bibCsv, bibReporte:S.bibReporte,
     bibHallazgos:S.bibHallazgos, bibConclusiones:S.bibConclusiones,
+    tituloProyecto:S.tituloProyecto,
     objetivoGeneral:S.objetivoGeneral,
     varInd:S.varInd, varDep:S.varDep,
     indicadorGeneral:S.indicadorGeneral,
@@ -2639,6 +2652,7 @@ function restaurarEstado(json){
   S.bibReporte        = d.bibReporte        || '';
   S.bibHallazgos      = d.bibHallazgos      || '';
   S.bibConclusiones   = d.bibConclusiones   || '';
+  S.tituloProyecto    = d.tituloProyecto    || '';
   S.objetivoGeneral   = d.objetivoGeneral   || '';
   S.varInd            = d.varInd            || '';
   S.varDep            = d.varDep            || '';
@@ -2687,6 +2701,7 @@ function guardar(){
     ciclo:S.ciclo,
     numero_grupo:S.numeroGrupo,
     coordinador:S.coordinador,
+    titulo_proyecto:S.tituloProyecto,
     objetivo_general:S.objetivoGeneral,
     objetivos_especificos:serializarLista('objetivo','OE'),
     hipotesis_general:S.hipotesisGeneral,
