@@ -1025,7 +1025,12 @@ function render(){
       '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="compañero@urp.edu.pe">'+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar este planteamiento. Si trabajas solo, déjalo vacío.</p>'+
 
-      '<div class="actions"><span></span><button class="btn" onclick="p0next()">Iniciar planteamiento →</button></div></div>';
+      '<div class="actions">'+
+      (S.recordId
+        ? '<button class="btnGhost" onclick="guardarDatosGrupo()" id="btnGuardar0">Guardar cambios</button>'
+        : '<span></span>')+
+      '<button class="btn" onclick="p0next()">'+(S.recordId?'Continuar →':'Iniciar planteamiento →')+'</button>'+
+      '</div></div>';
   }
   else if(S.paso===1){
     var n=aspectosCompletos();
@@ -1646,6 +1651,15 @@ function refreshCont1(){
 function go(n){ S.paso=n; render(); window.scrollTo(0,0); }
 
 // ---- navegación con captura de campos ----
+/* Guardar desde el registro. La barra superior con «Actualizar» solo aparece
+   del paso 1 en adelante, así que sin esto los cambios hechos aquí sobre un
+   planteamiento ya guardado se perdían al no pulsar «Continuar». */
+function guardarDatosGrupo(){
+  capturarPasoActual();
+  if(!String(S.numeroGrupo||'').trim()) return toast('Indica el N° de grupo', true);
+  guardar();
+}
+
 function p0next(){
   S.tituloProyecto = val('f_titulo');
   S.ciclo=val('f_ciclo'); S.numeroGrupo=val('f_ngrupo'); S.coordinador=val('f_coord');
