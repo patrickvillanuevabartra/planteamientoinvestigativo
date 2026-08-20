@@ -221,9 +221,19 @@
   .mcTag{font-weight:700;color:var(--teal);white-space:nowrap;}
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
   .btnDel:hover{background:#fbf1ee;}
+  .cmpLista{display:flex;flex-direction:column;gap:6px;}
+  .cmpFila{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px;}
+  .cmpMal{flex:1;min-width:150px;background:#fbf1ee;border:1px solid #e0c3bb;color:#9a3b2c;
+          border-radius:4px;padding:5px 9px;text-decoration:line-through;}
+  .cmpBien{flex:1;min-width:150px;background:#f2f8f7;border:1px solid #b9d2cf;color:#2f6d6a;
+           border-radius:4px;padding:5px 9px;font-weight:600;}
+  .cmpFle{color:#8a948f;flex-shrink:0;}
+  @media(max-width:520px){ .cmpFle{display:none;} }
   .reqs{margin:6px 0 2px;padding-left:20px;list-style:lower-alpha;}
   .reqs li{margin:3px 0;line-height:1.5;}
   .reqs li::marker{color:#8a6d3b;font-weight:700;}
+  .campoBloq{background:#f4f6f2;border:1px solid var(--line);border-radius:4px;
+             padding:11px 12px;font-size:16.5px;color:#6a746f;}
   .accLista{display:flex;flex-direction:column;gap:5px;}
   .accFila{display:flex;align-items:center;justify-content:space-between;gap:10px;
            background:#fff;border:1px solid var(--line);border-radius:5px;padding:7px 11px;}
@@ -585,13 +595,15 @@ function periodo(){
   if(S.pretest && S.postest) return S.pretest+' – '+S.postest;
   return S.pretest||S.postest||'[periodo]';
 }
+// El año sale SIEMPRE de las fechas de la delimitación (paso 2): postest, test
+// o pretest, en ese orden. Antes caía al año en curso cuando no había fechas, y
+// aparecía un 2026 que el alumno no había escrito en ninguna parte.
 function anio(){
-  // El año que identifica el estudio es el de su cierre; si falta, se busca hacia
-  // atrás y como último recurso se usa el año en curso.
   var t=(S.postest||S.test||S.pretest||'');
   var m=String(t).match(/(20\d{2}|19\d{2})/);
-  return m ? m[1] : String(new Date().getFullYear());
+  return m ? m[1] : '';
 }
+function anioOAviso(){ return anio() || '[año \u2014 complétalo en el paso 2]'; }
 // Vuelve a componer el tema desde el propósito y la línea actuales, pisando lo
 // que hubiera. Se usa desde el paso 5 cuando el alumno cambió alguno de los dos
 // y quiere la versión nueva; si no, su edición manual se respeta.
@@ -606,8 +618,9 @@ function rearmarTema(){
 function armarTema(){
   if(!S.proposito || !lineaTexto()) return '';
   var p = S.proposito.trim().replace(/\.?\s*$/,'');
-  return p+' mediante '+lineaTexto()+' en la empresa '+(S.empresa||'[Empresa]')+
-         (ciudad()?', '+ciudad():'')+', '+anio();
+  return p+' mediante '+lineaTexto()+' en la empresa '+
+         (S.empresa||'[empresa \u2014 complétala en el paso 2]')+
+         (ciudad()?', '+ciudad():'')+', '+anioOAviso();
 }
 
 // ============================================================
@@ -1029,8 +1042,13 @@ function render(){
       '<input id="f_coord" value="'+esc(S.coordinador)+'" placeholder="Nombres y apellidos"></div></div>'+
 
       '<label>Correo del compañero(a) de grupo</label>'+
-      '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="compañero@urp.edu.pe">'+
-      '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar este planteamiento. Si trabajas solo, déjalo vacío.</p>'+
+      (SESION.docente
+        ? '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="companero@urp.edu.pe">'
+        : '<div class="campoBloq">'+esc(S.correoCompanero || '— lo asigna el docente')+'</div>')+
+      '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. '+
+      (SESION.docente
+        ? 'Como docente puedes dar acceso a otro correo desde aquí.'
+        : 'Si tu compañero(a) necesita acceso a este planteamiento, pídeselo al docente.')+'</p>'+
       panelAccesos()+
 
       '<div class="actions">'+
@@ -1105,6 +1123,16 @@ function render(){
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
       'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda en la Empresa Alfa S.A.C.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
+      '<div style="border-top:1px solid #e2ddcd;margin-top:10px;padding-top:9px;">'+
+      '<b>Los cuatro errores del ciclo pasado</b>'+
+      '<ol class="reqs" style="list-style:decimal;">'+
+      '<li><b>Empezar con sustantivo.</b> «Reducción de…», «Optimización de…». Va en <b>infinitivo</b>: «Reducir», «Disminuir», «Incrementar».</li>'+
+      '<li><b>Verbo sin dirección.</b> «Mejorar» y «optimizar» no dicen si el indicador sube o baja, así que no se pueden medir. Di qué se mueve y hacia dónde.</li>'+
+      '<li><b>No decir qué proceso.</b> «Optimizar la gestión de almacenes» deja fuera lo esencial: ¿el despacho?, ¿la recepción?, ¿el conteo? Nómbralo.</li>'+
+      '<li><b>Anglicismos y jerga interna.</b> «Procura» se entiende en tu empresa, no ante un jurado. Escribe «abastecimiento» o «adquisiciones».</li>'+
+      '</ol>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">De los cuatro grupos del 2026-1, ninguno alcanzó el puntaje máximo en este criterio. Es donde más se pierde.</p>'+
+      '</div>'+
       '</div>'+
       '<textarea rows="4" id="f_prop" placeholder="Propósito de la investigación…" style="margin-top:8px;">'+esc(S.proposito)+'</textarea>'+
       '<div class="actions"><button class="btnGhost" onclick="go(2)">← Atrás</button>'+
@@ -1124,6 +1152,17 @@ function render(){
       '<div class="ejBox" id="ej_lin" style="display:none;">'+
       '<b>Gesti\u00f3n por procesos y mejora continua.</b>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
+      '<div style="border-top:1px solid #e2ddcd;margin-top:10px;padding-top:9px;">'+
+      '<b>El error que se repitió en tres de cada cuatro grupos</b>'+
+      '<p class="note" style="font-size:12.5px;margin:5px 0 8px;">Escribir una <b>herramienta</b> donde va la línea. Casos reales del 2026-1:</p>'+
+      '<div class="cmpLista">'+
+      '<div class="cmpFila"><span class="cmpMal">Sistemas digitales de control y trazabilidad</span><span class="cmpFle">→</span><span class="cmpBien">Gestión de almacenes e inventarios</span></div>'+
+      '<div class="cmpFila"><span class="cmpMal">Clasificación ABC · planificación de transporte</span><span class="cmpFle">→</span><span class="cmpBien">Gestión de inventarios y logística</span></div>'+
+      '<div class="cmpFila"><span class="cmpMal">BPM · modelado BPMN</span><span class="cmpFle">→</span><span class="cmpBien">Gestión por procesos y mejora continua</span></div>'+
+      '</div>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Lo de la izquierda no se descarta: <b>reaparece en el paso 9</b> como la herramienta de cada problema específico. Solo estaba en el sitio equivocado.</p>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;"><b>Cómo distinguirlas:</b> si puedes comprarla, instalarla o certificarte en ella, es una herramienta. La línea es el campo de conocimiento que la enmarca, y sigue siendo la misma aunque cambies de herramienta.</p>'+
+      '</div>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Tomado de un trabajo real del curso (apartado de l\u00ednea de investigaci\u00f3n); la empresa se mantiene en reserva.</p>'+
       '</div>'+
       '<div class="lineList">'+lo+
@@ -1161,9 +1200,12 @@ function render(){
       '<div class="varTit">De aquí sale el tema</div>'+
       '<div class="varFija"><span class="varEt">Propósito · paso 3</span>'+
       '<span class="varVal">'+esc(S.proposito||'— sin definir')+'</span></div>'+
-      '<div class="varFija" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">'+
-      '<span class="varEt">Línea · paso 4</span>'+
+      '<div class="varFija"><span class="varEt">Línea · paso 4</span>'+
       '<span class="varVal">'+esc(lineaTexto()||'— sin elegir')+'</span></div>'+
+      '<div class="varFija" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">'+
+      '<span class="varEt">Empresa y año · paso 2</span>'+
+      '<span class="varVal">'+esc((S.empresa||'— sin empresa')+(ciudad()?', '+ciudad():'')+' · '+
+        (anio()||'sin año: faltan las fechas de pretest/postest'))+'</span></div>'+
       '<button type="button" class="ejBtn" style="margin-top:9px;" onclick="rearmarTema()">rearmar desde estos datos</button>'+
       '</div>'+
       '<div class="temaResLbl">Tema</div>'+
@@ -1224,7 +1266,7 @@ function render(){
 
       '<label style="margin-top:14px;">Consecuencia o síntoma del problema central</label>'+
       '<textarea rows="2" id="f_consec" oninput="S.consecuenciaSintoma=this.value" placeholder="Ej. Retraso en el tiempo de atención en la entrega de bienes y/o servicios, en perjuicio del área de ingeniería…">'+esc(S.consecuenciaSintoma)+'</textarea>'+
-      '<p class="note" style="margin:4px 0 0;font-size:12px;">Es el efecto observable que evidencia el problema (aparece como recuadro junto a la cabeza del pescado).</p>'+
+      '<p class="note" style="margin:4px 0 0;font-size:12px;">Es el efecto observable que evidencia el problema (aparece como recuadro junto a la cabeza del pescado). <b>No es la solución:</b> el ciclo pasado un grupo escribió aquí «Reducir los tiempos mediante Lean Manufacturing», que es lo que se propone hacer, no lo que el problema provoca. Va algo como «Insatisfacción de clientes y pérdida de ventas por incumplir los plazos comprometidos».</p>'+
 
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:14px;">'+
       '<p class="note" style="margin:0;">Al escribir cada causa, describe <b>algo que ocurre</b>, no algo que falta.</p>'+
@@ -1243,6 +1285,24 @@ function render(){
       '<tr><td>Falta de capacitación en el proceso</td><td>El personal ejecuta con criterios no homogéneos</td></tr>'+
       '</tbody></table>'+
       'Los ejemplos de la derecha no son inventados: salen del propio caso de la Empresa Alfa, del cap\u00edtulo donde el estudio describe c\u00f3mo trabaja el \u00e1rea.'+
+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">De los cuatro diagramas evaluados el ciclo pasado, tres sacaron 1 de 3 en este criterio: entre el 20% y el 33% de sus causas estaban escritas como ausencias. Es donde más puntaje se pierde.</p>'+
+
+      '<div style="border-top:1px solid #e2ddcd;margin-top:14px;padding-top:11px;">'+
+      '<b>Que cada causa aparezca una sola vez.</b> Ninguno de los cuatro grupos logró el máximo aquí. El solapamiento siempre ocurre entre las mismas parejas de categorías, porque sus fronteras no son obvias:'+
+      '<table class="ejParTable" style="margin-top:8px;"><thead><tr><th>Pareja</th><th>Cómo separarlas</th></tr></thead><tbody>'+
+      '<tr><td><b>Medición</b> vs <b>Método</b></td><td>Medición es qué se mide y con qué indicadores; Método es cómo se ejecuta el trabajo. «No se controla el inventario» (Medición) y «El proceso de inventarios no está estandarizado» (Método) dicen lo mismo dos veces.</td></tr>'+
+      '<tr><td><b>Máquina</b> vs <b>Mano de obra</b></td><td>Máquina es el equipo o el sistema; Mano de obra es la persona. «Registro manual de información» es de Máquina —falta la herramienta—; «Errores al registrar» es de Mano de obra, y conviene decir qué tipo de error.</td></tr>'+
+      '<tr><td><b>Medición</b> vs <b>Medio ambiente</b></td><td>«Variabilidad en los resultados» es Medición si falta control estadístico, y Medio ambiente si la provoca la temperatura o la humedad. Decide cuál es y déjala en una sola.</td></tr>'+
+      '</tbody></table>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Apunta a <b>3 a 5 causas por categoría</b>. Con dos por rama no se explica un problema complejo, y las ramas de Medición y Medio ambiente suelen quedarse cortas frente al resto.</p>'+
+      '</div>'+
+
+      '<div style="border-top:1px solid #e2ddcd;margin-top:14px;padding-top:11px;">'+
+      '<b>Llega al tercer nivel.</b> Los cuatro diagramas se quedaron en causas intermedias. Pregunta <i>¿por qué?</i> hasta que la respuesta sea algo que puedas corregir:'+
+      '<p class="note" style="font-size:13px;margin:7px 0 0;line-height:1.6;">«Falla en el sistema informático» → <i>¿por qué?</i> → «El ERP no está integrado con el módulo de despachos» → <i>¿por qué?</i> → «No se configuró el módulo de seguimiento en la implementación inicial».</p>'+
+      '<p class="note" style="font-size:12px;margin:7px 0 0;">La primera no se puede atacar; la última sí. Ahí está la causa raíz.</p>'+
+      '</div>'+
       '<p style="margin-top:14px;"><b>Y no confundas la consecuencia con la causa.</b> Si algo ocurre <i>porque</i> pasa otra cosa que ya est\u00e1 en tu diagrama, es un efecto intermedio, no una causa. En el caso: la <i>demora en las aprobaciones</i> ocurre porque cada \u00e1rea aplica criterios distintos y porque el tr\u00e1mite depende de varias \u00e1reas a la vez. Se corrige eso; la demora cede sola.</p>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Importa sobre todo en el Pareto: si mides la consecuencia y su causa como si fueran dos causas distintas, cuentas el mismo problema dos veces y se te va la prioridad al s\u00edntoma.</p></div>'+
 
@@ -1291,6 +1351,12 @@ function render(){
       '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 6). '+
       'Aqu\u00ed se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
       'Las 3 que elijas ser\u00e1n tus 3 problemas espec\u00edficos.</div>'+
+      '<div class="varBox" style="margin-bottom:14px;">'+
+      '<div class="varTit">De dónde sale la frecuencia</div>'+
+      '<p class="note" style="margin:0 0 7px;font-size:13px;">Este es el criterio donde <b>ninguno</b> de los cuatro diagramas del ciclo pasado alcanzó el puntaje máximo. Todos priorizaron «a ojo», por criterio del equipo, sin un dato detrás.</p>'+
+      '<p class="note" style="margin:0 0 7px;font-size:13px;">La frecuencia debe venir de algo que puedas mostrar: cuántas de las últimas 20 órdenes se retrasaron por cada causa, cuántos reclamos hubo por mes, cuántos registros del ERP presentan el error. Un conteo de treinta casos ya sirve.</p>'+
+      '<p class="note" style="margin:0;font-size:12px;">Si por ahora no tienes el dato, prioriza con el criterio del equipo y <b>anótalo como pendiente</b>: al sustentar te van a preguntar por qué esas tres y no otras. La respuesta no puede ser «nos pareció».</p>'+
+      '</div>'+
       '<div class="blockLbl">\u25c6 \u00bfA qu\u00e9 nivel quieres priorizar?</div>'+
       '<div class="lineList" style="margin-bottom:6px;">'+
       '<button type="button" class="lineOpt '+(porSubcausa()?'':'sel')+'" onclick="setNivelPareto(\'causa\')">'+
@@ -1378,9 +1444,10 @@ function render(){
       pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
           subTxt+
-          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea>'+
           '<label>Herramienta enmarcada en la línea</label>'+
-          '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…"></div>';
+          '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…">'+
+          '<label style="margin-top:10px;">Problema específico</label>'+
+          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea></div>';
     });
     if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
     var notaBib = '<div class="varBox" style="margin-top:14px;">'+
@@ -1771,11 +1838,16 @@ function p4next(){
 // ------------------------------------------------------------------
 function promptLineaIA(){
   var lin = LINEAS.map(function(l,i){ return (i+1)+'. '+limpiarLinea(l); }).join('\n');
-  // Sin datos del proyecto: el alumno describe su caso al asistente con sus
-  // propias palabras. Aqui solo se le da la lista oficial, que la IA no conoce.
+  // Se arma con lo que el alumno ya trabajo en los pasos 1 a 3: no tiene
+  // sentido pedirle que lo reescriba. Si algun campo esta vacio, queda
+  // marcado para que lo complete antes de pegar la indicacion.
+  var falta = '(completar en el paso %s)';
   return 'Actua como asesor de tesis de Ingenieria Industrial.\n\n' +
     'MI CASO\n' +
-    '(describe aqui tu empresa, el problema y lo que quieres lograr)\n\n' +
+    'Empresa: ' + (S.empresa || falta.replace('%s','2')) + '\n' +
+    'Ubicacion: ' + (S.ubicacion || falta.replace('%s','2')) + '\n' +
+    'Problema empresarial: ' + (S.problemaEmpresa || falta.replace('%s','1')) + '\n' +
+    'Proposito de la investigacion: ' + (S.proposito || falta.replace('%s','3')) + '\n\n' +
     'LINEAS OFICIALES DE INVESTIGACION DE MI ESCUELA (2026-2030)\n' + lin + '\n\n' +
     'LO QUE NECESITO\n' +
     '1. Dime si mi problema encaja en alguna de las lineas oficiales de arriba y en cual.\n' +
@@ -2474,7 +2546,7 @@ function ciudad(){
 function contextoEmpresa(){
   var e = S.empresa ? ('en la '+S.empresa) : 'en la empresa';
   var c = ciudad();
-  return e + (c ? ', '+c : '') + ', ' + anio() + '.';
+  return e + (c ? ', '+c : '') + ', ' + anioOAviso() + '.';
 }
 
 function borradorObjetivo(pregunta){
