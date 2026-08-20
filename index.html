@@ -224,6 +224,13 @@
   .reqs{margin:6px 0 2px;padding-left:20px;list-style:lower-alpha;}
   .reqs li{margin:3px 0;line-height:1.5;}
   .reqs li::marker{color:#8a6d3b;font-weight:700;}
+  .accLista{display:flex;flex-direction:column;gap:5px;}
+  .accFila{display:flex;align-items:center;justify-content:space-between;gap:10px;
+           background:#fff;border:1px solid var(--line);border-radius:5px;padding:7px 11px;}
+  .accMail{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px;
+           word-break:break-all;}
+  .accYo{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+         background:#e9f3f1;color:var(--teal);border-radius:99px;padding:2px 7px;flex-shrink:0;}
   .recFila{display:flex;align-items:stretch;gap:6px;}
   .recTipo-pdf{background:#f3eaf6;color:#6b3f80;}
   .recAdmin{border:1px dashed #c9bfa4;border-radius:6px;background:#fbfaf6;
@@ -529,7 +536,7 @@ function estadoInicial(){
     tema:'', problemaGeneral:'', efectoCentral:'', consecuenciaSintoma:'',
     categorias: CATEGORIAS.slice(),   // 6M editables
     causas:{}, especificos:[],
-    correoCompanero:'',
+    correoCompanero:'', correosGrupo:'',
     nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
     paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
     priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
@@ -1024,6 +1031,7 @@ function render(){
       '<label>Correo del compañero(a) de grupo</label>'+
       '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="compañero@urp.edu.pe">'+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar este planteamiento. Si trabajas solo, déjalo vacío.</p>'+
+      panelAccesos()+
 
       '<div class="actions">'+
       (S.recordId
@@ -1658,6 +1666,58 @@ function guardarDatosGrupo(){
   capturarPasoActual();
   if(!String(S.numeroGrupo||'').trim()) return toast('Indica el N° de grupo', true);
   guardar();
+}
+
+/* Normaliza una lista de correos separados por coma, punto y coma o espacios */
+function listaCorreos(t){
+  return String(t||'').toLowerCase().split(/[;,\s]+/)
+         .filter(function(x){ return x && x.indexOf('@') !== -1; });
+}
+
+/* Quién tiene acceso a este planteamiento. Quitar es potestad del docente:
+   un alumno no puede sacar a otro de su propio grupo, y quien se equivocó al
+   escribir un correo se lo pide al docente. */
+function panelAccesos(){
+  if(!S.recordId) return '';
+  var lista = listaCorreos(S.correosGrupo);
+  if(!lista.length) return '';
+
+  var h = '<div class="varBox" style="margin-top:14px;">'+
+          '<div class="varTit">Con acceso a este planteamiento</div>'+
+          '<div class="accLista">';
+  lista.forEach(function(c){
+    var yo = (c === SESION.email);
+    h += '<div class="accFila"><span class="accMail">'+esc(c)+
+         (yo ? '<span class="accYo">tú</span>' : '')+'</span>'+
+         (SESION.docente && !yo && lista.length > 1
+           ? '<button type="button" class="btnDel" style="padding:4px 9px;font-size:12px;" '+
+             'onclick="quitarAcceso(\''+c+'\')">quitar</button>'
+           : '')+
+         '</div>';
+  });
+  h += '</div>';
+  if(SESION.docente){
+    h += '<p class="note" style="font-size:12px;margin:8px 0 0;">Como docente puedes retirar el acceso de cualquiera. No se puede dejar el registro sin ningún correo ni quitarte a ti mismo.</p>';
+  }
+  return h + '</div>';
+}
+
+function quitarAcceso(correo){
+  if(!confirm('¿Retirar el acceso de '+correo+' a este planteamiento?\n\nDejará de verlo y de poder editarlo.')) return;
+  toast('Quitando acceso…');
+  jsonpCall({ action:'correo_quitar', record_id:S.recordId, correo:encodeURIComponent(correo) }, function(r){
+    if(!r || !r.ok){
+      var msg = (r && r.error === 'ULTIMO_CORREO')
+        ? 'No se puede quitar: es el único correo con acceso.'
+        : ('No se pudo quitar' + ((r && r.error) ? ': '+r.error : ''));
+      return toast(msg, true);
+    }
+    S.correosGrupo = r.correos || '';
+    S.correoCompanero = listaCorreos(S.correosGrupo)
+        .filter(function(x){ return x !== SESION.email; })[0] || '';
+    render();
+    toast('Acceso retirado');
+  }, function(f){ toast('Error de red. '+textoFallo(f), true); });
 }
 
 function p0next(){
@@ -2985,8 +3045,9 @@ function aplicarRegistro(rec, recId){
   // "Estructura completa" no la trajo, se toma de ese campo.
   if(!S.consecuenciaSintoma) S.consecuenciaSintoma = g('consecuencia');
   // el compañero es el otro correo del registro
-  S.correoCompanero = String(g('correos')||'').toLowerCase()
-      .split(/[;,\s]+/).filter(function(x){ return x && x!==SESION.email; })[0] || '';
+  S.correosGrupo = String(g('correos')||'').toLowerCase();
+  S.correoCompanero = listaCorreos(S.correosGrupo)
+      .filter(function(x){ return x!==SESION.email; })[0] || '';
 
   if(!reconstruido){
     // Fallback: reconstruir lo básico desde los campos de texto sueltos
