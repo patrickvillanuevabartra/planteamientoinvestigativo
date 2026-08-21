@@ -1189,8 +1189,11 @@ function render(){
       '</ol>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">De estas fechas sale el <b>a\u00f1o</b> que despu\u00e9s aparece en el tema, el problema, los objetivos y las hip\u00f3tesis. Si las dejas vac\u00edas, ese a\u00f1o queda sin completar.</p>'+
       '</div>'+
-      '<div style="border-top:1px solid #e2ddcd;margin-top:12px;padding-top:10px;">'+
-      '<b>Gu\u00eda de redacci\u00f3n</b>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:14px;">'+
+      '<p class="note" style="margin:0;">Escribe fechas y lugares que <b>otra persona pueda verificar</b>.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'reddel\')">guía de redacción</button></div>'+
+      '<div class="ejBox" id="ej_reddel" style="display:none;">'+
       '<p class="note" style="font-size:12.5px;margin:5px 0 0;">Una delimitaci\u00f3n vale si <b>otra persona puede verificarla</b>: ir al lugar, abrir el calendario y comprobar que es exactamente eso. Lo vago no se puede auditar.</p>'+
       '<table class="ejParTable"><thead><tr><th>Evita escribir\u2026</th><th>Escribe mejor\u2026</th></tr></thead><tbody>'+
       '<tr><td>Durante el primer semestre de 2026</td><td>Del 01 de abril al 31 de julio de 2026 (4 meses)</td></tr>'+
@@ -1201,7 +1204,6 @@ function render(){
       '<tr><td>En el \u00e1rea de log\u00edstica</td><td>En el proceso de despacho del almac\u00e9n central, \u00e1rea de log\u00edstica</td></tr>'+
       '</tbody></table>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">La fila resaltada es la que m\u00e1s pesa: <b>el \u00e1rea concreta</b>. La empresa entera es demasiado grande para medir nada; el problema ocurre en un proceso espec\u00edfico, y ah\u00ed es donde vas a tomar los datos del pretest y del postest.</p>'+
-      '</div>'+
       '</div>'+
       '<div class="blockLbl" style="margin-top:14px;">◆ Delimitación espacial</div>'+
       '<div class="row2"><div><label>Empresa / unidad de estudio</label>'+
@@ -1310,8 +1312,11 @@ function render(){
       '<p class="note" style="font-size:12px;margin:8px 0 0;">En la r\u00fabrica esto se califica como <b>coherencia</b>, y arrastra lo que traiga el prop\u00f3sito y la l\u00ednea: el ciclo pasado, los grupos con bajo puntaje en esos dos criterios tambi\u00e9n lo tuvieron aqu\u00ed. Ning\u00fan retoque de redacci\u00f3n lo compensa.</p>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Puedes editarlo a mano, pero si luego cambias el prop\u00f3sito o la l\u00ednea y pulsas <b>rearmar</b>, tu edici\u00f3n se pierde.</p>'+
       '</div>'+
-      '<div style="border-top:1px solid #e2ddcd;margin-top:12px;padding-top:10px;">'+
-      '<b>Gu\u00eda de redacci\u00f3n</b>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:12px;">'+
+      '<p class="note" style="margin:0;">El tema es <b>afirmativo</b>: nombra el indicador y la línea, sin signos de pregunta.</p>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'redtema\')">guía de redacción</button></div>'+
+      '<div class="ejBox" id="ej_redtema" style="display:none;">'+
       '<p class="note" style="font-size:12.5px;margin:5px 0 0;">Estos son los temas reales que el ciclo pasado perdieron puntaje, y c\u00f3mo quedar\u00edan corregidos. La empresa se mantiene en reserva.</p>'+
       '<table class="ejParTable"><thead><tr><th>Evita escribir\u2026</th><th>Escribe mejor\u2026</th></tr></thead><tbody>'+
       '<tr class="ejHot"><td>Optimizaci\u00f3n de la gesti\u00f3n de almacenes mediante sistemas digitales de control y trazabilidad</td><td>Reducir las diferencias de inventario mediante la gesti\u00f3n de almacenes e inventarios en\u2026</td></tr>'+
@@ -1319,7 +1324,6 @@ function render(){
       '<tr><td>Optimizaci\u00f3n del proceso de procura mediante BPM</td><td>Reducir el tiempo del proceso de abastecimiento mediante la gesti\u00f3n por procesos y la mejora continua en\u2026</td></tr>'+
       '</tbody></table>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Los tres fallan en lo mismo: empiezan con <b>sustantivo</b> en vez de infinitivo, usan verbos <b>sin direcci\u00f3n</b> (optimizar, mejorar) y ponen una <b>herramienta</b> donde va la l\u00ednea. Ninguno dice qu\u00e9 indicador se mueve ni hacia d\u00f3nde.</p>'+
-      '</div>'+
       '</div>'+
       '<div class="varBox">'+
       '<div class="varTit">De aquí sale el tema</div>'+
