@@ -620,6 +620,81 @@ function rearmarTema(){
   toast('Tema rearmado desde el propósito y la línea');
 }
 
+/* Pasa el verbo del propósito de infinitivo a presente: la pregunta del
+   problema general lo necesita conjugado («Reducir» → «reduce»). Los
+   irregulares frecuentes van en la tabla; el resto sigue la regla. */
+var VERBOS_PRESENTE = {
+  reducir:'reduce', disminuir:'disminuye', incrementar:'incrementa',
+  aumentar:'aumenta', mejorar:'mejora', optimizar:'optimiza',
+  estandarizar:'estandariza', automatizar:'automatiza', implementar:'implementa',
+  elevar:'eleva', minimizar:'minimiza', maximizar:'maximiza', acortar:'acorta',
+  ampliar:'amplía', agilizar:'agiliza', simplificar:'simplifica',
+  eliminar:'elimina', controlar:'controla', garantizar:'garantiza',
+  fortalecer:'fortalece', contribuir:'contribuye', influir:'influye'
+};
+function aPresente(v){
+  var x = String(v||'').trim().toLowerCase();
+  if(!x) return '';
+  if(VERBOS_PRESENTE[x]) return VERBOS_PRESENTE[x];
+  if(/uir$/.test(x))  return x.slice(0,-2)+'ye';   // constituir → constituye
+  if(/ar$/.test(x))   return x.slice(0,-2)+'a';
+  if(/[ei]r$/.test(x))return x.slice(0,-2)+'e';
+  return x;
+}
+
+/* Separa el propósito en verbo + resto: «Reducir el tiempo…» → reduce | el tiempo… */
+function partirProposito(){
+  var t = String(S.proposito||'').trim().replace(/\s*[.;]+\s*$/,'');
+  if(!t) return null;
+  // Se recorta la cola de empresa/periodo si el alumno la escribió
+  t = t.replace(/\s*,?\s*en\s+(la\s+)?empresa\b[\s\S]*$/i,'')
+       .replace(/\s*,?\s*en\s+el\s+periodo\b[\s\S]*$/i,'')
+       .replace(/\s*[.,;]+\s*$/,'');
+  var m = t.match(/^(\S+)\s+([\s\S]+)$/);
+  if(!m) return null;
+  return { verbo: aPresente(m[1]), resto: m[2].trim() };
+}
+
+/* El problema general se compone igual que el tema, pero en forma de pregunta:
+   ¿De qué manera [la línea] [verbo en presente] [el indicador] [contexto]? */
+function armarProblemaGeneral(){
+  var pr = partirProposito();
+  if(!pr || !lineaTexto()) return '';
+  return '¿De qué manera la aplicación de ' + lineaTexto() + ' ' + pr.verbo + ' ' +
+         pr.resto + ' ' + contextoEmpresa().replace(/\.$/,'') + '?';
+}
+
+function rearmarProblemaGeneral(){
+  var t = armarProblemaGeneral();
+  if(!t){ toast('Faltan el propósito (paso 3) o la línea (paso 4)', true); return; }
+  S.problemaGeneral = t;
+  render();
+  toast('Problema general armado desde el propósito y la línea');
+}
+
+/* Cada problema específico usa la misma fórmula, con su herramienta en lugar
+   de la línea y el efecto que esa herramienta produce. */
+function armarProblemaEspecifico(i){
+  var e = S.especificos[i];
+  if(!e) return '';
+  var pr = partirProposito();
+  var verbo = (pr && pr.verbo) || 'mejora';
+  var herr = String(e.herramienta||'').trim();
+  if(!herr) return '';
+  var efecto = String(e.vd||'').trim() ||
+               ('[qué mejora — deriva de: «' + (e.causa||e.sub||'la causa priorizada') + '»]');
+  return ('¿De qué manera la aplicación de ' + herr).replace(/\bde el\b/,'del') +
+         ' ' + verbo + ' ' + efecto + ' ' + contextoEmpresa().replace(/\.$/,'') + '?';
+}
+
+function proponerPE(i){
+  var t = armarProblemaEspecifico(i);
+  if(!t){ toast('Escribe primero la herramienta de este problema específico', true); return; }
+  S.especificos[i].problema = t;
+  render();
+  toast('Borrador armado — completa lo que quede entre corchetes');
+}
+
 function armarTema(){
   if(!S.proposito || !lineaTexto()) return '';
   var p = S.proposito.trim().replace(/\.?\s*$/,'');
@@ -1114,6 +1189,19 @@ function render(){
       '</ol>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">De estas fechas sale el <b>a\u00f1o</b> que despu\u00e9s aparece en el tema, el problema, los objetivos y las hip\u00f3tesis. Si las dejas vac\u00edas, ese a\u00f1o queda sin completar.</p>'+
       '</div>'+
+      '<div style="border-top:1px solid #e2ddcd;margin-top:12px;padding-top:10px;">'+
+      '<b>Gu\u00eda de redacci\u00f3n</b>'+
+      '<p class="note" style="font-size:12.5px;margin:5px 0 0;">Una delimitaci\u00f3n vale si <b>otra persona puede verificarla</b>: ir al lugar, abrir el calendario y comprobar que es exactamente eso. Lo vago no se puede auditar.</p>'+
+      '<table class="ejParTable"><thead><tr><th>Evita escribir\u2026</th><th>Escribe mejor\u2026</th></tr></thead><tbody>'+
+      '<tr><td>Durante el primer semestre de 2026</td><td>Del 01 de abril al 31 de julio de 2026 (4 meses)</td></tr>'+
+      '<tr><td>Entre abril y julio</td><td>Pretest: 01 al 30 de abril \u00b7 Intervenci\u00f3n: 01 de mayo al 30 de junio \u00b7 Postest: 01 al 31 de julio</td></tr>'+
+      '<tr><td>Durante el desarrollo de la investigaci\u00f3n</td><td>En las 12 semanas que dura la implementaci\u00f3n del piloto</td></tr>'+
+      '<tr class="ejHot"><td>En la Empresa Alfa S.A.C.</td><td>En el \u00e1rea de administraci\u00f3n de proyectos y servicios de la Empresa Alfa S.A.C.</td></tr>'+
+      '<tr><td>En Lima</td><td>Av. Los Ingenieros 450, Ate, Lima (con enlace al mapa)</td></tr>'+
+      '<tr><td>En el \u00e1rea de log\u00edstica</td><td>En el proceso de despacho del almac\u00e9n central, \u00e1rea de log\u00edstica</td></tr>'+
+      '</tbody></table>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">La fila resaltada es la que m\u00e1s pesa: <b>el \u00e1rea concreta</b>. La empresa entera es demasiado grande para medir nada; el problema ocurre en un proceso espec\u00edfico, y ah\u00ed es donde vas a tomar los datos del pretest y del postest.</p>'+
+      '</div>'+
       '</div>'+
       '<div class="blockLbl" style="margin-top:14px;">◆ Delimitación espacial</div>'+
       '<div class="row2"><div><label>Empresa / unidad de estudio</label>'+
@@ -1221,6 +1309,16 @@ function render(){
       '</tbody></table>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">En la r\u00fabrica esto se califica como <b>coherencia</b>, y arrastra lo que traiga el prop\u00f3sito y la l\u00ednea: el ciclo pasado, los grupos con bajo puntaje en esos dos criterios tambi\u00e9n lo tuvieron aqu\u00ed. Ning\u00fan retoque de redacci\u00f3n lo compensa.</p>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Puedes editarlo a mano, pero si luego cambias el prop\u00f3sito o la l\u00ednea y pulsas <b>rearmar</b>, tu edici\u00f3n se pierde.</p>'+
+      '</div>'+
+      '<div style="border-top:1px solid #e2ddcd;margin-top:12px;padding-top:10px;">'+
+      '<b>Gu\u00eda de redacci\u00f3n</b>'+
+      '<p class="note" style="font-size:12.5px;margin:5px 0 0;">Estos son los temas reales que el ciclo pasado perdieron puntaje, y c\u00f3mo quedar\u00edan corregidos. La empresa se mantiene en reserva.</p>'+
+      '<table class="ejParTable"><thead><tr><th>Evita escribir\u2026</th><th>Escribe mejor\u2026</th></tr></thead><tbody>'+
+      '<tr class="ejHot"><td>Optimizaci\u00f3n de la gesti\u00f3n de almacenes mediante sistemas digitales de control y trazabilidad</td><td>Reducir las diferencias de inventario mediante la gesti\u00f3n de almacenes e inventarios en\u2026</td></tr>'+
+      '<tr><td>Mejorar la eficiencia log\u00edstica aplicando clasificaci\u00f3n ABC y planificaci\u00f3n de transporte</td><td>Reducir el costo de distribuci\u00f3n mediante la gesti\u00f3n de inventarios y log\u00edstica en\u2026</td></tr>'+
+      '<tr><td>Optimizaci\u00f3n del proceso de procura mediante BPM</td><td>Reducir el tiempo del proceso de abastecimiento mediante la gesti\u00f3n por procesos y la mejora continua en\u2026</td></tr>'+
+      '</tbody></table>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Los tres fallan en lo mismo: empiezan con <b>sustantivo</b> en vez de infinitivo, usan verbos <b>sin direcci\u00f3n</b> (optimizar, mejorar) y ponen una <b>herramienta</b> donde va la l\u00ednea. Ninguno dice qu\u00e9 indicador se mueve ni hacia d\u00f3nde.</p>'+
       '</div>'+
       '</div>'+
       '<div class="varBox">'+
@@ -1469,6 +1567,19 @@ function render(){
       '<i>¿De qué manera la aplicación de la gestión por procesos y la mejora continua reduce el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería en la Empresa Alfa S.A.C., Lima, 2026?</i>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Problema general del caso, tal como aparece en su matriz de consistencia.</p>'+
       '</div>'+
+      '<div class="varBox">'+
+      '<div class="varTit">De aquí sale el problema general</div>'+
+      '<div class="varFija"><span class="varEt">Propósito · paso 3</span>'+
+      '<span class="varVal">'+esc(S.proposito||'— sin definir')+'</span></div>'+
+      '<div class="varFija"><span class="varEt">Línea · paso 4</span>'+
+      '<span class="varVal">'+esc(lineaTexto()||'— sin elegir')+'</span></div>'+
+      '<div class="varFija" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">'+
+      '<span class="varEt">Empresa y año · paso 2</span>'+
+      '<span class="varVal">'+esc((S.empresa||'— sin empresa')+(ciudad()?', '+ciudad():'')+' · '+
+        (anio()||'sin año: faltan las fechas'))+'</span></div>'+
+      '<button type="button" class="ejBtn" style="margin-top:9px;" onclick="rearmarProblemaGeneral()">armar desde estos datos</button>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Se arma con la misma fórmula del tema, pero en forma de pregunta: el verbo del propósito pasa a presente («Reducir» → «reduce») y la línea entra como lo que produce el efecto.</p>'+
+      '</div>'+
       '<textarea rows="3" id="f_pg" style="font-style:italic;" oninput="S.problemaGeneral=this.value;refrescarCoherencia()" placeholder="¿De qué manera… en la empresa '+esc(S.empresa||'[Nombre]')+', '+esc(S.ubicacion||'[lugar]')+', '+anio()+'?">'+esc(S.problemaGeneral)+'</textarea>'+
       '<div id="cohWrap">'+panelCoherencia(S.problemaGeneral||'')+'</div>'+
 
@@ -1486,6 +1597,7 @@ function render(){
           '<label>Herramienta enmarcada en la línea</label>'+
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…">'+
           '<label style="margin-top:10px;">Problema específico</label>'+
+          '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerPE('+i+')">armar desde la herramienta</button>'+
           '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea></div>';
     });
     if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
