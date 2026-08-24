@@ -1229,7 +1229,8 @@ function render(){
     h='<div class="card"><h2>03 · Propósito de la investigación</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">¿Qué busca lograr la investigación? Escríbelo en tus palabras, en infinitivo (empieza con un verbo: reducir, disminuir, incrementar) y nombra el indicador que se quiere mover. Evita <b>optimizar</b> o <b>mejorar</b>: no dicen si el indicador sube o baja, y sin dirección no se puede medir. Aquí no va la herramienta — esa entra en el tema (paso 5).</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button></div>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'prop\')">ver ejemplo</button>'+
+      '<button type="button" class="ejBtn" onclick="excelProposito()">↓ descargar Excel</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
       'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda en la Empresa Alfa S.A.C.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
@@ -1258,7 +1259,8 @@ function render(){
     h='<div class="card"><h2>04 · Elige la línea de investigación de Ingeniería</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Selecciona una de las l\u00edneas oficiales, o \u2014si tu tema no encaja en ninguna\u2014 construye una <b>l\u00ednea paraguas</b> propia (un concepto amplio que abarque el problema).</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'lin\')">ver ejemplo</button></div>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'lin\')">ver ejemplo</button>'+
+      '<button type="button" class="ejBtn" onclick="excelLinea()">↓ descargar Excel</button></div>'+
       '<div class="ejBox" id="ej_lin" style="display:none;">'+
       '<b>Gesti\u00f3n por procesos y mejora continua.</b>'+
       '<p class="note" style="font-size:12px;margin:6px 0 0;">Es un paraguas: nombra el campo amplio, no la herramienta. BPMN, RPA o los KPIs son <i>herramientas</i> que van despu\u00e9s, en los problemas espec\u00edficos (paso 9) \u2014 no en la l\u00ednea.</p>'+
@@ -2922,6 +2924,33 @@ function excelDelimitacion(){
     ['Postest',  S.postest],
     ['Año del estudio', anio() || '(sin fechas)']
   ]);
+}
+
+function excelProposito(){
+  descargarCSV(nombreArchivo('03_proposito'), [
+    ['Elemento','Contenido'],
+    ['Problema empresarial (paso 1)', S.problemaEmpresa],
+    ['Empresa (paso 2)', S.empresa],
+    ['',''],
+    ['Propósito de la investigación', S.proposito],
+    ['',''],
+    ['Verificación','Debe empezar con verbo en infinitivo y nombrar el indicador que se quiere mover.'],
+    ['Verbo detectado', (String(S.proposito||'').trim().split(/\s+/)[0] || '(vacío)')]
+  ]);
+}
+
+function excelLinea(){
+  var filas = [
+    ['Elemento','Contenido'],
+    ['Propósito (paso 3)', S.proposito],
+    ['',''],
+    ['Línea de investigación', lineaTexto()],
+    ['Origen', S.lineaCustomTexto ? 'Personalizada (fuera de las oficiales)' : 'Oficial 2026-2030'],
+    ['','']
+  ];
+  filas.push(['Líneas oficiales de la escuela','']);
+  LINEAS.forEach(function(l,i){ filas.push([(i+1)+'.', limpiarLinea(l)]); });
+  descargarCSV(nombreArchivo('04_linea-de-investigacion'), filas);
 }
 
 function excelTema(){
