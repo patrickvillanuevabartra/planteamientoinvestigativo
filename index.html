@@ -3133,8 +3133,11 @@ function alRecibirCredencial(resp){
       err.textContent = 'No se pudo validar tu cuenta. Revisa que uses tu correo institucional.';
       err.style.display='block';
     }
-  }, function(){
-    err.textContent = 'Error de red al ingresar. Intenta de nuevo.';
+  }, function(f){
+    // El motivo concreto ahorra adivinar: distingue un proxy caído de una URL
+    // demasiado larga o de una respuesta que no es nuestro JSONP.
+    err.innerHTML = 'Error de red al ingresar. Intenta de nuevo.<br>'+
+                    '<small>'+esc(textoFallo(f))+'</small>';
     err.style.display='block';
   });
 }
