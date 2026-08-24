@@ -1148,7 +1148,10 @@ function render(){
              '<div class="ejBox" id="ej_'+ejKey+'" style="display:none;">'+esc(EJEMPLO_PROB[ejKey])+'</div>'+
              '<textarea rows="2" id="'+fid+'" oninput="S.'+stateKey+'=this.value;refreshCont1()" placeholder="Escribe aquí…">'+esc(S[stateKey])+'</textarea>';
     }
-    h='<div class="card"><h2>01 · Descripción del problema</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">01 · Descripción del problema</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelProblema()">↓ descargar Excel</button></div>'+
       '<div class="coordsBox" style="background:#fbf4ee;border-left:3px solid var(--amber);margin-bottom:18px;">'+
       '<b>Guía institucional (Manual URP 2020, p.8):</b> la descripción del problema no es un relato libre. '+
       'Debe precisar la población afectada, las posibles causas raíz, las consecuencias, dónde/cómo/cuándo se manifiesta '+
@@ -1168,7 +1171,8 @@ function render(){
     h='<div class="card"><h2>02 · Delimitación</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Delimitar es decir <b>dónde</b> y <b>cuándo</b> se hará el estudio. El periodo se parte en tres momentos porque el diseño es pre-post.</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'del\')">ver ejemplo</button></div>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'del\')">ver ejemplo</button>'+
+      '<button type="button" class="ejBtn" onclick="excelDelimitacion()">↓ descargar Excel</button></div>'+
       '<div class="ejBox" id="ej_del" style="display:none;">'+
       '<table class="ejParTable"><tbody>'+
       '<tr><td style="width:38%;">Empresa / unidad</td><td>Empresa Alfa S.A.C. \u2014 \u00e1rea de administraci\u00f3n de proyectos y servicios<br><span style="font-size:11.5px;color:#8a7f6d;">(automatizaci\u00f3n industrial y servicios de ingenier\u00eda; nombre ficticio)</span></td></tr>'+
@@ -1296,7 +1300,8 @@ function render(){
     h='<div class="card"><h2>05 · Tema de investigación</h2>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El tema combina tu prop\u00f3sito con la l\u00ednea, la empresa y el periodo. Puedes editarlo.</p>'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button></div>'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'tem\')">ver ejemplo</button>'+
+      '<button type="button" class="ejBtn" onclick="excelTema()">↓ descargar Excel</button></div>'+
       '<div class="ejBox" id="ej_tem" style="display:none;">'+
       'Reducci\u00f3n del tiempo de atenci\u00f3n de entrega de bienes y/o servicios en el \u00e1rea de ingenier\u00eda mediante la aplicaci\u00f3n de la gesti\u00f3n por procesos y la mejora continua en la Empresa Alfa S.A.C., Lima, 2026.'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Se lee: <b>[lo que se quiere lograr]</b> mediante <b>[la l\u00ednea]</b> en <b>[d\u00f3nde]</b>, en <b>[el periodo]</b>. Es afirmativo y sin signos de pregunta.</p>'+
@@ -2858,6 +2863,81 @@ function filasMatriz(){
 }
 
 // Texto separado por tabuladores: al pegarlo en Excel cae en celdas.
+/* ── Descarga a Excel ──
+   Se genera un CSV con BOM: Excel en español lo abre en columnas sin pedir
+   nada. Se usa punto y coma como separador, que es lo que espera la
+   configuración regional de Perú. */
+function descargarCSV(nombre, filas){
+  var sep = ';';
+  var cuerpo = filas.map(function(f){
+    return f.map(function(c){
+      var t = String(c == null ? '' : c).replace(/"/g,'""');
+      return '"' + t + '"';
+    }).join(sep);
+  }).join('\r\n');
+
+  var blob = new Blob(['\ufeff' + cuerpo], { type:'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  toast('Descargado: ' + nombre);
+}
+
+/* Prefijo del archivo: ciclo, grupo y coordinador, para que al juntar las
+   entregas de todo el curso cada archivo se identifique solo. */
+function nombreArchivo(sufijo){
+  var p = [S.ciclo, S.numeroGrupo ? ('G'+S.numeroGrupo) : '', S.coordinador]
+            .filter(function(x){ return x; }).join('_')
+            .replace(/[^\wÁÉÍÓÚÑáéíóúñ .-]/g,'').replace(/\s+/g,'-');
+  return (p ? p + '_' : '') + sufijo + '.csv';
+}
+
+function excelProblema(){
+  descargarCSV(nombreArchivo('01_descripcion-del-problema'), [
+    ['Aspecto','Contenido'],
+    ['Población afectada',      S.probPoblacion],
+    ['Causas raíz aparentes',   S.probCausas],
+    ['Consecuencias',           S.probConsecuencias],
+    ['Dónde, cómo y cuándo',    S.probContexto],
+    ['Magnitud (cifras)',       S.probMagnitud],
+    ['',''],
+    ['Problema empresarial consolidado', S.problemaEmpresa]
+  ]);
+}
+
+function excelDelimitacion(){
+  descargarCSV(nombreArchivo('02_delimitacion'), [
+    ['Delimitación','Contenido'],
+    ['Empresa / unidad de estudio', S.empresa],
+    ['Ubicación (distrito, ciudad)', S.ubicacion],
+    ['Link de Google Maps', S.mapsLink],
+    ['',''],
+    ['Pretest',  S.pretest],
+    ['Test (intervención)', S.test],
+    ['Postest',  S.postest],
+    ['Año del estudio', anio() || '(sin fechas)']
+  ]);
+}
+
+function excelTema(){
+  descargarCSV(nombreArchivo('05_tema-de-investigacion'), [
+    ['Elemento','Contenido'],
+    ['Título del proyecto', S.tituloProyecto],
+    ['Propósito (paso 3)',  S.proposito],
+    ['Línea de investigación (paso 4)', lineaTexto()],
+    ['Origen de la línea',  S.lineaCustomTexto ? 'Personalizada' : 'Oficial'],
+    ['Empresa', S.empresa],
+    ['Año', anio() || '(sin fechas)'],
+    ['',''],
+    ['Tema de investigación', S.tema]
+  ]);
+}
+
 function matrizTSV(){
   var enc = ['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)'].join('\t');
   var filas = filasMatriz().map(function(f){
@@ -3120,24 +3200,8 @@ function iniciarGoogle(){
 function alRecibirCredencial(resp){
   var err = document.getElementById('authErr');
   err.style.display='none';
-  /* El primer ingreso del día puede tardar: avisar evita que el alumno
-     recargue a mitad y lo intente otra vez sin necesidad. */
-  var tIngreso = new Date().getTime();
-  var avisoLento = setTimeout(function(){
-    err.innerHTML = '<span style="color:#8a6d3b;">Conectando… el primer ingreso del día puede tardar unos segundos.</span>';
-    err.style.display='block';
-  }, 3500);
   jsonpCall({ action:'login', token:encodeURIComponent(resp.credential) }, function(r){
-    clearTimeout(avisoLento);
     if (r && r.ok){
-      /* Reparte el tiempo: lo que tardo el proxy por dentro (t_total) frente a
-         lo que espero el navegador. La diferencia es el arranque en frio. */
-      try {
-        var msCliente = new Date().getTime() - tIngreso;
-        console.log('[login] navegador: '+msCliente+' ms · proxy por dentro: '+
-          (r.t_total||'?')+' ms (verificar token: '+(r.t_token||'?')+' ms) · '+
-          'arranque en frio aprox: '+(msCliente-(r.t_total||0))+' ms');
-      } catch(e){}
       SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
       document.getElementById('authWrap').style.display='none';
       var ub=document.getElementById('userBar');
@@ -3152,7 +3216,6 @@ function alRecibirCredencial(resp){
       err.style.display='block';
     }
   }, function(f){
-    clearTimeout(avisoLento);
     // El motivo concreto ahorra adivinar: distingue un proxy caído de una URL
     // demasiado larga o de una respuesta que no es nuestro JSONP.
     err.innerHTML = 'Error de red al ingresar. Intenta de nuevo.<br>'+
