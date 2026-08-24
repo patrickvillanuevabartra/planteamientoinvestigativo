@@ -3120,8 +3120,24 @@ function iniciarGoogle(){
 function alRecibirCredencial(resp){
   var err = document.getElementById('authErr');
   err.style.display='none';
+  /* El primer ingreso del día puede tardar: avisar evita que el alumno
+     recargue a mitad y lo intente otra vez sin necesidad. */
+  var tIngreso = new Date().getTime();
+  var avisoLento = setTimeout(function(){
+    err.innerHTML = '<span style="color:#8a6d3b;">Conectando… el primer ingreso del día puede tardar unos segundos.</span>';
+    err.style.display='block';
+  }, 3500);
   jsonpCall({ action:'login', token:encodeURIComponent(resp.credential) }, function(r){
+    clearTimeout(avisoLento);
     if (r && r.ok){
+      /* Reparte el tiempo: lo que tardo el proxy por dentro (t_total) frente a
+         lo que espero el navegador. La diferencia es el arranque en frio. */
+      try {
+        var msCliente = new Date().getTime() - tIngreso;
+        console.log('[login] navegador: '+msCliente+' ms · proxy por dentro: '+
+          (r.t_total||'?')+' ms (verificar token: '+(r.t_token||'?')+' ms) · '+
+          'arranque en frio aprox: '+(msCliente-(r.t_total||0))+' ms');
+      } catch(e){}
       SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
       document.getElementById('authWrap').style.display='none';
       var ub=document.getElementById('userBar');
@@ -3130,10 +3146,13 @@ function alRecibirCredencial(resp){
         (SESION.docente ? '<b>Docente</b> · ' : '') + esc(SESION.email);
       render();
     } else {
-      err.textContent = 'No se pudo validar tu cuenta. Revisa que uses tu correo institucional.';
+      err.textContent = (r && r.error && r.error !== 'TOKEN_INVALIDO')
+        ? r.error
+        : 'No se pudo validar tu cuenta. Vuelve a intentarlo.';
       err.style.display='block';
     }
   }, function(f){
+    clearTimeout(avisoLento);
     // El motivo concreto ahorra adivinar: distingue un proxy caído de una URL
     // demasiado larga o de una respuesta que no es nuestro JSONP.
     err.innerHTML = 'Error de red al ingresar. Intenta de nuevo.<br>'+
@@ -3183,10 +3202,15 @@ function jsonpCall(params, onOk, onErr){
     if(onErr) onErr(ULTIMO_FALLO);
   }
 
+  /* 45 s: el PRIMER arranque del proxy tras un despliegue nuevo puede tardar
+     bastante (Google compila el script y abre conexión con QuintaDB). Después
+     queda caliente y responde en menos de un segundo. Con 20 s ese primer
+     intento fallaba y el alumno cre\u00eda que el aplicativo no serv\u00eda. */
+  var LIMITE = 45000;
   var timer=setTimeout(function(){
     fallar(cargo ? 'respondio, pero el contenido no era la respuesta esperada'
-                 : 'no respondio en 20 s');
-  }, 20000);
+                 : 'no respondio en 45 s');
+  }, LIMITE);
 
   window[cbName]=function(data){
     if(cerrado) return; cerrado=true;
