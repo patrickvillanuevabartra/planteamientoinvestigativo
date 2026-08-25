@@ -1387,7 +1387,10 @@ function render(){
     });
     var efectoSugerido = S.probConsecuencias || S.probMagnitud || S.probContexto || '';
     var efectoVal = S.efectoCentral || efectoSugerido;
-    h='<div class="card"><h2>06 · Diagrama de Ishikawa</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">06 · Diagrama de Ishikawa</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelIshikawa()">↓ descargar Excel</button></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El efecto (cabeza del pescado) es el problema central. Cada categoría admite causas principales y, dentro de ellas, <b>subcausas</b> (segundo nivel). Puedes renombrar o eliminar las categorías (6M) y añadir nuevas.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'ishi\');dibujarEjemploIshikawa()">ver ejemplo</button></div>'+
@@ -1491,7 +1494,10 @@ function render(){
         '<select onchange="setPriorizada('+pi+',this.value)">'+optsSel+'</select></div>';
     }
 
-    h='<div class="card"><h2>07 · Priorización por Pareto</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">07 · Priorización por Pareto</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelPareto()">↓ descargar Excel</button></div>'+
       '<div class="coordsBox" style="background:#eef5f4;margin-bottom:14px;">'+
       '<b>De d\u00f3nde salen estas filas:</b> cada fila es '+(porSubcausa()?'una <b>subcausa</b>':'una <b>causa</b>')+' que registraste en tu diagrama de Ishikawa (paso 6). '+
       'Aqu\u00ed se miden: le das a cada una una <b>frecuencia</b>, el Pareto las ordena y quedan priorizadas las que concentran el 80%. '+
@@ -1537,7 +1543,10 @@ function render(){
   }
   else if(S.paso===8){
     var an = analisisCentralProposito();
-    h='<div class="card"><h2>08 · Problema general</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">08 · Problema general</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelProblemas()">↓ descargar Excel</button></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">El planteamiento del problema general comprende dos momentos. <b>Verificación de coherencia:</b> comprobar que el propósito y el problema central expresen la misma idea. <b>Formulación de la pregunta:</b> redactar la interrogante principal alineada con el tema de investigación. La revisarás con los hallazgos del análisis bibliométrico en el paso 10.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pg\')">ver ejemplo</button></div>'+
@@ -1616,7 +1625,10 @@ function render(){
       '<div class="varTit">Estas herramientas son una propuesta, todavía no una decisión</div>'+
       '<p class="note" style="margin:0;font-size:13px;">Las eliges ahora por criterio técnico, pero quien las confirma es la literatura. En el <b>paso 10</b> harás el análisis bibliométrico y comprobarás si cada una tiene respaldo para el efecto que buscas. Es normal volver aquí y cambiar alguna: eso no es un retroceso, es el método funcionando.</p>'+
       '</div>';
-    h='<div class="card"><h2>09 · Problemas específicos y herramientas</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">09 · Problemas específicos y herramientas</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelProblemas()">↓ descargar Excel</button></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Cada '+rotuloNivel()+' priorizada en el Pareto genera un problema espec\u00edfico. Compl\u00e9talo con su herramienta enmarcada en la l\u00ednea.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'pe\')">ver ejemplo</button></div>'+
@@ -1627,7 +1639,10 @@ function render(){
       '<button class="btn" onclick="go(10)">Continuar → Análisis bibliométrico</button></div></div>';
   }
   else if(S.paso===10){
-    h='<div class="card"><h2>10 · Análisis bibliométrico</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">10 · Análisis bibliométrico</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelBibliometrico()">↓ descargar Excel</button></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Antes de formular el problema, revisa qué se ha investigado ya. Esto respalda la herramienta que elegiste en el Pareto y confirma que la relación entre tus variables está estudiada.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'bib\')">ver ejemplo</button></div>'+
@@ -1658,12 +1673,12 @@ function render(){
 
       '<div class="blockLbl" style="margin-top:20px;">◆ A · Cuestionamiento</div>'+
       '<label>Pregunta de investigación preliminar</label>'+
-      '<textarea rows="2" oninput="S.bibPregunta=this.value" placeholder="Parte de tu propósito y tus variables: ¿cómo influye X en Y?">'+esc(S.bibPregunta)+'</textarea>'+
+      editorRico('bibPregunta', S.bibPregunta, 'Parte de tu propósito y tus variables: ¿cómo influye X en Y?')+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">No es todavía el problema general: es la pregunta con la que vas a buscar literatura.</p>'+
 
       '<div class="blockLbl" style="margin-top:18px;">◆ B · Búsqueda eficiente</div>'+
       '<label>Fórmula de búsqueda</label>'+
-      '<textarea rows="3" oninput="S.bibFormula=this.value" placeholder=\'( "term1" OR "term2" ) AND ( "term3" )\'>'+esc(S.bibFormula)+'</textarea>'+
+      editorRico('bibFormula', S.bibFormula, '( "term1" OR "term2" ) AND ( "term3" )')+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Usa comillas para frases exactas, <b>OR</b> entre sinónimos y <b>AND</b> entre conceptos distintos. Una fórmula bien armada es lo que separa 40 resultados útiles de 4000 inservibles.</p>'+
 
       '<div class="blockLbl" style="margin-top:18px;">◆ C · Levantamiento de datos</div>'+
@@ -1677,13 +1692,13 @@ function render(){
 
       '<div class="blockLbl" style="margin-top:18px;">◆ D · Construcción del material de análisis</div>'+
       '<label>Reporte de los programas (VOSviewer, Bibliometrix)</label>'+
-      '<textarea rows="3" oninput="S.bibReporte=this.value" placeholder="Qué mapas y tablas generaste, y qué muestra cada uno…">'+esc(S.bibReporte)+'</textarea>'+
+      editorRico('bibReporte', S.bibReporte, 'Qué mapas y tablas generaste, y qué muestra cada uno… (usa 🔗 para enlazar el mapa en Drive)')+
 
       '<div class="blockLbl" style="margin-top:18px;">◆ E · Informe técnico</div>'+
       '<label>Hallazgos y resultados</label>'+
-      '<textarea rows="3" oninput="S.bibHallazgos=this.value" placeholder="Qué encontraste y cómo respalda tu herramienta y tus variables…">'+esc(S.bibHallazgos)+'</textarea>'+
+      editorRico('bibHallazgos', S.bibHallazgos, 'Qué encontraste y cómo respalda tu herramienta y tus variables…')+
       '<label>Conclusiones y recomendaciones</label>'+
-      '<textarea rows="3" oninput="S.bibConclusiones=this.value" placeholder="Qué concluyes de la revisión y qué recomiendas para tu proyecto…">'+esc(S.bibConclusiones)+'</textarea>'+
+      editorRico('bibConclusiones', S.bibConclusiones, 'Qué concluyes de la revisión y qué recomiendas para tu proyecto…')+
       '<div class="varBox" style="margin-top:12px;">'+
       '<div class="varTit">Antes de continuar · qué debes revisar con estos hallazgos</div>'+
       '<p class="note" style="margin:0 0 8px;font-size:13px;"><b>Las herramientas de tus problemas específicos (paso 9).</b> La literatura debe mostrar que cada una se ha usado para el efecto que buscas. Si alguna no aparece en los mapas, o aparece en un tema apenas emergente, tienes dos salidas: sustituirla por otra con respaldo, o mantenerla y declararlo como limitación del estudio. Los mapas también pueden sugerirte herramientas que no habías considerado.</p>'+
@@ -1713,7 +1728,10 @@ function render(){
           '</div></div>';
     });
     if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
-    h='<div class="card"><h2>11 · Objetivos y variables</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">11 · Objetivos y variables</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelObjetivos()">↓ descargar Excel</button></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">Un objetivo por cada problema: el general responde al problema general, y cada específico a su PE. La correspondencia es <b>uno a uno</b>.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'obj\')">ver ejemplo</button></div>'+
@@ -1759,7 +1777,10 @@ function render(){
           '<textarea rows="2" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea></div>';
     });
     if(!he) he='<p class="note">Aún no hay objetivos específicos. Vuelve al paso 10.</p>';
-    h='<div class="card"><h2>12 · Indicadores e hipótesis</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">12 · Indicadores e hipótesis</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelHipotesis()">↓ descargar Excel</button></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
       '<p class="note" style="margin:0;">La hipótesis es una <b>afirmación</b>, nunca una pregunta. Necesita variable independiente (lo que aplicas), variable dependiente (lo que mejora) y el contexto.</p>'+
       '<button type="button" class="ejBtn" onclick="toggleEj(\'hip\')">ver ejemplo</button></div>'+
@@ -1805,7 +1826,10 @@ function render(){
     t+='</tbody></table></div>';
     var faltan = filas.filter(function(f){ return !f.objetivo || !f.hipotesis || !f.indicador; }).length;
     var aviso = faltan ? '<p class="hintWarn">Hay '+faltan+' fila(s) incompleta(s). La matriz solo sirve si está completa.</p>' : '';
-    h='<div class="card"><h2>13 · Matriz de consistencia</h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">13 · Matriz de consistencia</h2>'+
+      '<button type="button" class="ejBtn" onclick="excelMatriz()">↓ descargar Excel</button></div>'+
       '<p class="note">Esta matriz no se llena: se arma sola con lo que ya escribiste. Léela por filas — si una fila no se sostiene, el problema está arriba, no aquí.</p>'+
       aviso + t +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">'+
@@ -1857,7 +1881,10 @@ function render(){
               '<p class="note" style="margin:0 0 7px;font-size:12.5px;">'+r[2]+'</p>'+
               editorRico(r[0], S[r[0]]||'', r[3])+'</div>';
     });
-    h='<div class="card"><h2>14 · Referencias · <span style="font-weight:400;color:#8a6d3b;">eje transversal</span></h2>'+
+    h='<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+      '<h2 style="margin:0;">14 · Referencias · <span style="font-weight:400;color:#8a6d3b;">eje transversal</span></h2>'+
+      '<button type="button" class="ejBtn" onclick="excelReferencias()">↓ descargar Excel</button></div>'+
       '<p class="note">Este paso no va después de los otros: va <b>a lo largo</b> de los trece. Cada fuente que consultes —al describir el problema, al elegir la línea, al hacer el análisis bibliométrico— se registra aquí en el momento, no al final. Dejarlo para el cierre es lo que obliga a reconstruir de memoria de dónde salió cada dato.</p>'+
       '<div class="varBox"><div class="varTit">Dónde se nota</div>'+
       '<p class="note" style="margin:0;font-size:13px;">El <b>paso 10</b> es el que más alimenta tu biblioteca: los documentos que salen de la búsqueda en Scopus se importan directo con el Web Importer y quedan listos para citar. Y el grupo de trabajo evita el problema clásico de entregar un informe donde cada integrante citó una edición distinta del mismo libro.</p></div>'+
@@ -2923,6 +2950,101 @@ function excelDelimitacion(){
     ['Test (intervención)', S.test],
     ['Postest',  S.postest],
     ['Año del estudio', anio() || '(sin fechas)']
+  ]);
+}
+
+function txtPlano(h){
+  var d = document.createElement('div');
+  d.innerHTML = String(h||'').replace(/<\/(p|div|li)>/gi,'\n');
+  return (d.textContent || '').replace(/\n{2,}/g,'\n').trim();
+}
+
+function excelIshikawa(){
+  var filas = [['Categoría','Causa','Subcausa','Causa raíz']];
+  filas.push(['Problema central', S.efectoCentral, '', '']);
+  filas.push(['Consecuencia', S.consecuencia, '', '']);
+  filas.push(['','','','']);
+  S.categorias.forEach(function(cat){
+    (S.causas[cat]||[]).forEach(function(cz){
+      var subs = subsDe(cz);
+      if(!subs.length){ filas.push([cat, cz.txt, '', '']); return; }
+      subs.forEach(function(sb){
+        if(!(sb.subs||[]).length){ filas.push([cat, cz.txt, sb.txt, '']); return; }
+        sb.subs.forEach(function(r){ filas.push([cat, cz.txt, sb.txt, r]); });
+      });
+    });
+  });
+  descargarCSV(nombreArchivo('06_ishikawa'), filas);
+}
+
+function excelPareto(){
+  var filas = [['#','Nivel priorizado: '+rotuloNivel(),'Origen','Frecuencia','% acum.','¿Priorizada?']];
+  paretoOrdenado().forEach(function(f,i){
+    filas.push([i+1, f.etiqueta, f.meta, f.freq,
+                (f.acum!=null? f.acum+'%' : ''), f.priorizada?'Sí':'']);
+  });
+  descargarCSV(nombreArchivo('07_pareto'), filas);
+}
+
+function excelBibliometrico(){
+  descargarCSV(nombreArchivo('10_analisis-bibliometrico'), [
+    ['Fase','Contenido'],
+    ['A · Pregunta preliminar', txtPlano(S.bibPregunta)],
+    ['B · Fórmula de búsqueda', txtPlano(S.bibFormula)],
+    ['C · Base de datos', S.bibBase],
+    ['C · Registros obtenidos', S.bibRegistros],
+    ['C · Enlace al CSV', S.bibCsv],
+    ['D · Reporte de programas', txtPlano(S.bibReporte)],
+    ['E · Hallazgos y resultados', txtPlano(S.bibHallazgos)],
+    ['E · Conclusiones y recomendaciones', txtPlano(S.bibConclusiones)]
+  ]);
+}
+
+function excelProblemas(){
+  var filas = [['Nivel','Herramienta','Problema']];
+  filas.push(['General', lineaTexto(), S.problemaGeneral]);
+  S.especificos.forEach(function(e,i){
+    filas.push(['Específico '+(i+1), e.herramienta, e.problema]);
+  });
+  descargarCSV(nombreArchivo('09_problemas'), filas);
+}
+
+function excelObjetivos(){
+  var filas = [['Nivel','Objetivo','VI (lo que aplicas)','VD (lo que mejora)']];
+  filas.push(['General', S.objetivoGeneral, S.varInd, S.varDep]);
+  S.especificos.forEach(function(e,i){
+    filas.push(['Específico '+(i+1), e.objetivo, viDe(e), e.vd]);
+  });
+  descargarCSV(nombreArchivo('11_objetivos-y-variables'), filas);
+}
+
+function excelHipotesis(){
+  var filas = [['Nivel','Indicador (VD)','Hipótesis']];
+  filas.push(['General', S.indicadorGeneral, S.hipotesisGeneral]);
+  S.especificos.forEach(function(e,i){
+    filas.push(['Específico '+(i+1), e.indicador, e.hipotesis]);
+  });
+  descargarCSV(nombreArchivo('12_indicadores-e-hipotesis'), filas);
+}
+
+function excelMatriz(){
+  var filas = [['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)']];
+  filasMatriz().forEach(function(f){
+    filas.push([f.tag, f.problema, f.objetivo, f.hipotesis, f.variables, f.indicador]);
+  });
+  descargarCSV(nombreArchivo('13_matriz-de-consistencia'), filas);
+}
+
+function excelReferencias(){
+  descargarCSV(nombreArchivo('14_referencias-mendeley'), [
+    ['Componente','Evidencia'],
+    ['Cuenta y perfil',            txtPlano(S.refCuenta)],
+    ['Mendeley Reference Manager', txtPlano(S.refManager)],
+    ['Mendeley Web Importer',      txtPlano(S.refImporter)],
+    ['Metadatos',                  txtPlano(S.refMetadatos)],
+    ['Notebook',                   txtPlano(S.refNotebook)],
+    ['Grupo de trabajo',           txtPlano(S.refGrupo)],
+    ['Mendeley Cite',              txtPlano(S.refCite)]
   ]);
 }
 
