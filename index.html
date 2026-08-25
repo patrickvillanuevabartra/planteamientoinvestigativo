@@ -1743,7 +1743,7 @@ function render(){
 
       visorDefinido()+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
-      '<p class="note" style="font-size:12px;margin:0 0 6px;">Toma el verbo y el indicador de tu <b>propósito</b> (paso 3), nombra el <b>medio</b> con «mediante» y cierra con empresa, ciudad y año. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
+      '<p class="note" style="font-size:12px;margin:0 0 6px;">Toma el verbo y el indicador de tu <b>propósito</b> (paso 3), y como medio la <b>línea de investigación</b> (paso 4) tras «mediante». Cierra con empresa, ciudad y año. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
       '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<div class="varBox" style="margin-top:12px;">'+
@@ -2802,15 +2802,17 @@ function proponerOG(){
          .replace(/\s*,?\s*en\s+el\s+periodo\b[\s\S]*$/i,'')
          .replace(/\s*,\s*[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ.\s]*,?\s*(19|20)\d{2}\s*\.?\s*$/,'')
          .replace(/\s*[.,;]+\s*$/,'');
-  // El medio sale de la variable independiente si ya está declarada (paso 11);
-  // si no, se deja marcado para que el alumno lo complete.
-  var medio = String(S.varInd||'').trim();
-  var falta = !medio;
-  S.objetivoGeneral = pr + ' mediante ' + (medio || '__(indica aquí el medio)__') +
-                      ' ' + contextoEmpresa();
+  /* El medio es la LÍNEA DE INVESTIGACIÓN (paso 4): es lo que se aplica para
+     mover el indicador, y ya está elegida. Solo si el alumno declaró una
+     variable independiente distinta (paso 11) se usa esa. */
+  var medio = String(S.varInd||'').trim() || lineaTexto();
+  if(!medio){
+    toast('Elige primero la línea de investigación (paso 4)', true);
+    return;
+  }
+  S.objetivoGeneral = pr + ' mediante ' + medio + ' ' + contextoEmpresa();
   render();
-  toast(falta ? 'Borrador listo — completa el medio que va tras «mediante»'
-              : 'Borrador tomado del propósito — revísalo', falta);
+  toast('Borrador armado con el propósito y la línea — revísalo');
 }
 
 function proponerOE(i){
