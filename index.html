@@ -1122,13 +1122,16 @@ function render(){
       '<input id="f_coord" value="'+esc(S.coordinador)+'" placeholder="Nombres y apellidos"></div></div>'+
 
       '<label>Correo del compañero(a) de grupo</label>'+
-      (SESION.docente
-        ? '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="companero@urp.edu.pe">'
-        : '<div class="campoBloq">'+esc(S.correoCompanero || '— lo asigna el docente')+'</div>')+
+      (puedeAgregarCorreo()
+        ? '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="Escribe un correo para darle acceso">'
+        : '<div class="campoBloq">\u2014 el grupo ya está completo</div>')+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. '+
       (SESION.docente
-        ? 'Como docente puedes dar acceso a otro correo desde aquí.'
-        : 'Si tu compañero(a) necesita acceso a este planteamiento, pídeselo al docente.')+'</p>'+
+        ? 'Como docente no tienes tope: puedes dar acceso a los correos que hagan falta.'
+        : (puedeAgregarCorreo()
+            ? 'Añade aquí a tu compañero(a) de grupo. Los grupos son de dos, así que es el único correo que puedes dar de alta; si hace falta sumar a alguien más, pídeselo al docente.'
+            : 'Tu compañero(a) ya tiene acceso. Los grupos son de dos: para sumar a un tercero, pídeselo al docente.'))+
+      ' Retirar accesos es potestad del docente.</p>'+
       panelAccesos()+
 
       '<div class="actions">'+
@@ -1925,6 +1928,34 @@ function guardarDatosGrupo(){
 }
 
 /* Normaliza una lista de correos separados por coma, punto y coma o espacios */
+/* Todos los que deben conservar acceso: quien guarda, los que ya estaban en el
+   registro, y el que se acabe de escribir en «añadir». Antes el guardado solo
+   mandaba [yo, unCompañero], así que al guardar como docente se quedaban fuera
+   los demás integrantes y perdían el registro sin aviso. */
+/* Los grupos son de dos: el alumno solo puede dar de alta a su compañero. Un
+   tercero \u2014otro integrante o un revisor\u2014 lo añade el docente, que no tiene
+   tope. Quitar accesos sigue siendo solo del docente en cualquier caso. */
+var MAX_CORREOS_ALUMNO = 2;
+
+function puedeAgregarCorreo(){
+  if(SESION.docente) return true;
+  return listaCorreos(S.correosGrupo).length < MAX_CORREOS_ALUMNO;
+}
+
+function correosDelRegistro(){
+  var base = [SESION.email].concat(listaCorreos(S.correosGrupo));
+  var vistos = {}, out = [];
+  base.forEach(function(c){ if(c && !vistos[c]){ vistos[c]=1; out.push(c); } });
+  /* El tope se aplica tambi\u00e9n aqu\u00ed, no solo al pintar el campo: as\u00ed no se
+     salta editando el HTML desde la consola. */
+  listaCorreos(S.correoCompanero).forEach(function(c){
+    if(vistos[c]) return;
+    if(!SESION.docente && out.length >= MAX_CORREOS_ALUMNO) return;
+    vistos[c]=1; out.push(c);
+  });
+  return out;
+}
+
 function listaCorreos(t){
   return String(t||'').toLowerCase().split(/[;,\s]+/)
          .filter(function(x){ return x && x.indexOf('@') !== -1; });
@@ -2654,7 +2685,8 @@ function capturarPasoActual(){
       if(document.getElementById('f_titulo')) S.tituloProyecto=val('f_titulo');
       if(document.getElementById('f_ngrupo')) S.numeroGrupo=val('f_ngrupo');
       if(document.getElementById('f_coord'))  S.coordinador=val('f_coord');
-      if(document.getElementById('f_correo2')) S.correoCompanero=val('f_correo2');
+      var c2=document.getElementById('f_correo2');
+      if(c2 && typeof c2.value === 'string') S.correoCompanero=c2.value.trim().toLowerCase();
       break;
     case 1:
       if(document.getElementById('f_pob')) S.probPoblacion=val('f_pob');
@@ -3309,7 +3341,7 @@ function guardar(){
     ref_cite:S.refCite,
     estructura:serializarEstado(),
     consecuencia:S.consecuenciaSintoma,
-    correos:[SESION.email, S.correoCompanero].filter(function(x){ return x; }).join(', ')
+    correos:correosDelRegistro().join(', ')
   };
 
   function restore(){
@@ -3323,9 +3355,14 @@ function guardar(){
   jsonpCall(params, function(res){
     if(res && res.ok){
       if(res.qid) S.recordId = res.qid;            // memoriza el id para próximas actualizaciones
+      /* La lista de accesos queda como acaba de grabarse, y el campo «añadir»
+         se vacía: si no, al volver a guardar se reenviaría el mismo correo. */
+      S.correosGrupo = payload.correos || S.correosGrupo;
+      S.correoCompanero = '';
       toast(S.recordId ? '✓ Planteamiento actualizado' : '✓ Planteamiento guardado');
       renderGrupoBar();
       restore();
+      if(S.paso===0) render();   // repinta la lista de accesos
     } else {
       restore();
       toast('Error al guardar: '+((res&&res.error)||'desconocido'),true);
@@ -3563,8 +3600,7 @@ function aplicarRegistro(rec, recId){
   if(!S.consecuenciaSintoma) S.consecuenciaSintoma = g('consecuencia');
   // el compañero es el otro correo del registro
   S.correosGrupo = String(g('correos')||'').toLowerCase();
-  S.correoCompanero = listaCorreos(S.correosGrupo)
-      .filter(function(x){ return x!==SESION.email; })[0] || '';
+  S.correoCompanero = '';   // el campo es para AÑADIR; la lista se ve debajo
 
   if(!reconstruido){
     // Fallback: reconstruir lo básico desde los campos de texto sueltos
