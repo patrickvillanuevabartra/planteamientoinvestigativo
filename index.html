@@ -1121,9 +1121,10 @@ function render(){
       '<div><label>Coordinador(a) de grupo</label>'+
       '<input id="f_coord" value="'+esc(S.coordinador)+'" placeholder="Nombres y apellidos"></div></div>'+
 
-      '<label>Correo del compañero(a) de grupo</label>'+
+      '<label>'+(SESION.docente ? 'Dar acceso a otro correo' : 'Correo de tu compañero(a) de grupo')+'</label>'+
       (puedeAgregarCorreo()
-        ? '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="Escribe un correo para darle acceso">'
+        ? '<input id="f_correo2" value="'+esc(S.correoCompanero)+'" placeholder="'+
+          (SESION.docente ? 'Correo al que quieres dar acceso' : 'companero@urp.edu.pe')+'">'
         : '<div class="campoBloq">\u2014 el grupo ya está completo</div>')+
       '<p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b>'+esc(SESION.email)+'</b>. '+
       (SESION.docente
