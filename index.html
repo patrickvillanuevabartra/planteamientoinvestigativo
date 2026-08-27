@@ -1937,9 +1937,18 @@ function guardarDatosGrupo(){
    tope. Quitar accesos sigue siendo solo del docente en cualquier caso. */
 var MAX_CORREOS_ALUMNO = 2;
 
+/* Los correos de docentes no ocupan plaza en el grupo: supervisan, no forman
+   parte del equipo. Sin esto, que el docente entrara a revisar bloqueaba al
+   alumno la posibilidad de añadir a su compañero. */
+function esCorreoDocente(c){
+  return (SESION.docentes || []).indexOf(String(c||'').toLowerCase()) !== -1;
+}
+function correosDelGrupo(){
+  return listaCorreos(S.correosGrupo).filter(function(c){ return !esCorreoDocente(c); });
+}
 function puedeAgregarCorreo(){
   if(SESION.docente) return true;
-  return listaCorreos(S.correosGrupo).length < MAX_CORREOS_ALUMNO;
+  return correosDelGrupo().length < MAX_CORREOS_ALUMNO;
 }
 
 function correosDelRegistro(){
@@ -1950,7 +1959,8 @@ function correosDelRegistro(){
      salta editando el HTML desde la consola. */
   listaCorreos(S.correoCompanero).forEach(function(c){
     if(vistos[c]) return;
-    if(!SESION.docente && out.length >= MAX_CORREOS_ALUMNO) return;
+    var delGrupo = out.filter(function(x){ return !esCorreoDocente(x); }).length;
+    if(!SESION.docente && delGrupo >= MAX_CORREOS_ALUMNO) return;
     vistos[c]=1; out.push(c);
   });
   return out;
@@ -1974,8 +1984,10 @@ function panelAccesos(){
           '<div class="accLista">';
   lista.forEach(function(c){
     var yo = (c === SESION.email);
+    var doc = esCorreoDocente(c);
     h += '<div class="accFila"><span class="accMail">'+esc(c)+
-         (yo ? '<span class="accYo">tú</span>' : '')+'</span>'+
+         (yo ? '<span class="accYo">tú</span>' : '')+
+         (doc ? '<span class="accYo" style="background:#f6e9d8;color:#b4552f;">docente</span>' : '')+'</span>'+
          (SESION.docente && !yo && lista.length > 1
            ? '<button type="button" class="btnDel" style="padding:4px 9px;font-size:12px;" '+
              'onclick="quitarAcceso(\''+c+'\')">quitar</button>'
@@ -3393,6 +3405,7 @@ function alRecibirCredencial(resp){
   jsonpCall({ action:'login', token:encodeURIComponent(resp.credential) }, function(r){
     if (r && r.ok){
       SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
+      SESION.docentes = r.docentes || [];   // para no contarlos en el tope
       document.getElementById('authWrap').style.display='none';
       var ub=document.getElementById('userBar');
       ub.style.display='flex';
