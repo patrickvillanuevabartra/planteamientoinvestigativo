@@ -452,6 +452,7 @@ var FIELD = {
   bib_hallazgos           : 'dcTSobWQzdH6LJWQBcRxC0',
   bib_conclusiones        : 'cbWRBcHmnmDOkTWO_dSSke',
   titulo_proyecto         : 'cjWRXzo8jaW6FcHJRcVSko',
+  problema_identificado   : 'acALqrbtHkwkVcQCofjwrg',
   // Paso 14 · Referencias (Mendeley)
   ref_cuenta              : 'dcOdGdEG5dQik_mCkyoCo9',
   ref_manager             : 'ddMYiqkbzeWO9yl1ZdQGaE',
@@ -512,6 +513,7 @@ function limpiarLinea(l){ return l.replace(/\s*\(T\)\s*$/,'').trim(); }
 // Ese texto es el que usa el Ishikawa (efecto central), el payload y la lista.
 function consolidarProblema(){
   var partes=[];
+  if(S.problemaIdentificado) partes.push(S.problemaIdentificado.trim());
   if(S.probPoblacion)     partes.push('Población afectada: '+S.probPoblacion.trim());
   if(S.probCausas)        partes.push('Posibles causas raíz: '+S.probCausas.trim());
   if(S.probConsecuencias) partes.push('Consecuencias: '+S.probConsecuencias.trim());
@@ -544,6 +546,7 @@ function estadoInicial(){
     // Registro del grupo (paso 0)
     ciclo:'', numeroGrupo:'', coordinador:'', tituloProyecto:'',
     // Descripción del problema — 5 aspectos exigidos por el Manual URP 2020 (p.8)
+    problemaIdentificado:'',
     probPoblacion:'', probCausas:'', probConsecuencias:'', probContexto:'', probMagnitud:'',
     problemaEmpresa:'', empresa:'', ubicacion:'', mapsLink:'',
     pretest:'', test:'', postest:'',
@@ -1162,6 +1165,25 @@ function render(){
       'y su magnitud, respaldados en cifras, datos o evidencias. '+
       '<span style="display:block;margin-top:6px;">Completa <b>al menos 3 de los 5</b> aspectos para poder continuar.</span></div>'+
 
+      '<div class="varBox" style="border-left-color:#b4552f;">'+
+      '<div class="varTit" style="color:#b4552f;">Antes de los cinco aspectos · el problema en una oración</div>'+
+      '<p class="note" style="margin:0 0 7px;font-size:13px;">¿Qué está ocurriendo mal, y en qué proceso? Los cinco aspectos de abajo caracterizan <b>este</b> problema: quién lo sufre, por qué ocurre, qué provoca, dónde y cuánto.</p>'+
+      '<textarea id="f_probid" rows="3" oninput="S.problemaIdentificado=this.value" placeholder="Ej. El proceso de adquisición de bienes y servicios excede los tiempos de atención comprometidos con el área de ingeniería.">'+esc(S.problemaIdentificado)+'</textarea>'+
+      '<div style="display:flex;justify-content:flex-end;margin-top:6px;">'+
+      '<button type="button" class="ejBtn" onclick="toggleEj(\'probid\')">ver ejemplo</button></div>'+
+      '<div class="ejBox" id="ej_probid" style="display:none;">'+
+      '<b>Así sí</b>'+
+      '<p class="note" style="font-size:13px;margin:4px 0 10px;">En el área de ingeniería de la Empresa Alfa S.A.C., el proceso de adquisición de bienes y servicios presenta deficiencias que alargan el tiempo de atención de los requerimientos, lo que retrasa la ejecución de los proyectos.</p>'+
+      '<b>Así no</b>'+
+      '<table class="ejParTable"><thead><tr><th>Redacción</th><th>Qué falla</th></tr></thead><tbody>'+
+      '<tr><td>Falta un sistema de seguimiento de pedidos</td><td>Es la <b>solución</b> disfrazada de problema. Si empieza con «falta» o «no hay», estás nombrando lo que quieres implementar.</td></tr>'+
+      '<tr><td>Los clientes internos se quejan de los retrasos</td><td>Es la <b>consecuencia</b>. Va en el aspecto 3, no aquí.</td></tr>'+
+      '<tr><td>Gestión ineficiente del área de proyectos</td><td>Es un <b>juicio</b>, no un hecho observable. ¿Ineficiente en qué? ¿medido cómo?</td></tr>'+
+      '<tr><td>Reducir el tiempo de atención mediante Lean</td><td>Es el <b>propósito</b>. Eso va en el paso 3.</td></tr>'+
+      '</tbody></table>'+
+      '<p class="note" style="font-size:12px;margin:6px 0 0;">Tomado de un trabajo real del curso; la empresa se mantiene en reserva. De aquí sale el <b>problema central</b> del Ishikawa (paso 6).</p>'+
+      '</div></div>'+
+
       campoProb('1','Población afectada','pob','¿Quiénes son afectados directa o indirectamente por el problema?','f_pob','probPoblacion')+
       campoProb('2','Posibles causas raíz','cau','¿Qué comportamientos, decisiones o condiciones observables provocan el problema? Descríbelas como algo que ocurre (no como "falta de…" o "ausencia de…"). El Ishikawa del paso 6 las desarrollará.','f_cau','probCausas')+
       campoProb('3','Consecuencias','con','¿Cuál o cuáles son las consecuencias del problema?','f_con','probConsecuencias')+
@@ -1389,7 +1411,7 @@ function render(){
              '<input class="addInput" style="width:100%;" placeholder="+ causa principal" '+
              'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
     });
-    var efectoSugerido = S.probConsecuencias || S.probMagnitud || S.probContexto || '';
+    var efectoSugerido = S.problemaIdentificado || S.probConsecuencias || S.probMagnitud || '';
     var efectoVal = S.efectoCentral || efectoSugerido;
     h='<div class="card">'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
@@ -2598,20 +2620,29 @@ function armarPareto(){
   var vistos={};
   S.categorias.forEach(function(cat){
     (S.causas[cat]||[]).forEach(function(cz){
-      // 1.º nivel: la causa (sub vacío)
-      var kc=subKey(cat,cz.txt,'');
+      // 1.º nivel: la causa
+      var kc=subKey(cat,cz.txt,'','');
       vistos[kc]=true;
       if(!(kc in S.paretoFreq)) S.paretoFreq[kc]=1;
-      // 2.º nivel: cada subcausa
-      (cz.subs||[]).forEach(function(sb){
-        var k=subKey(cat,cz.txt,sb);
+      /* 2.º y 3.º nivel. Ojo: una subcausa ya no es texto sino {txt, subs},
+         y antes se pasaba el objeto entero a subKey. La clave sal\u00eda como
+         "categoria|causa|[object Object]|" mientras la tabla le\u00eda
+         "categoria|causa|texto|": nunca coincid\u00edan, y por eso la frecuencia
+         no se guardaba m\u00e1s all\u00e1 del primer nivel. */
+      subsDe(cz).forEach(function(sb){
+        var k=subKey(cat,cz.txt,sb.txt,'');
         vistos[k]=true;
         if(!(k in S.paretoFreq)) S.paretoFreq[k]=1;
+        (sb.subs||[]).forEach(function(s2){
+          var k3=subKey(cat,cz.txt,sb.txt,s2);
+          vistos[k3]=true;
+          if(!(k3 in S.paretoFreq)) S.paretoFreq[k3]=1;
+        });
       });
     });
   });
-  // Limpia frecuencias de elementos ya inexistentes. Se conservan los DOS niveles,
-  // para que cambiar de nivel no borre lo ya medido en el otro.
+  // Limpia frecuencias de elementos ya inexistentes. Se conservan los TRES
+  // niveles, para que cambiar de nivel no borre lo ya medido en los otros.
   Object.keys(S.paretoFreq).forEach(function(k){ if(!vistos[k]) delete S.paretoFreq[k]; });
 }
 
@@ -2702,6 +2733,7 @@ function capturarPasoActual(){
       if(c2 && typeof c2.value === 'string') S.correoCompanero=c2.value.trim().toLowerCase();
       break;
     case 1:
+      if(document.getElementById('f_probid')) S.problemaIdentificado=val('f_probid');
       if(document.getElementById('f_pob')) S.probPoblacion=val('f_pob');
       if(document.getElementById('f_cau')) S.probCausas=val('f_cau');
       if(document.getElementById('f_con')) S.probConsecuencias=val('f_con');
@@ -3238,6 +3270,7 @@ function serializarEstado(){
     bibRegistros:S.bibRegistros, bibCsv:S.bibCsv, bibReporte:S.bibReporte,
     bibHallazgos:S.bibHallazgos, bibConclusiones:S.bibConclusiones,
     tituloProyecto:S.tituloProyecto,
+    problemaIdentificado:S.problemaIdentificado,
     objetivoGeneral:S.objetivoGeneral,
     varInd:S.varInd, varDep:S.varDep,
     indicadorGeneral:S.indicadorGeneral,
@@ -3279,6 +3312,7 @@ function restaurarEstado(json){
   S.bibHallazgos      = d.bibHallazgos      || '';
   S.bibConclusiones   = d.bibConclusiones   || '';
   S.tituloProyecto    = d.tituloProyecto    || '';
+  S.problemaIdentificado = d.problemaIdentificado || '';
   S.objetivoGeneral   = d.objetivoGeneral   || '';
   S.varInd            = d.varInd            || '';
   S.varDep            = d.varDep            || '';
@@ -3328,6 +3362,7 @@ function guardar(){
     numero_grupo:S.numeroGrupo,
     coordinador:S.coordinador,
     titulo_proyecto:S.tituloProyecto,
+    problema_identificado:S.problemaIdentificado,
     objetivo_general:S.objetivoGeneral,
     objetivos_especificos:serializarLista('objetivo','OE'),
     hipotesis_general:S.hipotesisGeneral,
