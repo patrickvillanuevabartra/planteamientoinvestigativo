@@ -265,6 +265,21 @@
   .recTit{font-size:13.5px;color:var(--ink);line-height:1.4;}
   .recDesc{font-size:12px;color:#8a948f;line-height:1.4;}
   .recFlecha{flex-shrink:0;color:#9aa39d;font-size:14px;}
+  /* Los textos largos ya no quedan solapados: el cajón crece con el contenido
+     hasta un tope, y a partir de ahí aparece la barra de desplazamiento. */
+  /* Barra de cambios pendientes: pegada arriba para que no se pierda de vista
+     al desplazarse por un paso largo. */
+  #avisoGuardado{position:sticky;top:0;z-index:20;display:flex;align-items:center;
+                 gap:10px;flex-wrap:wrap;background:#fbf4ee;border:1px solid var(--amber);
+                 border-radius:6px;padding:9px 13px;margin-bottom:14px;font-size:13.5px;
+                 color:#8a4a1f;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+  .avisoPunto{width:9px;height:9px;border-radius:50%;background:var(--amber);flex-shrink:0;
+              animation:pulso 1.6s ease-in-out infinite;}
+  @keyframes pulso{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @media(prefers-reduced-motion:reduce){ .avisoPunto{animation:none;} }
+  #avisoGuardado .btnSave{margin-left:auto;}
+  textarea{min-height:96px;max-height:340px;resize:vertical;}
+  .rt{min-height:110px;max-height:340px;overflow-y:auto;}
   .rtBar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0;}
   .rtBtn{background:#fff;border:1px solid var(--line);border-bottom:none;border-radius:4px 4px 0 0;
          padding:4px 9px;font-size:12px;color:#6a746f;cursor:pointer;line-height:1.4;}
@@ -374,6 +389,11 @@
   <div id="vistaFlujo">
     <div class="stepper" id="stepper"></div>
     <div id="grupoBar"></div>
+    <div id="avisoGuardado" style="display:none;">
+      <span class="avisoPunto"></span>
+      <span>Tienes cambios sin guardar. Pulsa <b>Actualizar</b> antes de salir o cambiar de paso.</span>
+      <button type="button" class="btnSave" onclick="guardar()">Guardar ahora</button>
+    </div>
     <div id="pasos"></div>
   </div>
 
@@ -510,6 +530,38 @@ function usarConsecuencia(){
   render();
   toast('Consecuencia traída del paso 1 — ajústala si hace falta');
 }
+
+/* ── Cambios sin guardar ──
+   Se ha dado el caso de grupos que salían sin guardar y perdían el trabajo.
+   Cualquier edición marca el estado como sucio; guardar lo limpia. */
+var HAY_CAMBIOS = false;
+
+function marcarSucio(){
+  if(HAY_CAMBIOS) return;
+  HAY_CAMBIOS = true;
+  pintarAvisoGuardado();
+}
+function marcarLimpio(){
+  HAY_CAMBIOS = false;
+  pintarAvisoGuardado();
+}
+function pintarAvisoGuardado(){
+  var el = document.getElementById('avisoGuardado');
+  if(!el) return;
+  el.style.display = HAY_CAMBIOS ? 'flex' : 'none';
+}
+
+/* El navegador pregunta antes de cerrar o recargar con cambios pendientes.
+   El texto lo pone el navegador; solo se le indica que hay algo en juego. */
+window.addEventListener('beforeunload', function(e){
+  if(!HAY_CAMBIOS) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+/* Cualquier tecleo o cambio dentro del formulario marca cambios pendientes. */
+document.addEventListener('input',  function(){ marcarSucio(); }, true);
+document.addEventListener('change', function(){ marcarSucio(); }, true);
 
 function toggleEj(id){
   var el=document.getElementById('ej_'+id);
@@ -1124,7 +1176,7 @@ function render(){
       '<div style="font-weight:600;">'+esc(PROFESOR_FIJO)+'</div></div>'+
 
       '<label>Título del proyecto</label>'+
-      '<textarea id="f_titulo" rows="2" placeholder="Un título provisional; lo afinarás en el paso 5">'+esc(S.tituloProyecto)+'</textarea>'+
+      '<textarea id="f_titulo" rows="3" placeholder="Un título provisional; lo afinarás en el paso 5">'+esc(S.tituloProyecto)+'</textarea>'+
       '<p class="note" style="font-size:12px;margin:4px 0 14px;">Escríbelo aunque todavía no lo tengas claro: sirve para identificar tu proyecto en el listado y en Red de Experimentos. En el <b>paso 5</b> el aplicativo arma el <b>tema</b>, que es su versión final y más precisa.</p>'+
 
       '<label>Ciclo</label>'+
@@ -1164,7 +1216,7 @@ function render(){
              '<button type="button" class="ejBtn" onclick="toggleEj(\''+ejKey+'\')">ver ejemplo</button></div>'+
              '<p class="note" style="margin:4px 0 6px;">'+hint+'</p>'+
              '<div class="ejBox" id="ej_'+ejKey+'" style="display:none;">'+esc(EJEMPLO_PROB[ejKey])+'</div>'+
-             '<textarea rows="2" id="'+fid+'" oninput="S.'+stateKey+'=this.value;refreshCont1()" placeholder="Escribe aquí…">'+esc(S[stateKey])+'</textarea>';
+             '<textarea rows="3" id="'+fid+'" oninput="S.'+stateKey+'=this.value;refreshCont1()" placeholder="Escribe aquí…">'+esc(S[stateKey])+'</textarea>';
     }
     h='<div class="card">'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
@@ -1329,7 +1381,7 @@ function render(){
           (IA_ACTIVA?'<button type="button" class="ejBtn" id="btnIALinea" onclick="sugerirLineaIA()">✦ sugerir con IA</button>':'')+
           '<button type="button" class="ejBtn" onclick="toggleEj(\'ia\')">✦ ayuda con IA</button></div>'+
           panelAyudaIA()+
-          '<textarea rows="2" id="f_lcustom" oninput="S.lineaCustomTexto=this.value" '+
+          '<textarea rows="3" id="f_lcustom" oninput="S.lineaCustomTexto=this.value" '+
           'placeholder="Ej. Gestión por procesos y mejora continua" style="margin-top:6px;">'+esc(S.lineaCustomTexto)+'</textarea>'+
           '</div>'
           : '')+
@@ -1408,14 +1460,14 @@ function render(){
                 '<button onclick="quitarSub('+ci+','+idx+','+si+')">×</button></div>'+
                 '<div class="raizList">'+s2+
                 '<input class="addInput addRaiz" placeholder="+ causa raíz (¿por qué?)" '+
-                'onkeydown="if(event.key===\'Enter\'){agregarSub2('+ci+','+idx+','+si+',this.value);this.value=\'\';}" onblur="if(this.value.trim()){agregarSub2('+ci+','+idx+','+si+',this.value);this.value=\'\';}"></div></div>';
+                'onkeydown="if(event.key===\'Enter\'){var v=this.value;this.value=\'\';if(v.trim())agregarSub2('+ci+','+idx+','+si+',v);}" onblur="var v=this.value;this.value=\'\';if(v.trim())agregarSub2('+ci+','+idx+','+si+',v);"></div></div>';
         });
         items+='<div class="causaWrap">'+
                '<div class="causa"><span>'+esc(cz.txt)+'</span>'+
                '<button onclick="quitarCausa('+ci+','+idx+')">×</button></div>'+
                '<div class="subList">'+subs+
                '<input class="addInput addSub" placeholder="+ subcausa (por qué…)" '+
-               'onkeydown="if(event.key===\'Enter\'){agregarSub('+ci+','+idx+',this.value);this.value=\'\';}" onblur="if(this.value.trim()){agregarSub('+ci+','+idx+',this.value);this.value=\'\';}"></div>'+
+               'onkeydown="if(event.key===\'Enter\'){var v=this.value;this.value=\'\';if(v.trim())agregarSub('+ci+','+idx+',v);}" onblur="var v=this.value;this.value=\'\';if(v.trim())agregarSub('+ci+','+idx+',v);"></div>'+
                '</div>';
       });
       boxes+='<div class="catBox">'+
@@ -1424,7 +1476,7 @@ function render(){
              '<button class="catDel" title="Eliminar categoría" onclick="quitarCategoria('+ci+')">×</button></div>'+
              items+
              '<input class="addInput" style="width:100%;" placeholder="+ causa principal" '+
-             'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}" onblur="if(this.value.trim()){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
+             'onkeydown="if(event.key===\'Enter\'){var v=this.value;this.value=\'\';if(v.trim())agregarCausa('+ci+',v);}" onblur="var v=this.value;this.value=\'\';if(v.trim())agregarCausa('+ci+',v);"></div>';
     });
     var efectoSugerido = S.problemaIdentificado || S.probConsecuencias || S.probMagnitud || '';
   var conseSugerida = S.probConsecuencias || '';
@@ -1451,7 +1503,7 @@ function render(){
       '<p class="note" style="font-size:12px;margin:8px 0 0;">El problema central es <b>lo contrario</b> de lo que el tema busca lograr: si el tema propone reducir un tiempo, aquí va que ese tiempo es alto. Deben hablar del mismo indicador.</p>'+
       '</div>'+
       '<label style="margin-top:12px;">Problema central (cabeza del pescado)</label>'+
-      '<textarea rows="2" id="f_efecto" oninput="S.efectoCentral=this.value" placeholder="Escribe el efecto/problema central del diagrama…">'+esc(efectoVal)+'</textarea>'+
+      '<textarea rows="3" id="f_efecto" oninput="S.efectoCentral=this.value" placeholder="Escribe el efecto/problema central del diagrama…">'+esc(efectoVal)+'</textarea>'+
       (efectoSugerido && !S.efectoCentral ? '<p class="note" style="margin:4px 0 0;font-size:12px;">Sugerido desde el paso 1 — puedes editarlo.</p>' : '')+
 
       '<label style="margin-top:14px;">Consecuencia o síntoma del problema central</label>'+
@@ -1459,7 +1511,7 @@ function render(){
         ? '<div class="sugBox">Del paso 1 · aspecto 3: <i>'+esc(conseSugerida)+'</i>'+
           '<button type="button" class="ejBtn" style="margin-left:8px;" onclick="usarConsecuencia()">usar</button></div>'
         : '')+
-      '<textarea rows="2" id="f_consec" oninput="S.consecuenciaSintoma=this.value" placeholder="Ej. Retraso en el tiempo de atención en la entrega de bienes y/o servicios, en perjuicio del área de ingeniería…">'+esc(S.consecuenciaSintoma)+'</textarea>'+
+      '<textarea rows="3" id="f_consec" oninput="S.consecuenciaSintoma=this.value" placeholder="Ej. Retraso en el tiempo de atención en la entrega de bienes y/o servicios, en perjuicio del área de ingeniería…">'+esc(S.consecuenciaSintoma)+'</textarea>'+
       '<p class="note" style="margin:4px 0 0;font-size:12px;">Es el efecto observable que evidencia el problema (aparece como recuadro junto a la cabeza del pescado). <b>No es la solución:</b> el ciclo pasado un grupo escribió aquí «Reducir los tiempos mediante Lean Manufacturing», que es lo que se propone hacer, no lo que el problema provoca. Va algo como «Insatisfacción de clientes y pérdida de ventas por incumplir los plazos comprometidos».</p>'+
 
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:14px;">'+
@@ -1664,7 +1716,7 @@ function render(){
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…">'+
           '<label style="margin-top:10px;">Problema específico</label>'+
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerPE('+i+')">armar desde la herramienta</button>'+
-          '<textarea rows="2" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea></div>';
+          '<textarea rows="3" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea></div>';
     });
     if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
     var notaBib = '<div class="varBox" style="margin-top:14px;">'+
@@ -1764,7 +1816,7 @@ function render(){
           '<div class="note" style="margin:0 0 6px;">↳ PE'+(i+1)+': '+esc(e.problema||'—')+'</div>'+
           '<label>Objetivo específico</label>'+
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
-          '<textarea rows="2" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
+          '<textarea rows="3" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
           '<div class="varBox" style="margin-top:10px;">'+
           '<div class="varTit">Variables que se desprenden de este objetivo</div>'+
           '<div class="row2"><div><label>VI · lo que aplicas</label>'+
@@ -1820,7 +1872,7 @@ function render(){
           '</div>'+
           '<label>Hipótesis específica</label>'+
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerHE('+i+')">proponer borrador</button>'+
-          '<textarea rows="2" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea></div>';
+          '<textarea rows="3" oninput="S.especificos['+i+'].hipotesis=this.value" placeholder="Afirmación, no pregunta…">'+esc(e.hipotesis||'')+'</textarea></div>';
     });
     if(!he) he='<p class="note">Aún no hay objetivos específicos. Vuelve al paso 10.</p>';
     h='<div class="card">'+
@@ -3427,6 +3479,7 @@ function guardar(){
          se vacía: si no, al volver a guardar se reenviaría el mismo correo. */
       S.correosGrupo = payload.correos || S.correosGrupo;
       S.correoCompanero = '';
+      marcarLimpio();
       toast(S.recordId ? '✓ Planteamiento actualizado' : '✓ Planteamiento guardado');
       renderGrupoBar();
       restore();
@@ -3642,6 +3695,7 @@ function continuarEdicion(recId){
       return;
     }
     aplicarRegistro(res.data.record, recId);
+    marcarLimpio();
   }, function(){
     toast('Error de red al cargar el planteamiento',true);
   });
