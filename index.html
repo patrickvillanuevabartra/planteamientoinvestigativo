@@ -269,6 +269,9 @@
      hasta un tope, y a partir de ahí aparece la barra de desplazamiento. */
   /* Barra de cambios pendientes: pegada arriba para que no se pierda de vista
      al desplazarse por un paso largo. */
+  #reLoginBox{background:#fbf1ee;border:1px solid #e0c3bb;border-radius:6px;
+              padding:12px 14px;margin-bottom:14px;font-size:13.5px;color:#8a3b2c;
+              line-height:1.55;}
   #avisoGuardado{position:sticky;top:0;z-index:20;display:flex;align-items:center;
                  gap:10px;flex-wrap:wrap;background:#fbf4ee;border:1px solid var(--amber);
                  border-radius:6px;padding:9px 13px;margin-bottom:14px;font-size:13.5px;
@@ -389,6 +392,11 @@
   <div id="vistaFlujo">
     <div class="stepper" id="stepper"></div>
     <div id="grupoBar"></div>
+    <div id="reLoginBox" style="display:none;">
+      <b>Tu sesión venció.</b> Vuelve a ingresar aquí para seguir: <b>no se pierde nada</b> de lo que
+      escribiste, y el guardado se reintenta solo.
+      <div id="reLoginBtn" style="margin-top:9px;"></div>
+    </div>
     <div id="avisoGuardado" style="display:none;">
       <span class="avisoPunto"></span>
       <span>Tienes cambios sin guardar. Pulsa <b>Actualizar</b> antes de salir o cambiar de paso.</span>
@@ -3484,6 +3492,9 @@ function guardar(){
       renderGrupoBar();
       restore();
       if(S.paso===0) render();   // repinta la lista de accesos
+    } else if(esSesionVencida(res)){
+      restore();
+      renovarSesion(function(){ guardar(); });   // se reenvía lo mismo, nada se pierde
     } else {
       restore();
       toast('Error al guardar: '+((res&&res.error)||'desconocido'),true);
@@ -3506,6 +3517,63 @@ function iniciarGoogle(){
   google.accounts.id.initialize({ client_id: CLIENT_ID, callback: alRecibirCredencial });
   google.accounts.id.renderButton(document.getElementById('gbtn'),
     { theme:'outline', size:'large', text:'signin_with', width:280 });
+}
+
+/* ── Sesión caducada ──
+   El sid dura 6 horas. Al vencer, el proxy responde NO_AUTH y cualquier
+   guardado falla: el alumno puede pasar la tarde escribiendo sin que nada se
+   grabe. Aquí se renueva la sesión sin perder lo escrito y se reintenta. */
+var renovando = false;
+var trasRenovar = null;
+
+function esSesionVencida(r){
+  return !!(r && r.ok === false && r.error === 'NO_AUTH');
+}
+
+/* Pide a Google una credencial nueva sin salir de la página. El estado (S)
+   sigue en memoria, así que al volver la sesión se reenvía tal cual. */
+function renovarSesion(alTerminar){
+  if(renovando){ trasRenovar = alTerminar; return; }
+  renovando = true;
+  trasRenovar = alTerminar;
+  toast('Tu sesión venció. Renovando… no cierres la página', true);
+
+  var caja = document.getElementById('reLoginBox');
+  if(caja) caja.style.display = 'block';
+
+  try {
+    google.accounts.id.initialize({ client_id: CLIENT_ID, callback: alRenovarCredencial });
+    google.accounts.id.prompt();
+    var cont = document.getElementById('reLoginBtn');
+    if(cont){
+      cont.innerHTML = '';
+      google.accounts.id.renderButton(cont,
+        { theme:'outline', size:'large', text:'signin_with', width:280 });
+    }
+  } catch(e){
+    renovando = false;
+    toast('No se pudo renovar la sesión. Copia lo que escribiste antes de recargar.', true);
+  }
+}
+
+function alRenovarCredencial(resp){
+  jsonpCall({ action:'login', token:encodeURIComponent(resp.credential) }, function(r){
+    renovando = false;
+    var caja = document.getElementById('reLoginBox');
+    if(caja) caja.style.display = 'none';
+    if(!(r && r.ok)){
+      toast('No se pudo renovar la sesión. Copia lo que escribiste antes de recargar.', true);
+      return;
+    }
+    SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
+    SESION.docentes = r.docentes || [];
+    toast('Sesión renovada — reintentando');
+    var f = trasRenovar; trasRenovar = null;
+    if(typeof f === 'function') f();
+  }, function(){
+    renovando = false;
+    toast('No se pudo renovar la sesión. Copia lo que escribiste antes de recargar.', true);
+  });
 }
 
 function alRecibirCredencial(resp){
@@ -3690,6 +3758,7 @@ function eliminarPlanteamiento(recId){
 function continuarEdicion(recId){
   toast('Cargando planteamiento…');
   jsonpCall({ action:'registro', record_id:recId }, function(res){
+    if(esSesionVencida(res)){ renovarSesion(function(){ continuarEdicion(recId); }); return; }
     if(!res || !res.ok || !res.data || !res.data.record){
       toast('No se pudo cargar el planteamiento'+((res&&res.error)?': '+res.error:''),true);
       return;
