@@ -226,6 +226,8 @@
   .subcausa.raiz{background:#fbfaf6;border-color:#e2ddcd;}
   .subcausa.raiz span{color:#7d7466;}
   .addRaiz{font-size:12px;}
+  .sugBox{background:#eef5f4;border:1px solid #c3ded9;border-radius:5px;
+          padding:8px 11px;margin:6px 0;font-size:13px;color:#333d38;line-height:1.5;}
   .cmpLista{display:flex;flex-direction:column;gap:6px;}
   .cmpFila{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px;}
   .cmpMal{flex:1;min-width:150px;background:#fbf1ee;border:1px solid #e0c3bb;color:#9a3b2c;
@@ -500,6 +502,15 @@ var EJEMPLO_PROB = {
   ctx: "Ocurre de forma sostenida en la sede principal y se agrava en los cierres de mes, cuando varias áreas solicitan compras al mismo tiempo y el equipo las atiende sin un criterio claro de prioridad.",
   mag: "En el último semestre, 38 de cada 100 órdenes de compra llegaron con más de 5 días hábiles de retraso frente a la fecha comprometida, lo que obligó a compras urgentes a sobreprecio y encareció el abastecimiento del período."
 };
+/* La consecuencia del Ishikawa suele ser la misma que el alumno ya describió
+   en el aspecto 3 del paso 1. Se ofrece, no se impone: puede afinarla. */
+function usarConsecuencia(){
+  if(!S.probConsecuencias){ toast('No hay consecuencias escritas en el paso 1', true); return; }
+  S.consecuenciaSintoma = S.probConsecuencias;
+  render();
+  toast('Consecuencia traída del paso 1 — ajústala si hace falta');
+}
+
 function toggleEj(id){
   var el=document.getElementById('ej_'+id);
   if(!el) return;
@@ -1259,6 +1270,10 @@ function render(){
       '<button type="button" class="ejBtn" onclick="excelProposito()">↓ descargar Excel</button></div>'+
       '<div class="ejBox" id="ej_prop" style="display:none;">'+
       'Reducir el tiempo de atenci\u00f3n de entrega de bienes y/o servicios al \u00e1rea de ingenier\u00eda en la Empresa Alfa S.A.C.'+
+      (S.problemaIdentificado
+        ? '<div class="sugBox" style="margin-bottom:10px;"><b>Tu problema (paso 1):</b> '+esc(S.problemaIdentificado)+
+          '<div style="margin-top:6px;font-size:12px;color:#6a746f;">El propósito es <b>la contracara exacta</b> de este problema: si el problema es que un tiempo se excede, el propósito es reducir ese mismo tiempo. Si hablan de cosas distintas, uno de los dos está mal.</div></div>'
+        : '<p class="hintWarn">Escribe primero el problema en el paso 1: el propósito se deriva de él.</p>')+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Verbo en infinitivo (<b>Reducir</b>) e indicador que se quiere mover (<b>el tiempo de atención de entrega</b>). Ese mismo verbo debe reaparecer en el problema general (paso 8).</p>'+
       '<div style="border-top:1px solid #e2ddcd;margin-top:10px;padding-top:9px;">'+
       '<b>Los cuatro errores del ciclo pasado</b>'+
@@ -1393,14 +1408,14 @@ function render(){
                 '<button onclick="quitarSub('+ci+','+idx+','+si+')">×</button></div>'+
                 '<div class="raizList">'+s2+
                 '<input class="addInput addRaiz" placeholder="+ causa raíz (¿por qué?)" '+
-                'onkeydown="if(event.key===\'Enter\'){agregarSub2('+ci+','+idx+','+si+',this.value);this.value=\'\';}"></div></div>';
+                'onkeydown="if(event.key===\'Enter\'){agregarSub2('+ci+','+idx+','+si+',this.value);this.value=\'\';}" onblur="if(this.value.trim()){agregarSub2('+ci+','+idx+','+si+',this.value);this.value=\'\';}"></div></div>';
         });
         items+='<div class="causaWrap">'+
                '<div class="causa"><span>'+esc(cz.txt)+'</span>'+
                '<button onclick="quitarCausa('+ci+','+idx+')">×</button></div>'+
                '<div class="subList">'+subs+
                '<input class="addInput addSub" placeholder="+ subcausa (por qué…)" '+
-               'onkeydown="if(event.key===\'Enter\'){agregarSub('+ci+','+idx+',this.value);this.value=\'\';}"></div>'+
+               'onkeydown="if(event.key===\'Enter\'){agregarSub('+ci+','+idx+',this.value);this.value=\'\';}" onblur="if(this.value.trim()){agregarSub('+ci+','+idx+',this.value);this.value=\'\';}"></div>'+
                '</div>';
       });
       boxes+='<div class="catBox">'+
@@ -1409,9 +1424,10 @@ function render(){
              '<button class="catDel" title="Eliminar categoría" onclick="quitarCategoria('+ci+')">×</button></div>'+
              items+
              '<input class="addInput" style="width:100%;" placeholder="+ causa principal" '+
-             'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
+             'onkeydown="if(event.key===\'Enter\'){agregarCausa('+ci+',this.value);this.value=\'\';}" onblur="if(this.value.trim()){agregarCausa('+ci+',this.value);this.value=\'\';}"></div>';
     });
     var efectoSugerido = S.problemaIdentificado || S.probConsecuencias || S.probMagnitud || '';
+  var conseSugerida = S.probConsecuencias || '';
     var efectoVal = S.efectoCentral || efectoSugerido;
     h='<div class="card">'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
@@ -1439,6 +1455,10 @@ function render(){
       (efectoSugerido && !S.efectoCentral ? '<p class="note" style="margin:4px 0 0;font-size:12px;">Sugerido desde el paso 1 — puedes editarlo.</p>' : '')+
 
       '<label style="margin-top:14px;">Consecuencia o síntoma del problema central</label>'+
+      ((conseSugerida && !String(S.consecuenciaSintoma||'').trim())
+        ? '<div class="sugBox">Del paso 1 · aspecto 3: <i>'+esc(conseSugerida)+'</i>'+
+          '<button type="button" class="ejBtn" style="margin-left:8px;" onclick="usarConsecuencia()">usar</button></div>'
+        : '')+
       '<textarea rows="2" id="f_consec" oninput="S.consecuenciaSintoma=this.value" placeholder="Ej. Retraso en el tiempo de atención en la entrega de bienes y/o servicios, en perjuicio del área de ingeniería…">'+esc(S.consecuenciaSintoma)+'</textarea>'+
       '<p class="note" style="margin:4px 0 0;font-size:12px;">Es el efecto observable que evidencia el problema (aparece como recuadro junto a la cabeza del pescado). <b>No es la solución:</b> el ciclo pasado un grupo escribió aquí «Reducir los tiempos mediante Lean Manufacturing», que es lo que se propone hacer, no lo que el problema provoca. Va algo como «Insatisfacción de clientes y pérdida de ventas por incumplir los plazos comprometidos».</p>'+
 
