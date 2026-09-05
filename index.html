@@ -3477,10 +3477,11 @@ function guardar(){
     if(btn8){ btn8.disabled=false; btn8.textContent='Guardar en QuintaDB'; }
   }
 
-  var params = { payload: encodeURIComponent(JSON.stringify(payload)) };
+  /* Por POST el payload va tal cual, sin encodeURIComponent: no viaja en la URL. */
+  var params = { payload: JSON.stringify(payload) };
   if(S.recordId) params.record_id = S.recordId;   // si existe, el proxy actualiza
 
-  jsonpCall(params, function(res){
+  postCall(params, function(res){
     if(res && res.ok){
       if(res.qid) S.recordId = res.qid;            // memoriza el id para próximas actualizaciones
       /* La lista de accesos queda como acaba de grabarse, y el campo «añadir»
@@ -3499,9 +3500,9 @@ function guardar(){
       restore();
       toast('Error al guardar: '+((res&&res.error)||'desconocido'),true);
     }
-  }, function(){
+  }, function(f){
     restore();
-    toast('Error de red al guardar',true);
+    toast('Error de red al guardar. '+textoFallo(f), true);
   });
 }
 
@@ -3682,6 +3683,29 @@ function jsonpCall(params, onOk, onErr){
   };
 
   document.body.appendChild(sc);
+}
+
+/* Guardado por POST: el planteamiento completo no cabe en una URL. Con
+   descripciones reales se superan los ~8000 caracteres que admiten el
+   navegador y Google, y la petición se cae con «error de red». Por el cuerpo
+   no hay límite.
+   Content-Type text/plain lo mantiene como petición simple, sin preflight,
+   que es lo que nos bloqueó cuando intentamos fetch con JSON. */
+function postCall(params, onOk, onErr){
+  var t0 = new Date().getTime();
+  params.ses = SESION.sid;
+  fetch(PROXY_URL, {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify(params)
+  })
+  .then(function(r){ return r.json(); })
+  .then(onOk)
+  .catch(function(err){
+    var ms = new Date().getTime() - t0;
+    try { console.error('[postCall] '+err+' · '+ms+' ms'); } catch(e){}
+    if(onErr) onErr({ motivo:'no se pudo enviar el guardado', ms:ms });
+  });
 }
 
 // Frase corta para pintar debajo del mensaje de error en pantalla.
