@@ -1033,8 +1033,8 @@ function marcoRecursos_(){
     var ops = PASOS_RECURSO.map(function(p){
       return '<option value="'+p.v+'">'+esc(p.t)+'</option>';
     }).join('');
-    h += '<div class="recAdmin">'+
-         '<div class="varTit" style="color:#8a6d3b;">Publicar un recurso · solo docentes</div>'+
+    h += '<div class="recAdmin" id="rec_form">'+
+         '<div class="varTit" style="color:#8a6d3b;" id="rec_modoTit">Publicar un recurso · solo docentes</div>'+
          '<div class="row2"><div><label>Título</label>'+
          '<input id="rec_titulo" placeholder="Ej. Guía rápida de Mendeley (PDF)"></div>'+
          '<div><label>Tipo</label>'+
@@ -1048,7 +1048,8 @@ function marcoRecursos_(){
          '<label>Enlace</label>'+
          '<input id="rec_url" placeholder="https://drive.google.com/… (permiso de lectura)">'+
          '<p class="note" style="font-size:12px;margin:4px 0 8px;">Si es un PDF, súbelo a Drive, dale permiso de lectura y pega aquí el enlace.</p>'+
-         '<button type="button" class="ejBtn" onclick="publicarRecurso()">publicar recurso</button>'+
+         '<button type="button" class="ejBtn" id="rec_btnGuardar" onclick="publicarRecurso()">publicar recurso</button>'+
+         '<button type="button" class="ejBtn" id="rec_btnCancelar" style="display:none;margin-left:6px;" onclick="cancelarEdicionRecurso()">cancelar</button>'+
          '</div>';
   }
   return h + '</div>';
@@ -1087,8 +1088,12 @@ function cargarRecursos(){
              '<span class="recTxt"><span class="recTit">'+esc(x.titulo||'(sin título)')+'</span>'+
              '<span class="recDesc">'+esc(x.descripcion||'')+'</span></span>'+
              '<span class="recFlecha">↗</span></a>'+
-             (SESION.docente ? '<button type="button" class="btnDel" style="padding:6px 9px;" '+
-               'title="Eliminar recurso" onclick="eliminarRecurso(\''+x.id+'\')">×</button>' : '')+
+             (SESION.docente
+               ? '<button type="button" class="ejBtn" style="padding:6px 9px;" title="Editar recurso" '+
+                 'onclick=\'editarRecursoUI('+JSON.stringify(x).replace(/'/g,"&#39;")+')\'>editar</button>'+
+                 '<button type="button" class="btnDel" style="padding:6px 9px;" '+
+                 'title="Eliminar recurso" onclick="eliminarRecurso(\''+x.id+'\')">×</button>'
+               : '')+
              '</div>';
       });
       h += '</div>';
@@ -1097,11 +1102,54 @@ function cargarRecursos(){
   }, function(){ cont.innerHTML=''; });
 }
 
+/* Editar un recurso ya publicado: se cargan sus datos en el formulario de
+   abajo, que pasa a modo edición. Guardar actualiza en vez de crear otro. */
+var RECURSO_EDITANDO = null;
+
+function editarRecursoUI(x){
+  RECURSO_EDITANDO = x.id;
+  var v = function(id, val){ var el=document.getElementById(id); if(el) el.value = val || ''; };
+  v('rec_titulo', x.titulo);
+  v('rec_desc',   x.descripcion);
+  v('rec_url',    x.url);
+  v('rec_orden',  x.orden);
+  var t = document.getElementById('rec_tipo');
+  if(t){
+    var buscado = String(x.tipo||'').toLowerCase();
+    for(var i=0;i<t.options.length;i++){
+      if(t.options[i].value.toLowerCase() === buscado){ t.selectedIndex = i; break; }
+    }
+  }
+  var p = document.getElementById('rec_paso');
+  if(p) p.value = String(x.paso||'');
+  pintarModoRecurso();
+  var caja = document.getElementById('rec_form');
+  if(caja) caja.scrollIntoView({ behavior:'smooth', block:'center' });
+  toast('Editando «'+(x.titulo||'recurso')+'» — guarda para aplicar los cambios');
+}
+
+function cancelarEdicionRecurso(){
+  RECURSO_EDITANDO = null;
+  ['rec_titulo','rec_desc','rec_url'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  pintarModoRecurso();
+}
+
+function pintarModoRecurso(){
+  var t = document.getElementById('rec_modoTit');
+  var b = document.getElementById('rec_btnGuardar');
+  var c = document.getElementById('rec_btnCancelar');
+  if(t) t.textContent = RECURSO_EDITANDO ? 'Editando un recurso publicado' : 'Publicar un recurso · solo docentes';
+  if(b) b.textContent = RECURSO_EDITANDO ? 'guardar cambios' : 'publicar recurso';
+  if(c) c.style.display = RECURSO_EDITANDO ? 'inline-block' : 'none';
+}
+
 function publicarRecurso(){
   var url = val('rec_url').trim();
   if(!url) return toast('Pega el enlace del recurso', true);
   var params = {
-    action:'recurso_crear',
+    action: RECURSO_EDITANDO ? 'recurso_editar' : 'recurso_crear',
     titulo: encodeURIComponent(val('rec_titulo').trim()),
     descripcion: encodeURIComponent(val('rec_desc').trim()),
     tipo: encodeURIComponent(document.getElementById('rec_tipo').value),
@@ -1109,13 +1157,16 @@ function publicarRecurso(){
     paso: document.getElementById('rec_paso').value,
     orden: val('rec_orden').trim() || '10'
   };
-  toast('Publicando…');
+  if(RECURSO_EDITANDO) params.record_id = RECURSO_EDITANDO;
+  toast(RECURSO_EDITANDO ? 'Guardando cambios…' : 'Publicando…');
   jsonpCall(params, function(r){
-    if(!r || !r.ok) return toast('No se pudo publicar'+((r&&r.error)?': '+r.error:''), true);
+    if(!r || !r.ok) return toast((RECURSO_EDITANDO?'No se pudo actualizar':'No se pudo publicar')+((r&&r.error)?': '+r.error:''), true);
     ['rec_titulo','rec_desc','rec_url'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.value='';
     });
-    toast('✓ Recurso publicado');
+    toast(RECURSO_EDITANDO ? '✓ Recurso actualizado' : '✓ Recurso publicado');
+    RECURSO_EDITANDO = null;
+    pintarModoRecurso();
     cargarRecursos();
   }, function(f){ toast('Error de red al publicar. '+textoFallo(f), true); });
 }
