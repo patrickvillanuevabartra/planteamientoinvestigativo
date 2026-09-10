@@ -628,7 +628,7 @@ function estadoInicial(){
     correoCompanero:'', correosGrupo:'',
     nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
     paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
-    priorizadas:[],       // hasta 3 elementos priorizados {categoria,causa,sub}
+    priorizadas:[],       // hasta 3 priorizados {categoria,causa,sub,sub2}
     // Paso 14 · Referencias (Mendeley, eje transversal)
     refCuenta:'', refManager:'', refImporter:'', refMetadatos:'',
     refNotebook:'', refGrupo:'', refCite:'',
@@ -1645,7 +1645,8 @@ function render(){
     filas.forEach(function(f){ opts+='<option value="'+esc(f.key)+'">'+esc(f.etiqueta)+' ('+f.freq+')</option>'; });
     var selects='';
     for(var pi=0; pi<3; pi++){
-      var cur = S.priorizadas[pi] ? subKey(S.priorizadas[pi].categoria,S.priorizadas[pi].causa,S.priorizadas[pi].sub||'') : '';
+      var pz = S.priorizadas[pi];
+      var cur = pz ? subKey(pz.categoria, pz.causa, pz.sub||'', pz.sub2||'') : '';
       var optsSel = opts.replace('value="'+cur+'"','value="'+cur+'" selected');
       selects+='<div style="margin-bottom:8px;"><label>Problema específico '+(pi+1)+'</label>'+
         '<select onchange="setPriorizada('+pi+',this.value)">'+optsSel+'</select></div>';
@@ -2838,8 +2839,13 @@ function setNivelPareto(n){
 // Fija el elemento priorizado en la posición pi (0..2) a partir de su key
 function setPriorizada(pi,key){
   if(!key){ S.priorizadas[pi]=null; render(); return; }
+  /* La clave tiene CUATRO partes desde que existe el tercer nivel:
+     categoria|causa|subcausa|causaRaiz. Antes se descartaba la cuarta, así que
+     al priorizar a nivel de causa raíz no se guardaba nada y el desplegable
+     volvía a quedar vacío. */
   var parts=key.split('|');
-  S.priorizadas[pi]={ categoria:parts[0], causa:parts[1], sub:parts[2]||'' };
+  S.priorizadas[pi]={ categoria:parts[0]||'', causa:parts[1]||'',
+                      sub:parts[2]||'', sub2:parts[3]||'' };
   render();
 }
 
