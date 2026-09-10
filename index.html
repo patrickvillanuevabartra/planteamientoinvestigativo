@@ -423,7 +423,12 @@
 // ============================================================
 //  CONFIGURACIÓN
 // ============================================================
-var PROXY_URL = "https://script.google.com/macros/s/AKfycbyeMZERRsQNsSUsdKet60IqndE2QWc_rORm0n6dFml7Gnf9-8ZEp71ZSuuWKurQM2JV/exec";
+/* Proxy en Cloudflare Workers. Sustituye al de Apps Script, que dormía tras
+   un rato sin uso y tardaba decenas de segundos en despertar: de ahí los
+   «error de red» al ingresar y al guardar.
+   El anterior queda anotado por si hiciera falta volver:
+   https://script.google.com/macros/s/AKfycbyeMZERRsQNsSUsdKet60IqndE2QWc_rORm0n6dFml7Gnf9-8ZEp71ZSuuWKurQM2JV/exec */
+var PROXY_URL = "https://planteamiento-proxy.patrick-villanueva.workers.dev/";
 
 // Habilitar cuando actives la IA en el proxy (ruta action=ia).
 // Sugerencia con IA vía API de Anthropic (de pago). Apagada: en su lugar la app
