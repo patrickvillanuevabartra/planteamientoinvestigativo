@@ -763,15 +763,48 @@ function rearmarProblemaGeneral(){
 
 /* Cada problema específico usa la misma fórmula, con su herramienta en lugar
    de la línea y el efecto que esa herramienta produce. */
+/* Verbos agrupados por lo que le pasa a la causa. No se usa la taxonomía de
+   Bloom: esa clasifica procesos cognitivos del estudiante («analizar»,
+   «evaluar»), y aquí el sujeto no es el estudiante sino la herramienta
+   actuando sobre una causa. */
+var VERBOS_PE = [
+  ['La causa desaparece',        ['elimina','suprime']],
+  ['La causa disminuye',         ['reduce','disminuye','minimiza']],
+  ['La causa se corrige',        ['corrige','subsana','estandariza']],
+  ['La causa no vuelve a ocurrir',['previene','evita']],
+  ['La causa se atenúa',         ['mitiga','controla']]
+];
+
+function opcionesVerbo(sel){
+  var h = '<option value="">— elige el verbo —</option>';
+  VERBOS_PE.forEach(function(g){
+    h += '<option disabled style="font-weight:700;">' + esc(g[0]) + '</option>';
+    g[1].forEach(function(v){
+      h += '<option value="'+v+'"'+(v===sel?' selected':'')+'>&nbsp;&nbsp;'+v+'</option>';
+    });
+  });
+  return h;
+}
+
 function armarProblemaEspecifico(i){
   var e = S.especificos[i];
   if(!e) return '';
   var pr = partirProposito();
-  var verbo = (pr && pr.verbo) || 'mejora';
+  /* Con la VD ya declarada se usa el verbo del propósito. Mientras es un
+     borrador, se dejan las dos opciones que suelen calzar sobre una causa:
+     reducirla o eliminarla. El alumno se queda con una. */
+  /* Manda el verbo que el alumno eligió. Si aún no eligió, se usa el del
+     propósito cuando ya hay VD, y si no, se deja la doble opción como pista. */
+  var verbo = String(e.verbo||'').trim() ||
+              (String(e.vd||'').trim() ? ((pr && pr.verbo) || 'mejora') : 'reduce/elimina');
   var herr = String(e.herramienta||'').trim();
   if(!herr) return '';
+  /* La referencia es el nivel que el grupo priorizó en el Pareto, no la causa
+     de primer nivel: si priorizaron una causa raíz, el problema específico
+     tiene que derivarse de esa, no de la rama entera. */
+  var priorizado = e.sub2 || e.sub || e.causa || 'la causa priorizada';
   var efecto = String(e.vd||'').trim() ||
-               ('[qué mejora — deriva de: «' + (e.causa||e.sub||'la causa priorizada') + '»]');
+               ('[qué mejora — deriva de: «' + priorizado + '»]');
   return ('¿De qué manera la aplicación de ' + herr).replace(/\bde el\b/,'del') +
          ' ' + verbo + ' ' + efecto + ' ' + contextoEmpresa().replace(/\.$/,'') + '?';
 }
@@ -1805,6 +1838,12 @@ function render(){
           '<input value="'+esc(e.herramienta)+'" oninput="S.especificos['+i+'].herramienta=this.value" placeholder="Técnica o herramienta…">'+
           '<label style="margin-top:10px;">Problema específico</label>'+
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerPE('+i+')">armar desde la herramienta</button>'+
+          '<div class="varBox" style="margin:0 0 8px;border-left-color:#2f6d6a;">'+
+          '<div class="varTit" style="color:#2f6d6a;">¿Qué le hace tu herramienta a esta causa?</div>'+
+          '<select onchange="S.especificos['+i+'].verbo=this.value">'+opcionesVerbo(e.verbo)+'</select>'+
+          '<p class="note" style="font-size:12px;margin:6px 0 0;">El verbo fija la meta que tendrás que demostrar en el <b>paso 12</b>: si dices <b>elimina</b>, tu indicador tiene que llegar a cero; si dices <b>reduce</b>, basta un porcentaje de mejora. Ante la duda, el verbo más modesto es más defendible: es peor prometer eliminar y quedarse a medias que reducir y superarlo.</p>'+
+          '<p class="note" style="font-size:12px;margin:5px 0 0;">Describe lo que hace <b>tu herramienta sobre esta causa</b>, no lo que quieres lograr en el proyecto: eso ya está en tu propósito.</p>'+
+          '</div>'+
           '<textarea rows="3" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea></div>';
     });
     if(!pe) pe='<p class="note">No hay '+rotuloNivel(true)+' priorizadas. Vuelve al Pareto (paso 7) y prioriza 3.</p>';
@@ -3405,7 +3444,7 @@ function armarEspecificos(){
     var k=p.categoria+'|'+p.causa+'|'+(p.sub||'')+'|'+(p.sub2||'');
     lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub||'',
                              sub2:p.sub2||'',
-                             problema:'', herramienta:'', objetivo:'', vi:'', vd:'',
+                             problema:'', herramienta:'', verbo:'', objetivo:'', vi:'', vd:'',
                              hipotesis:'', indicador:''});
   });
   S.especificos=lista;
