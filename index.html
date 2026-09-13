@@ -221,8 +221,17 @@
   .mcTag{font-weight:700;color:var(--teal);white-space:nowrap;}
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
   .btnDel:hover{background:#fbf1ee;}
+  /* Cada nivel con su etiqueta, sangría y color: se ve de un vistazo en cuál
+     se está y que solo hay tres. */
+  .nivTag{flex-shrink:0;font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+          font-weight:700;border-radius:99px;padding:2px 6px;margin-right:7px;}
+  .nivTag1{background:#f8ece6;color:#b4552f;}
+  .nivTag2{background:#f7f2e3;color:#8d7526;}
+  .nivTag3{background:#e9f3f1;color:#2f6d6a;}
+  .causa,.subcausa{display:flex;align-items:center;}
   .subWrap{margin-bottom:2px;}
-  .raizList{margin-left:16px;padding-left:9px;border-left:1px dashed #cfd6cd;}
+  .subList{margin-left:14px;padding-left:10px;border-left:2px solid #e3d9b9;}
+  .raizList{margin-left:14px;padding-left:10px;border-left:2px solid #c3ded9;}
   .subcausa.raiz{background:#fbfaf6;border-color:#e2ddcd;}
   .subcausa.raiz span{color:#7d7466;}
   .addRaiz{font-size:12px;}
@@ -634,6 +643,7 @@ function estadoInicial(){
     nivelPareto:'causa',  // 'causa' (1.º nivel) o 'subcausa' (2.º nivel) — lo elige el grupo
     paretoFreq:{},        // clave "categoria|causa|subcausa" -> frecuencia (número)
     priorizadas:[],       // hasta 3 priorizados {categoria,causa,sub,sub2}
+    priorPorNivel:{},     // lo priorizado en cada nivel, para no perderlo al cambiar
     // Paso 14 · Referencias (Mendeley, eje transversal)
     refCuenta:'', refManager:'', refImporter:'', refMetadatos:'',
     refNotebook:'', refGrupo:'', refCite:'',
@@ -1511,26 +1521,34 @@ function render(){
     S.categorias.forEach(function(cat,ci){
       var items='';
       (S.causas[cat]||[]).forEach(function(cz,idx){
-        // subcausas (nivel 3)
+        /* Tres niveles: causa → subcausa → causa raíz. Cada uno con su propio
+           distintivo y su rótulo, porque antes los niveles 2 y 3 usaban la
+           misma flecha y se confundían: parecía que el campo de abajo abría un
+           cuarto nivel cuando solo añade otra causa raíz hermana. */
         var subs='';
         subsDe(cz).forEach(function(sb,si){
-          // Tercer nivel: la causa raíz, opcional y solo donde haga falta
+          var raices = sb.subs||[];
           var s2='';
-          (sb.subs||[]).forEach(function(x,xi){
-            s2+='<div class="subcausa raiz"><span>↳ '+esc(x)+'</span>'+
+          raices.forEach(function(x,xi){
+            s2+='<div class="subcausa raiz"><span class="nivTag nivTag3">raíz</span>'+
+                '<span>'+esc(x)+'</span>'+
                 '<button onclick="quitarSub2('+ci+','+idx+','+si+','+xi+')">×</button></div>';
           });
-          subs+='<div class="subWrap"><div class="subcausa"><span>↳ '+esc(sb.txt)+'</span>'+
+          subs+='<div class="subWrap"><div class="subcausa">'+
+                '<span class="nivTag nivTag2">sub</span><span>'+esc(sb.txt)+'</span>'+
                 '<button onclick="quitarSub('+ci+','+idx+','+si+')">×</button></div>'+
                 '<div class="raizList">'+s2+
-                '<input class="addInput addRaiz" placeholder="+ causa raíz (¿por qué?)" '+
+                '<input class="addInput addRaiz" placeholder="'+
+                (raices.length ? '+ otra causa raíz de esta subcausa' : '+ causa raíz \u00b7 nivel 3 (¿por qué ocurre la subcausa?)')+'" '+
                 'onkeydown="if(event.key===\'Enter\'){var v=this.value;this.value=\'\';if(v.trim())agregarSub2('+ci+','+idx+','+si+',v);}" onblur="var v=this.value;this.value=\'\';if(v.trim())agregarSub2('+ci+','+idx+','+si+',v);"></div></div>';
         });
         items+='<div class="causaWrap">'+
-               '<div class="causa"><span>'+esc(cz.txt)+'</span>'+
+               '<div class="causa"><span class="nivTag nivTag1">causa</span>'+
+               '<span>'+esc(cz.txt)+'</span>'+
                '<button onclick="quitarCausa('+ci+','+idx+')">×</button></div>'+
                '<div class="subList">'+subs+
-               '<input class="addInput addSub" placeholder="+ subcausa (por qué…)" '+
+               '<input class="addInput addSub" placeholder="'+
+               (subsDe(cz).length ? '+ otra subcausa de esta causa' : '+ subcausa \u00b7 nivel 2 (¿por qué ocurre la causa?)')+'" '+
                'onkeydown="if(event.key===\'Enter\'){var v=this.value;this.value=\'\';if(v.trim())agregarSub('+ci+','+idx+',v);}" onblur="var v=this.value;this.value=\'\';if(v.trim())agregarSub('+ci+','+idx+',v);"></div>'+
                '</div>';
       });
@@ -1773,7 +1791,13 @@ function render(){
     armarEspecificos();
     var pe='';
     S.especificos.forEach(function(e,i){
-      var subTxt = e.sub ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">subcausa priorizada: '+esc(e.sub)+'</div>' : '';
+      /* Se muestra la cadena completa de lo priorizado, para que el alumno vea de
+         qué causa exacta sale este problema específico. */
+      var cadena = [e.causa, e.sub, e.sub2].filter(function(x){ return x; });
+      var subTxt = cadena.length>1
+        ? '<div class="note" style="margin:0 0 6px;color:#8a948f;">priorizado: '+
+          esc(cadena.join(' \u2192 '))+'</div>'
+        : '';
       pe+='<div class="peItem"><div class="peHead"><span class="peTag">PE'+(i+1)+'</span><span class="peCat">'+esc(e.categoria)+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ causa: '+esc(e.causa)+'</div>'+
           subTxt+
@@ -2473,8 +2497,8 @@ function construirIshikawaPNG(efecto, cats, titulo, prior, consecuencia){
 
   // ---- Tipografías (en px del lienzo). Se subieron todas para que el
   //      diagrama se lea sin ampliar, respetando el ancho del recuadro.
-  var F_TIT=30, F_EFECTO=25, F_CAT=23, F_CAUSA=20, F_SUB=17, F_CONS=18, F_CONSLBL=16, F_LEG=18;
-  var LH_CAUSA=25, LH_SUB=21, LH_CONS=24;
+  var F_TIT=30, F_EFECTO=25, F_CAT=23, F_CAUSA=20, F_SUB=17, F_RAIZ=15, F_CONS=18, F_CONSLBL=16, F_LEG=18;
+  var LH_CAUSA=25, LH_SUB=21, LH_RAIZ=19, LH_CONS=24;
 
   // ---- Parámetros de espacio horizontal ----
   var MARG_L=18;            // margen izquierdo del lienzo
@@ -2522,8 +2546,11 @@ function construirIshikawaPNG(efecto, cats, titulo, prior, consecuencia){
   function altoCausa(cz){
     m.font=F_CAUSA+'px Arial';
     var l = partir(m, cz.txt||cz, anchoTexto, 3).length;
-    var ns = (cz.subs||[]).length;
-    return l*LH_CAUSA + ns*LH_SUB + 16;
+    /* Se cuentan los tres niveles: si solo se contaran las subcausas, las
+       causas raíz se pisarían con la causa siguiente. */
+    var ns=0, nr=0;
+    subsDe(cz).forEach(function(sb){ ns++; nr += (sb.subs||[]).length; });
+    return l*LH_CAUSA + ns*LH_SUB + nr*LH_RAIZ + 16;
   }
   function altoRama(lista){
     var t=0; (lista||[]).forEach(function(cz){ t+=altoCausa(cz); });
@@ -2657,16 +2684,35 @@ function construirIshikawaPNG(efecto, cats, titulo, prior, consecuencia){
                         w:anchoReal, h:lns.length*LH_CAUSA, t:czTxt });
 
       // subcausas
-      var ySub = y0 + lns.length*LH_CAUSA - 2;
-      (cz.subs||[]).forEach(function(sb,si){
-        var sbPrior = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt && p.sub===sb; });
-        x.fillStyle = sbPrior ? '#a8501e' : '#7d8781';
-        x.font = (sbPrior?'bold ':'')+F_SUB+'px Arial';
-        var ls = partir(x, '\u00b7 '+sb, dispo-14, 1);
-        var yS = ySub + si*LH_SUB;
-        x.fillText(ls[0], rightX-10, yS);
-        ISHI_CAJAS.push({ x:rightX-10-x.measureText(ls[0]).width, y:yS-LH_SUB*0.65,
-                          w:x.measureText(ls[0]).width, h:LH_SUB, t:sb });
+      /* Subcausas (2.º nivel) y causas raíz (3.º). Antes se pasaba el objeto
+         entero de la subcausa al texto y salía «[object Object]»; y el tercer
+         nivel no se dibujaba. */
+      var yLinea = y0 + lns.length*LH_CAUSA - 2;
+      subsDe(cz).forEach(function(sb){
+        var sbTxt = sb.txt||'';
+        var sbPrior = prior.some(function(p){ return p.categoria===cat.nombre &&
+                        p.causa===czTxt && p.sub===sbTxt && !p.sub2; });
+        var sbTiene = prior.some(function(p){ return p.categoria===cat.nombre &&
+                        p.causa===czTxt && p.sub===sbTxt; });
+        x.fillStyle = sbTiene ? '#a8501e' : '#7d8781';
+        x.font = ((sbPrior||sbTiene)?'bold ':'')+F_SUB+'px Arial';
+        var ls = partir(x, '\u00b7 '+sbTxt, dispo-14, 1);
+        x.fillText(ls[0], rightX-10, yLinea);
+        ISHI_CAJAS.push({ x:rightX-10-x.measureText(ls[0]).width, y:yLinea-LH_SUB*0.65,
+                          w:x.measureText(ls[0]).width, h:LH_SUB, t:sbTxt });
+        yLinea += LH_SUB;
+
+        (sb.subs||[]).forEach(function(r2){
+          var rPrior = prior.some(function(p){ return p.categoria===cat.nombre &&
+                         p.causa===czTxt && p.sub===sbTxt && p.sub2===r2; });
+          x.fillStyle = rPrior ? '#a8501e' : '#9aa39d';
+          x.font = (rPrior?'bold ':'')+F_RAIZ+'px Arial';
+          var lr = partir(x, '\u2013 '+r2, dispo-28, 1);
+          x.fillText(lr[0], rightX-24, yLinea);
+          ISHI_CAJAS.push({ x:rightX-24-x.measureText(lr[0]).width, y:yLinea-LH_RAIZ*0.65,
+                            w:x.measureText(lr[0]).width, h:LH_RAIZ, t:r2 });
+          yLinea += LH_RAIZ;
+        });
       });
     });
   }
@@ -2832,13 +2878,18 @@ function setFreq(key,v){
 }
 
 // Cambia el nivel de análisis del Pareto (1.º nivel = causa · 2.º nivel = subcausa)
+/* Cada nivel guarda su propia selección. Antes cambiar de nivel la borraba, y
+   volver al anterior obligaba a rehacerla: ahora se archiva y se recupera. */
 function setNivelPareto(n){
   if(S.nivelPareto===n) return;
-  var hay = S.priorizadas.filter(function(p){ return p; }).length;
-  if(hay && !confirm('Cambiar de nivel borra los '+hay+' elementos que ya priorizaste. \u00bfContinuar?')) return;
-  S.nivelPareto=n;
-  S.priorizadas=[];
+  S.priorPorNivel = S.priorPorNivel || {};
+  S.priorPorNivel[S.nivelPareto] = S.priorizadas;      // se archiva la actual
+  S.nivelPareto = n;
+  S.priorizadas = S.priorPorNivel[n] || [];            // se recupera la del nuevo
+  armarEspecificos();
   render();
+  var hay = S.priorizadas.filter(function(p){ return p; }).length;
+  if(hay) toast('Recuperada tu selección anterior en este nivel');
 }
 
 // Fija el elemento priorizado en la posición pi (0..2) a partir de su key
@@ -3343,12 +3394,17 @@ function armarEspecificos(){
   var previos={};
   // Se indexa siempre (aunque no haya subcausa): si no, cada re-render borraba
   // lo escrito cuando el Pareto trabaja a nivel de causa.
-  S.especificos.forEach(function(e){ previos[e.categoria+'|'+e.causa+'|'+(e.sub||'')]=e; });
+  S.especificos.forEach(function(e){
+    previos[e.categoria+'|'+e.causa+'|'+(e.sub||'')+'|'+(e.sub2||'')]=e;
+  });
   var lista=[];
   S.priorizadas.forEach(function(p){
     if(!p) return;
-    var k=p.categoria+'|'+p.causa+'|'+(p.sub||'');
-    lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub,
+    /* La clave incluye el tercer nivel: si no, al priorizar causas raíz todas
+       las de una misma subcausa colapsaban en un solo problema específico. */
+    var k=p.categoria+'|'+p.causa+'|'+(p.sub||'')+'|'+(p.sub2||'');
+    lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub||'',
+                             sub2:p.sub2||'',
                              problema:'', herramienta:'', objetivo:'', vi:'', vd:'',
                              hipotesis:'', indicador:''});
   });
@@ -3403,6 +3459,7 @@ function serializarEstado(){
     causas:S.causas,
     nivelPareto:S.nivelPareto,
     paretoFreq:S.paretoFreq,
+    priorPorNivel:S.priorPorNivel,
     priorizadas:S.priorizadas,
     especificos:S.especificos,
     refCuenta:S.refCuenta, refManager:S.refManager, refImporter:S.refImporter,
@@ -3435,6 +3492,7 @@ function restaurarEstado(json){
   if(typeof d.consecuenciaSintoma==='string'){ S.consecuenciaSintoma=d.consecuenciaSintoma; }
   if(d.causas){ S.causas=d.causas; }
   if(['causa','subcausa','raiz'].indexOf(d.nivelPareto)!==-1){ S.nivelPareto=d.nivelPareto; }
+  if(d.priorPorNivel){ S.priorPorNivel=d.priorPorNivel; }
   if(d.paretoFreq){ S.paretoFreq=d.paretoFreq; }
   if(d.priorizadas){ S.priorizadas=d.priorizadas; }
   if(d.especificos){ S.especificos=d.especificos; }
