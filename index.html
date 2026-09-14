@@ -2530,261 +2530,266 @@ var ISHI_CAJAS=[], ISHI_W=0, ISHI_H=0;
 // no la categoría entera: la categoría es un cajón de clasificación, no una causa.
 function construirIshikawaPNG(efecto, cats, titulo, prior, consecuencia){
   prior = (prior||[]).filter(function(p){ return p && p.categoria; });
-  ISHI_CAJAS=[];
+  ISHI_CAJAS = [];
   cats = (cats||[]).filter(function(c){ return (c.causas||[]).length>0; });
-  if(!cats.length) cats = [{nombre:'(sin categorías)', causas:[]}];
+  if(!cats.length) cats = [{ nombre:'(sin categorías)', causas:[] }];
 
-  // ---- Tipografías (en px del lienzo). Se subieron todas para que el
-  //      diagrama se lea sin ampliar, respetando el ancho del recuadro.
-  var F_TIT=30, F_EFECTO=25, F_CAT=23, F_CAUSA=20, F_SUB=17, F_RAIZ=15, F_CONS=18, F_CONSLBL=16, F_LEG=18;
-  var LH_CAUSA=25, LH_SUB=21, LH_RAIZ=19, LH_CONS=24;
+  /* ── Geometría del pescado ──────────────────────────────────────────────
+     Antes las causas se apilaban como una lista de texto, sin espinas: se
+     leía como un listado y los textos salían recortados. Ahora cada nivel
+     cuelga del anterior, como en un Ishikawa de manual:
+        columna vertebral ──── cabeza (efecto)
+          └ diagonal de categoría
+              └ espina de causa (horizontal, entra en la diagonal)
+                  └ espina de subcausa (diagonal corta)
+                      └ causa raíz (línea fina bajo la subcausa)          */
 
-  // ---- Parámetros de espacio horizontal ----
-  var MARG_L=18;            // margen izquierdo del lienzo
-  var TEXTO_ANCHO=300;      // ancho reservado a la izquierda de cada rama para sus causas
-  var SEPARACION=350;       // separación horizontal entre ramas del mismo lado
-  var HEAD_W=280;           // ancho de la cabeza (efecto)
-  var DX=70;                // desplazamiento horizontal de la diagonal
-  var CONECTOR=80;          // largo del guion horizontal de cada causa
+  var F_TIT=30, F_CAT=21, F_EFECTO=24, F_CAUSA=18, F_SUB=15, F_RAIZ=13, F_CONS=16, F_LEG=16;
+  var LH_CAUSA=22, LH_SUB=18, LH_RAIZ=16;
 
-  var arriba=[], abajo=[];
-  cats.forEach(function(c,i){ (i%2===0?arriba:abajo).push(c); });
-  var maxRamas = Math.max(arriba.length, abajo.length);
+  var COL_LINEA='#2f3b37', COL_TXT='#1c2a33', COL_SUAVE='#6a746f',
+      COL_PRIOR='#b4552f', COL_FONDO='#ffffff';
 
-  var spineX0 = MARG_L + 22;
-  var bx0 = MARG_L + TEXTO_ANCHO + CONECTOR + DX;                       // x de la primera rama
-  var spineX1 = bx0 + SEPARACION*(maxRamas-1) + 70;     // fin de la espina
-  var W = spineX1 + HEAD_W + 26;
-
-  // ---- Lienzo temporal solo para medir texto ----
   var mcv=document.createElement('canvas'), m=mcv.getContext('2d');
 
-  // Parte el texto en líneas que quepan en maxW (por medición real, no por nº de letras)
-  function partir(ctx,text,maxW,maxLines){
-    var words=String(text||'').split(/\s+/), lines=[], line='';
+  function partir(ctx, texto, maxW, maxLines){
+    var words=String(texto||'').split(/\s+/), lines=[], line='';
     for(var i=0;i<words.length;i++){
       var test = line ? line+' '+words[i] : words[i];
       if(ctx.measureText(test).width > maxW && line){
         lines.push(line); line=words[i];
-        if(lines.length===maxLines-1 && i<words.length-1){
-          // última línea permitida: mete lo que quede y recorta con …
+        if(lines.length === maxLines-1 && i < words.length-1){
           var resto=words.slice(i).join(' ');
-          while(resto && ctx.measureText(resto+'…').width>maxW) resto=resto.slice(0,-1);
+          while(resto && ctx.measureText(resto+'…').width > maxW) resto=resto.slice(0,-1);
           lines.push(resto+'…'); return lines;
         }
       } else { line=test; }
     }
     if(line) lines.push(line);
-    return lines.slice(0,maxLines);
+    return lines.slice(0, maxLines);
   }
 
-  // Ancho de texto disponible para las causas de una rama (no invade la rama vecina)
-  var anchoTexto = Math.min(TEXTO_ANCHO - 46, SEPARACION - CONECTOR - 60);
+  var ANCHO_CAUSA=250, ANCHO_SUB=225, ANCHO_RAIZ=205;
 
-  // Alto que ocupa cada causa (texto + subcausas) para repartir la diagonal
+  /* Alto que ocupa una causa con todo lo que cuelga de ella */
   function altoCausa(cz){
-    m.font=F_CAUSA+'px Arial';
-    var l = partir(m, cz.txt||cz, anchoTexto, 3).length;
-    /* Se cuentan los tres niveles: si solo se contaran las subcausas, las
-       causas raíz se pisarían con la causa siguiente. */
-    var ns=0, nr=0;
-    subsDe(cz).forEach(function(sb){ ns++; nr += (sb.subs||[]).length; });
-    return l*LH_CAUSA + ns*LH_SUB + nr*LH_RAIZ + 16;
+    m.font = F_CAUSA+'px Arial';
+    var h = partir(m, cz.txt||'', ANCHO_CAUSA, 3).length * LH_CAUSA + 8;
+    subsDe(cz).forEach(function(sb){
+      m.font = F_SUB+'px Arial';
+      h += partir(m, sb.txt||'', ANCHO_SUB, 2).length * LH_SUB + 4;
+      (sb.subs||[]).forEach(function(r){
+        m.font = F_RAIZ+'px Arial';
+        h += partir(m, r, ANCHO_RAIZ, 2).length * LH_RAIZ + 2;
+      });
+    });
+    return h + 16;
   }
-  function altoRama(lista){
-    var t=0; (lista||[]).forEach(function(cz){ t+=altoCausa(cz); });
-    return t;
-  }
-  function altoLado(ramas){
-    var mx=210;
-    ramas.forEach(function(c){ mx=Math.max(mx, altoRama(c.causas)+70); });
+
+  var arriba=[], abajo=[];
+  cats.forEach(function(c,i){ (i%2===0?arriba:abajo).push(c); });
+
+  /* Alto que necesita cada lado: la rama más cargada manda */
+  function altoLado(lista){
+    var mx=0;
+    lista.forEach(function(c){
+      var t=0; (c.causas||[]).forEach(function(cz){ t+=altoCausa(cz); });
+      mx=Math.max(mx,t);
+    });
     return mx;
   }
-  var BR_UP = altoLado(arriba), BR_DN = altoLado(abajo);
+  var altoArriba = altoLado(arriba), altoAbajo = altoLado(abajo);
 
-  // ---- Alto del recuadro de consecuencia (arriba a la derecha) ----
-  var cbX = spineX1 - 40, cbW = W - cbX - 22, cbY = 68, cbH = 0, consLineas = [];
-  if(consecuencia){
-    m.font=F_CONS+'px Arial';
-    consLineas = partir(m, consecuencia, cbW-24, 5);
-    cbH = 42 + consLineas.length*LH_CONS + 12;
-  }
+  var SEP=340, PASO_X=110, MARG=40, HEAD_W=300;
+  var maxRamas = Math.max(arriba.length, abajo.length);
+  var x0 = MARG + ANCHO_CAUSA + 70;
+  var spineX1 = x0 + SEP*(maxRamas-1) + PASO_X + 40;
+  var W = spineX1 + HEAD_W + MARG;
 
-  var topY = Math.max(240, cbY + cbH + 40);
-  var spineY = topY + BR_UP;
-  // La leyenda se mide ANTES para reservarle alto: con causas largas ocupa
-  // más de una línea y antes se salía por el borde derecho.
-  var legLineas = [];
-  if(prior.length){
-    m.font='bold '+F_LEG+'px Arial';
-    var etq = prior.map(function(p){ return p.sub || p.causa; });
-    legLineas = partir(m, '\u25a0 Priorizadas (Pareto): '+etq.join('  \u00b7  '), W-2*MARG_L-12, 3);
-  }
-  var H = spineY + BR_DN + 74 + legLineas.length*24;
+  var TOP = 86;                         // título
+  var yEspina = TOP + altoArriba + 120;
+  var H = yEspina + altoAbajo + 170;
 
   var cv=document.createElement('canvas');
   cv.width=W; cv.height=H;
   var x=cv.getContext('2d');
-  x.fillStyle='#ffffff'; x.fillRect(0,0,W,H);
+  x.fillStyle=COL_FONDO; x.fillRect(0,0,W,H);
+  x.textBaseline='middle';
 
-  // ---- Título ----
-  // El titulo se reduce hasta caber en el ancho (no debe salirse por la derecha).
-  var tit = titulo||'Diagrama de Ishikawa', fTit = F_TIT;
-  x.fillStyle='#1c2a33'; x.textAlign='left'; x.textBaseline='alphabetic';
-  x.font='italic bold '+fTit+'px Georgia';
-  while(fTit>18 && x.measureText(tit).width > W-2*MARG_L-12){
-    fTit--; x.font='italic bold '+fTit+'px Georgia';
-  }
-  x.fillText(tit, MARG_L+6, 46);
+  /* ── Título ── */
+  x.fillStyle=COL_TXT; x.font='bold italic '+F_TIT+"px Georgia, 'Times New Roman', serif";
+  x.textAlign='left';
+  x.fillText(titulo||'Diagrama de Ishikawa', MARG, 46);
 
-  // ---- Espina central ----
-  x.strokeStyle='#1c2a33'; x.lineWidth=5;
-  x.beginPath(); x.moveTo(spineX0,spineY); x.lineTo(spineX1,spineY); x.stroke();
+  /* ── Columna vertebral ── */
+  x.strokeStyle=COL_LINEA; x.lineWidth=6; x.lineCap='round';
+  x.beginPath(); x.moveTo(MARG, yEspina); x.lineTo(spineX1, yEspina); x.stroke();
 
-  // ---- Cabeza (efecto) ----
-  var headH = Math.min(170, Math.max(120, BR_UP*0.5));
-  x.fillStyle='#1c2a33';
+  /* ── Cabeza: el efecto ── */
+  var hx=spineX1, hw=HEAD_W, hh=190;
+  x.fillStyle=COL_LINEA;
   x.beginPath();
-  x.moveTo(spineX1, spineY-headH);
-  x.quadraticCurveTo(W-16, spineY-headH, W-16, spineY);
-  x.quadraticCurveTo(W-16, spineY+headH, spineX1, spineY+headH);
+  x.moveTo(hx, yEspina-hh/2);
+  x.lineTo(hx+hw-70, yEspina-hh/2);
+  x.quadraticCurveTo(hx+hw+26, yEspina, hx+hw-70, yEspina+hh/2);
+  x.lineTo(hx, yEspina+hh/2);
   x.closePath(); x.fill();
-  x.fillStyle='#fff'; x.font='bold '+F_EFECTO+'px Arial';
-  x.textAlign='center'; x.textBaseline='middle';
-  (function(){
-    var maxW = (W-16) - spineX1 - 54;
-    var lines = partir(x, efecto, maxW, 8);
-    var y0 = spineY - ((lines.length-1)*30)/2;
-    lines.forEach(function(ln,i){ x.fillText(ln, (spineX1 + (W-16))/2, y0 + i*30); });
-  })();
+  x.fillStyle='#fff'; x.font='bold '+F_EFECTO+'px Arial'; x.textAlign='center';
+  var le=partir(x, efecto||'(sin problema central)', hw-70, 5);
+  le.forEach(function(l,i){
+    x.fillText(l, hx+(hw-60)/2, yEspina - (le.length-1)*14 + i*28);
+  });
 
-  // ---- Recuadro de consecuencia / síntoma ----
-  if(consecuencia){
-    x.strokeStyle='#c8743b'; x.lineWidth=2; x.fillStyle='#fdf3e7';
-    x.fillRect(cbX,cbY,cbW,cbH); x.strokeRect(cbX,cbY,cbW,cbH);
-    x.fillStyle='#a8501e'; x.font='bold '+F_CONSLBL+'px Arial';
-    x.textAlign='left'; x.textBaseline='top';
-    x.fillText('CONSECUENCIA / SÍNTOMA', cbX+12, cbY+10);
-    x.fillStyle='#26241e'; x.font=F_CONS+'px Arial'; x.textBaseline='alphabetic';
-    consLineas.forEach(function(ln,i){ x.fillText(ln, cbX+12, cbY+42+ (i+1)*LH_CONS - 6); });
-    x.strokeStyle='#c8743b'; x.lineWidth=1.5;
-    x.beginPath(); x.moveTo(cbX+cbW/2, cbY+cbH); x.lineTo(cbX+cbW/2, spineY-headH); x.stroke();
-  }
+  /* ── Una rama ── */
+  function dibujarRama(cat, bx, arribaLado){
+    var dir = arribaLado ? -1 : 1;
+    var yCaja = arribaLado ? TOP + 6 : H - 108;
+    var yIni  = yEspina + dir*34;                    // donde arranca la diagonal
+    var pend  = (yCaja - yIni);                      // recorrido vertical
 
-  // ---- Ramas ----
-  function dibujarRama(cat, bx, up, brH){
-    var esPrior = prior.some(function(p){ return p.categoria===cat.nombre; });
-    var tipX = bx - DX, tipY = spineY + (up?-1:1)*brH;
-    x.strokeStyle = esPrior ? '#c8743b' : '#2f6d6a';
-    x.lineWidth   = esPrior ? 6 : 3.5;
-    x.beginPath(); x.moveTo(bx,spineY); x.lineTo(tipX,tipY); x.stroke();
+    /* Diagonal de la categoría */
+    x.strokeStyle=COL_LINEA; x.lineWidth=4;
+    x.beginPath(); x.moveTo(bx, yEspina); x.lineTo(bx - PASO_X, yCaja + (arribaLado?40:-40)); x.stroke();
 
-    // caja de la categoría
-    x.font='bold '+F_CAT+'px Arial'; x.textAlign='center'; x.textBaseline='middle';
-    var lw=x.measureText(cat.nombre).width+30, bh=34;
-    var boxY = up ? tipY-bh-6 : tipY+6;
-    x.fillStyle = esPrior ? '#c8743b' : '#1c2a33';
-    // Etiqueta anclada al extremo de la espina (no centrada): así nunca
-    // invade el texto de las causas de la rama vecina de la derecha.
-    var boxX = tipX - lw + 14;
-    x.fillRect(boxX, boxY, lw, bh);
-    x.fillStyle='#fff'; x.fillText(cat.nombre, boxX+lw/2, boxY+bh/2);
+    /* Caja de la categoría */
+    m.font='bold '+F_CAT+'px Arial';
+    var tw = m.measureText(cat.nombre).width;
+    var cw = tw + 34, cx = bx - PASO_X - cw/2, cy = yCaja - 14;
+    var priorEnCat = prior.some(function(p){ return p.categoria === cat.nombre; });
+    x.fillStyle = priorEnCat ? COL_PRIOR : COL_LINEA;
+    x.beginPath(); x.roundRect(cx, cy, cw, 34, 5); x.fill();
+    x.fillStyle='#fff'; x.font='bold '+F_CAT+'px Arial'; x.textAlign='center';
+    x.fillText(cat.nombre, cx+cw/2, cy+17);
 
-    // causas repartidas por altura real (no por fracción fija)
-    var causas=cat.causas||[];
-    var total=altoRama(causas) || 1;
-    var acum=0;
+    /* Espinas de causa, repartidas a lo largo de la diagonal */
+    var causas = cat.causas||[];
+    var total = 0; causas.forEach(function(cz){ total += altoCausa(cz); });
+    var y = yIni + dir*20;
+
     causas.forEach(function(cz){
-      var hC=altoCausa(cz);
-      var frac=(acum + hC/2)/total;            // centro vertical del bloque
-      acum+=hC;
-      var px = bx + (tipX-bx)*frac;
-      var py = spineY + (tipY-spineY)*frac;
-      var czTxt = cz.txt||cz;
-      var czPrior = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt && !p.sub; });
-      var czTiene = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt; });
-      x.strokeStyle = czTiene ? '#c8743b' : '#7a8a86';
-      x.lineWidth   = czTiene ? 3 : 1.8;
-      x.beginPath(); x.moveTo(px,py); x.lineTo(px-CONECTOR,py); x.stroke();
+      var h = altoCausa(cz);
+      var czTxt = cz.txt||'';
+      /* Dónde está la diagonal a una altura dada. Hace falta calcularlo por
+         altura y no solo en la espina: el texto se dibuja por encima (o por
+         debajo) de ella, y ahí la diagonal ya se ha desplazado. Sin esto, los
+         títulos largos cruzaban la línea. */
+      var yFin = yCaja + (arribaLado?40:-40);
+      function xDiagEn(yy){
+        var t = (yy - yEspina) / (yFin - yEspina);
+        return bx - PASO_X*Math.max(0, Math.min(1, t));
+      }
+      var xDiag = xDiagEn(y);
 
-      var rightX = px - CONECTOR - 10;
-      var dispo  = Math.min(anchoTexto, rightX - MARG_L);   // nunca sale del lienzo
-      x.fillStyle = czTiene ? '#a8501e' : '#26241e';
-      x.font = (czTiene?'bold ':'')+F_CAUSA+'px Arial';
-      x.textAlign='right'; x.textBaseline='middle';
-      var lns = partir(x, cz.txt||cz, dispo, 3);
-      var y0 = py - ((lns.length-1)*LH_CAUSA)/2;
-      var anchoReal=0;
-      lns.forEach(function(ln,i){
-        anchoReal=Math.max(anchoReal, x.measureText(ln).width);
-        x.fillText(ln, rightX, y0 + i*LH_CAUSA);
-      });
-      ISHI_CAJAS.push({ x:rightX-anchoReal, y:y0-LH_CAUSA*0.65,
-                        w:anchoReal, h:lns.length*LH_CAUSA, t:czTxt });
+      var czPrior = prior.some(function(p){ return p.categoria===cat.nombre &&
+                       p.causa===czTxt && !p.sub && !p.sub2; });
+      var czTocada = prior.some(function(p){ return p.categoria===cat.nombre && p.causa===czTxt; });
 
-      // subcausas
-      /* Subcausas (2.º nivel) y causas raíz (3.º). Antes se pasaba el objeto
-         entero de la subcausa al texto y salía «[object Object]»; y el tercer
-         nivel no se dibujaba. */
-      var yLinea = y0 + lns.length*LH_CAUSA - 2;
+      /* Espina horizontal de la causa, con su punta entrando en la diagonal */
+      x.strokeStyle = czTocada ? COL_PRIOR : COL_LINEA;
+      x.lineWidth = czTocada ? 3 : 2.2;
+      x.beginPath(); x.moveTo(xDiag - 40 - ANCHO_CAUSA, y); x.lineTo(xDiag-6, y); x.stroke();
+      x.beginPath();
+      x.moveTo(xDiag-4, y); x.lineTo(xDiag-17, y-5.5); x.lineTo(xDiag-17, y+5.5);
+      x.closePath(); x.fillStyle = czTocada ? COL_PRIOR : COL_LINEA; x.fill();
+
+      /* Los textos siempre se leen hacia abajo. Lo que cambia con el lado es
+         dónde empieza el bloque: en las ramas de arriba la causa queda justo
+         encima de su espina y las subcausas se alejan hacia arriba; en las de
+         abajo, al revés. Así nada se pisa. */
+      x.textAlign='right';
+      x.font = (czPrior?'bold ':'')+F_CAUSA+'px Arial';
+      var lc = partir(x, czTxt, ANCHO_CAUSA, 3);
+      var causaTop = arribaLado ? (y - 14 - lc.length*LH_CAUSA) : (y + 14);
+      var xTxt = xDiagEn(arribaLado ? causaTop : causaTop + lc.length*LH_CAUSA) - 26;
+      x.fillStyle = czPrior ? COL_PRIOR : COL_TXT;
+      lc.forEach(function(l,k){ x.fillText(l, xTxt, causaTop + k*LH_CAUSA + LH_CAUSA/2); });
+      ISHI_CAJAS.push({ x:xTxt-ANCHO_CAUSA, y:causaTop,
+                        w:ANCHO_CAUSA, h:lc.length*LH_CAUSA, t:czTxt });
+
+      var cursor = arribaLado ? causaTop - 8 : causaTop + lc.length*LH_CAUSA + 8;
+
       subsDe(cz).forEach(function(sb){
         var sbTxt = sb.txt||'';
         var sbPrior = prior.some(function(p){ return p.categoria===cat.nombre &&
                         p.causa===czTxt && p.sub===sbTxt && !p.sub2; });
-        var sbTiene = prior.some(function(p){ return p.categoria===cat.nombre &&
+        var sbTocada = prior.some(function(p){ return p.categoria===cat.nombre &&
                         p.causa===czTxt && p.sub===sbTxt; });
-        x.fillStyle = sbTiene ? '#a8501e' : '#7d8781';
-        x.font = ((sbPrior||sbTiene)?'bold ':'')+F_SUB+'px Arial';
-        var ls = partir(x, '\u00b7 '+sbTxt, dispo-14, 1);
-        x.fillText(ls[0], rightX-10, yLinea);
-        ISHI_CAJAS.push({ x:rightX-10-x.measureText(ls[0]).width, y:yLinea-LH_SUB*0.65,
-                          w:x.measureText(ls[0]).width, h:LH_SUB, t:sbTxt });
-        yLinea += LH_SUB;
 
-        (sb.subs||[]).forEach(function(r2){
+        x.font = (sbPrior?'bold ':'')+F_SUB+'px Arial';
+        var ls = partir(x, sbTxt, ANCHO_SUB, 2);
+        var subTop = arribaLado ? (cursor - ls.length*LH_SUB) : cursor;
+        var subMid = subTop + ls.length*LH_SUB/2;
+
+        /* Espina de la subcausa: entra en la espina de la causa, a la derecha
+           del texto para no cruzarlo. */
+        x.strokeStyle = sbTocada ? COL_PRIOR : '#9aa39d';
+        x.lineWidth = 1.7;
+        var xSub = xDiagEn(subMid);
+        x.beginPath(); x.moveTo(xSub-70, subMid); x.lineTo(xDiag-46, y); x.stroke();
+
+        x.fillStyle = sbPrior ? COL_PRIOR : COL_SUAVE;
+        ls.forEach(function(l,k){ x.fillText(l, xSub-78, subTop + k*LH_SUB + LH_SUB/2); });
+        ISHI_CAJAS.push({ x:xSub-78-ANCHO_SUB, y:subTop, w:ANCHO_SUB, h:ls.length*LH_SUB, t:sbTxt });
+
+        var cur2 = arribaLado ? subTop - 4 : subTop + ls.length*LH_SUB + 4;
+
+        (sb.subs||[]).forEach(function(r){
           var rPrior = prior.some(function(p){ return p.categoria===cat.nombre &&
-                         p.causa===czTxt && p.sub===sbTxt && p.sub2===r2; });
-          x.fillStyle = rPrior ? '#a8501e' : '#9aa39d';
+                         p.causa===czTxt && p.sub===sbTxt && p.sub2===r; });
           x.font = (rPrior?'bold ':'')+F_RAIZ+'px Arial';
-          var lr = partir(x, '\u2013 '+r2, dispo-28, 1);
-          x.fillText(lr[0], rightX-24, yLinea);
-          ISHI_CAJAS.push({ x:rightX-24-x.measureText(lr[0]).width, y:yLinea-LH_RAIZ*0.65,
-                            w:x.measureText(lr[0]).width, h:LH_RAIZ, t:r2 });
-          yLinea += LH_RAIZ;
+          var lr = partir(x, r, ANCHO_RAIZ, 2);
+          var rTop = arribaLado ? (cur2 - lr.length*LH_RAIZ) : cur2;
+          var rMid = rTop + lr.length*LH_RAIZ/2;
+
+          /* La causa raíz cuelga de la subcausa */
+          x.strokeStyle = rPrior ? COL_PRIOR : '#c4ccc6';
+          x.lineWidth = 1.3;
+          var xR = xDiagEn(rMid);
+          x.beginPath(); x.moveTo(xR-104, rMid); x.lineTo(xSub-82, subMid); x.stroke();
+
+          x.fillStyle = rPrior ? COL_PRIOR : '#9aa39d';
+          lr.forEach(function(l,k){ x.fillText(l, xR-112, rTop + k*LH_RAIZ + LH_RAIZ/2); });
+          ISHI_CAJAS.push({ x:xR-112-ANCHO_RAIZ, y:rTop, w:ANCHO_RAIZ, h:lr.length*LH_RAIZ, t:r });
+
+          cur2 = arribaLado ? (rTop - 2) : (rTop + lr.length*LH_RAIZ + 2);
         });
+        cursor = cur2;
       });
+
+      y += dir*h;
     });
   }
 
-  arriba.forEach(function(cat,i){ dibujarRama(cat, bx0 + SEPARACION*i, true,  BR_UP); });
-  abajo .forEach(function(cat,i){ dibujarRama(cat, bx0 + SEPARACION*i, false, BR_DN); });
+  arriba.forEach(function(c,i){ dibujarRama(c, x0 + SEP*i + PASO_X, true); });
+  abajo .forEach(function(c,i){ dibujarRama(c, x0 + SEP*i + PASO_X, false); });
 
-  // ---- Leyenda ----
-  if(legLineas.length){
-    x.fillStyle='#c8743b'; x.font='bold '+F_LEG+'px Arial';
-    x.textAlign='left'; x.textBaseline='alphabetic';
-    legLineas.forEach(function(ln,i){
-      x.fillText(ln, MARG_L+6, H-26-(legLineas.length-1-i)*24);
-    });
+  /* ── Consecuencia, en recuadro junto a la cabeza ── */
+  if(consecuencia){
+    x.font=F_CONS+'px Arial'; x.textAlign='left';
+    var lcs = partir(x, consecuencia, HEAD_W-40, 5);
+    var bh = lcs.length*20 + 46, byy = 70, bxx = hx - 10;
+    x.fillStyle='#fbf4ee'; x.strokeStyle=COL_PRIOR; x.lineWidth=1.5;
+    x.beginPath(); x.roundRect(bxx, byy, HEAD_W+10, bh, 6); x.fill(); x.stroke();
+    x.fillStyle=COL_PRIOR; x.font='bold 13px Arial';
+    x.fillText('CONSECUENCIA / SÍNTOMA', bxx+16, byy+20);
+    x.fillStyle=COL_TXT; x.font=F_CONS+'px Arial';
+    lcs.forEach(function(l,i){ x.fillText(l, bxx+16, byy+44+i*20); });
+    x.strokeStyle=COL_PRIOR; x.lineWidth=1.5; x.setLineDash([5,4]);
+    x.beginPath(); x.moveTo(bxx+(HEAD_W+10)/2, byy+bh); x.lineTo(bxx+(HEAD_W+10)/2, yEspina-95); x.stroke();
+    x.setLineDash([]);
   }
-  ISHI_W=W; ISHI_H=H;
+
+  /* ── Pie: lo priorizado en el Pareto ── */
+  if(prior.length){
+    var etiquetas = prior.map(function(p){ return p.sub2||p.sub||p.causa; }).filter(Boolean);
+    x.textAlign='left'; x.font='bold '+F_LEG+'px Arial'; x.fillStyle=COL_PRIOR;
+    x.fillRect(MARG, H-38, 11, 11);
+    x.fillText('Priorizadas (Pareto): '+etiquetas.join('  ·  '), MARG+20, H-32);
+  }
+
   return cv.toDataURL('image/png');
 }
 
-// Pinta zonas invisibles sobre la imagen: al pasar el mouse muestran el texto completo
-// (util cuando una causa larga quedo recortada con puntos suspensivos).
-function overlayIshikawa(idOv){
-  var ov=document.getElementById(idOv);
-  if(!ov || !ISHI_W || !ISHI_H) return;
-  var s='';
-  ISHI_CAJAS.forEach(function(b){
-    if(!b.t || b.w<=0) return;
-    s+='<div class="ishiHit" title="'+esc(b.t)+'" style="'+
-       'left:'+(b.x/ISHI_W*100).toFixed(3)+'%;top:'+(b.y/ISHI_H*100).toFixed(3)+'%;'+
-       'width:'+(b.w/ISHI_W*100).toFixed(3)+'%;height:'+(b.h/ISHI_H*100).toFixed(3)+'%;"></div>';
-  });
-  ov.innerHTML=s;
-}
 function descargarIshikawa(){
   var cats = S.categorias.map(function(c){ return { nombre:c, causas:(S.causas[c]||[]) }; })
                          .filter(function(c){ return c.causas.length>0; });
