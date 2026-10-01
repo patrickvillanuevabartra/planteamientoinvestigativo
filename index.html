@@ -200,6 +200,7 @@
   .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
   .varBox{background:#fbfaf6;border:1px solid #e2ddcd;border-left:3px solid var(--amber);
           border-radius:6px;padding:10px 13px 13px;margin:8px 0 12px;}
+  .varSubTit{font-size:11.5px;color:#7d8782;margin:2px 0 5px;}
   .varTit{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
           color:var(--amber);margin-bottom:8px;}
   .varFija{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;
@@ -652,6 +653,7 @@ function estadoInicial(){
     bibReporte:'', bibHallazgos:'', bibConclusiones:'',
     // Pasos 11-13: objetivos, hipótesis y matriz de consistencia
     objetivoGeneral:'', varInd:'', varDep:'', indicadorGeneral:'', hipotesisGeneral:'',
+    varIndProb:'', varDepProb:'', formulaGeneral:'',
     estudiante:'', curso:'', recordId:null
   };
   e.categorias.forEach(function(c){ e.causas[c]=[]; });   // cada causa: {txt, subs:[]}
@@ -1946,11 +1948,17 @@ function render(){
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
           '<textarea rows="3" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
           '<div class="varBox" style="margin-top:10px;">'+
-          '<div class="varTit">Variables que se desprenden de este objetivo</div>'+
+          '<div class="varTit">Variables · en el problema y en el objetivo</div>'+
+          '<div class="varSubTit">◇ En el <b>problema específico</b></div>'+
           '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-          '<input value="'+esc(e.vi||e.herramienta||'')+'" oninput="S.especificos['+i+'].vi=this.value" placeholder="Ej. el modelado BPMN"></div>'+
+          '<input value="'+esc(e.viProb||'')+'" oninput="S.especificos['+i+'].viProb=this.value" placeholder="Lo que va tras «De qué manera»"></div>'+
+          '<div><label>VD · lo que cambia</label>'+
+          '<input value="'+esc(e.vdProb||'')+'" oninput="S.especificos['+i+'].vdProb=this.value" placeholder="Lo que el verbo mueve en la pregunta"></div></div>'+
+          '<div class="varSubTit" style="margin-top:10px;">◇ En el <b>objetivo específico</b></div>'+
+          '<div class="row2"><div><label>VI · lo que aplicas</label>'+
+          '<input value="'+esc(e.vi||e.herramienta||'')+'" oninput="S.especificos['+i+'].vi=this.value" placeholder="Lo que va tras «mediante»"></div>'+
           '<div><label>VD · lo que mejora</label>'+
-          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Ej. el tiempo de ciclo del proceso"></div></div>'+
+          '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Lo que el objetivo se propone mover"></div></div>'+
           '</div></div>';
     });
     if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
@@ -1973,11 +1981,18 @@ function render(){
       '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<div class="varBox" style="margin-top:12px;">'+
-      '<div class="varTit">Variables que se desprenden del objetivo general</div>'+
+      '<div class="varTit">Variables · en el problema y en el objetivo</div>'+
+      '<p class="note" style="font-size:12px;margin:0 0 8px;">Las mismas dos variables aparecen en los dos enunciados, pero redactadas distinto: en el problema como pregunta, en el objetivo como propósito. Escribirlas por separado obliga a comprobar que son la misma cosa.</p>'+
+      '<div class="varSubTit">◇ Tal como aparecen en el <b>problema general</b> (paso 8)</div>'+
       '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Ej. la gestión por procesos y la mejora continua"></div>'+
+      '<input value="'+esc(S.varIndProb)+'" oninput="S.varIndProb=this.value" placeholder="Lo que va tras «De qué manera»"></div>'+
+      '<div><label>VD · lo que cambia</label>'+
+      '<input value="'+esc(S.varDepProb)+'" oninput="S.varDepProb=this.value" placeholder="Lo que el verbo mueve en la pregunta"></div></div>'+
+      '<div class="varSubTit" style="margin-top:10px;">◇ Tal como aparecen en el <b>objetivo general</b></div>'+
+      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
+      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Lo que va tras «mediante»"></div>'+
       '<div><label>VD · lo que mejora</label>'+
-      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Ej. el tiempo de atención de entrega"></div></div>'+
+      '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Lo que el objetivo se propone mover"></div></div>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Léelas de tu propio objetivo: la <b>VI</b> es lo que va tras «mediante», la <b>VD</b> es lo que se reduce o incrementa. Sus indicadores se definen en el paso 12.</p>'+
       '</div>'+
 
@@ -1997,6 +2012,8 @@ function render(){
           '<span class="varVal">'+esc(e.vd||'— sin declarar')+'</span></div>'+
           '<label>Indicador de la VD <span class="oblig">— así se medirá</span></label>'+
           '<input value="'+esc(e.indicador||'')+'" oninput="S.especificos['+i+'].indicador=this.value" placeholder="Ej. % de reducción del tiempo de ciclo (meta 20–25%)">'+
+          '<label>Fórmula del indicador</label>'+
+          '<input value="'+esc(e.formula||'')+'" oninput="S.especificos['+i+'].formula=this.value" placeholder="Ej. (Ciclo antes − Ciclo después) / Ciclo antes × 100">'+
           '</div>'+
           '<label>Hipótesis específica</label>'+
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerHE('+i+')">proponer borrador</button>'+
@@ -2023,6 +2040,9 @@ function render(){
       '<span class="varVal">'+esc(S.varDep||'— sin declarar')+'</span></div>'+
       '<label>Indicador de la VD <span class="oblig">— así se medirá</span></label>'+
       '<input value="'+esc(S.indicadorGeneral)+'" oninput="S.indicadorGeneral=this.value" placeholder="Ej. % de reducción del tiempo de atención (meta ≥ 40%)">'+
+      '<label>Fórmula del indicador</label>'+
+      '<input value="'+esc(S.formulaGeneral)+'" oninput="S.formulaGeneral=this.value" placeholder="Ej. (Tiempo antes − Tiempo después) / Tiempo antes × 100">'+
+      '<p class="note" style="font-size:12px;margin:4px 0 0;">Sin fórmula el indicador no se puede calcular: escribe qué se divide entre qué, y la unidad.</p>'+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Escribe la fórmula y la meta, no solo el nombre. «% de reducción = (antes − después) / antes × 100. Meta ≥ 40%.» se puede medir; «eficiencia del proceso» no.</p>'+
       '</div>'+
 
@@ -2039,12 +2059,12 @@ function render(){
     var filas = filasMatriz();
     // data-et permite que en móvil cada celda muestre su propio rótulo y la
     // tabla se convierta en tarjetas apiladas, sin arrastrar en horizontal.
-    var COLS=['Problema','Objetivo','Hipótesis','Variables','Indicador (VD)'];
+    var COLS=['Problema','Objetivo','Hipótesis','Variables','Indicador (VD)','Fórmula'];
     var t='<div class="mcWrap"><table class="mc"><thead><tr><th></th>';
     COLS.forEach(function(c){ t+='<th>'+c+'</th>'; });
     t+='</tr></thead><tbody>';
     filas.forEach(function(f){
-      var v=[f.problema,f.objetivo,f.hipotesis,f.variables,f.indicador];
+      var v=[f.problema,f.objetivo,f.hipotesis,f.variables,f.indicador,f.formula];
       t+='<tr><td class="mcTag" data-et="Fila">'+esc(f.tag)+'</td>';
       v.forEach(function(x,k){ t+='<td data-et="'+esc(COLS[k])+'">'+esc(x||'—')+'</td>'; });
       t+='</tr>';
@@ -3072,54 +3092,148 @@ function borradorObjetivo(pregunta){
 
 // El objetivo general nace del propósito (paso 3), no del problema general:
 // mismo verbo y mismo indicador, más el contexto. Así no se solapa con el tema.
+/* ── De la pregunta al objetivo y a la hipótesis ────────────────────────────
+   El problema general tiene una forma fija:
+
+     ¿De qué manera [MEDIO] [verbo] [EFECTO] [contexto]?
+
+   El objetivo lo INVIERTE: pone el efecto delante, el medio detrás, y el
+   verbo en infinitivo. Antes el borrador se armaba desde el propósito y
+   acababa usando un verbo que no aparecía en la pregunta. */
+
+var VERBOS_INFINITIVO = (function(){
+  var m = {};
+  for(var inf in VERBOS_PRESENTE){ m[VERBOS_PRESENTE[inf]] = inf; }
+  /* Los que ofrece el desplegable del paso 9 y no están en la otra tabla */
+  var extra = { suprime:'suprimir', corrige:'corregir', subsana:'subsanar',
+                previene:'prevenir', evita:'evitar', mitiga:'mitigar',
+                controla:'controlar', estandariza:'estandarizar' };
+  for(var k in extra) m[k] = extra[k];
+  return m;
+})();
+
+function aInfinitivo(v){
+  var x = String(v||'').trim().toLowerCase();
+  if(VERBOS_INFINITIVO[x]) return VERBOS_INFINITIVO[x];
+  if(/ye$/.test(x))  return x.slice(0,-2)+'uir';   // disminuye → disminuir
+  if(/a$/.test(x))   return x+'r';                 // optimiza  → optimizar
+  if(/e$/.test(x))   return x.slice(0,-1)+'er';
+  return x;
+}
+
+/* Separa la cola de empresa, ciudad y año para poder recolocarla al final */
+function partirContexto(t){
+  var txt = String(t||'').trim();
+  /* Solo cuenta como contexto la cola de empresa/ciudad/año, no cualquier «en».
+     Si no, «en el área de procurement» se iba al final, detrás del medio. */
+  var m = txt.match(/^([\s\S]*?)[,\s]*(en\s+(?:la\s+)?empresa\b[\s\S]*)$/i);
+  if(m) return { nucleo:m[1].trim().replace(/[,;]+$/,''), cola:m[2].trim() };
+  m = txt.match(/^([\s\S]*?)[,\s]*((?:en\s+)?[A-ZÁÉÍÓÚÑ][^,]*,\s*(?:19|20)\d{2}\.?)$/);
+  if(m) return { nucleo:m[1].trim().replace(/[,;]+$/,''), cola:m[2].trim() };
+  return { nucleo:txt, cola:'' };
+}
+
+/* Descompone una pregunta de investigación en sus piezas */
+function partirPregunta(preg){
+  var t = String(preg||'').trim()
+    .replace(/^\s*¿\s*/,'').replace(/\s*\?\s*$/,'')
+    .replace(/^de\s+qu[eé]\s+manera\s+/i,'').trim();
+  if(!t) return null;
+
+  /* El verbo es el primer token conocido: lo anterior es el medio, lo
+     posterior el efecto. */
+  var tokens = t.split(/\s+/);
+  for(var i=0;i<tokens.length;i++){
+    var limpio = tokens[i].toLowerCase().replace(/[.,;:()]/g,'');
+    var base = limpio.split('/')[0];              // admite «reduce/elimina»
+    if(VERBOS_INFINITIVO[base]){
+      var medio  = tokens.slice(0,i).join(' ').trim().replace(/[,;]+$/,'');
+      var efecto = tokens.slice(i+1).join(' ').trim();
+      return { medio:medio, verbo:base, infinitivo:aInfinitivo(base), efecto:efecto };
+    }
+  }
+  return null;
+}
+
+function mayus(t){ return String(t||'').charAt(0).toUpperCase()+String(t||'').slice(1); }
+
+/* Objetivo = verbo en infinitivo + efecto + «mediante» + medio + contexto */
+function objetivoDesdePregunta(preg){
+  var p = partirPregunta(preg);
+  if(!p) return '';
+  var c = partirContexto(p.efecto);
+  var partes = [mayus(p.infinitivo), c.nucleo];
+  if(p.medio) partes.push('mediante ' + p.medio);
+  if(c.cola)  partes.push(c.cola);
+  return partes.join(' ').replace(/\s+/g,' ').replace(/\s*\.?$/,'') + '.';
+}
+
 function proponerOG(){
-  var pr = String(S.proposito||'').trim();
-  if(!pr){ toast('Primero escribe el propósito (paso 3)', true); return; }
-  pr = pr.replace(/\s*[.;]+\s*$/,'');
-  // Si el propósito ya cierra con la empresa y/o el periodo, se recorta: de lo
-  // contrario el borrador repetía "…Empresa Alfa, 2026 mediante … Empresa Alfa, 2026".
-  pr = pr.replace(/\s*,?\s*en\s+(la\s+)?empresa\b[\s\S]*$/i,'')
-         .replace(/\s*,?\s*en\s+el\s+periodo\b[\s\S]*$/i,'')
-         .replace(/\s*,\s*[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ.\s]*,?\s*(19|20)\d{2}\s*\.?\s*$/,'')
-         .replace(/\s*[.,;]+\s*$/,'');
-  /* El medio es la LÍNEA DE INVESTIGACIÓN (paso 4): es lo que se aplica para
-     mover el indicador, y ya está elegida. Solo si el alumno declaró una
-     variable independiente distinta (paso 11) se usa esa. */
-  var medio = String(S.varInd||'').trim() || lineaTexto();
-  if(!medio){
-    toast('Elige primero la línea de investigación (paso 4)', true);
+  if(!String(S.problemaGeneral||'').trim()){
+    toast('Redacta primero el problema general (paso 8)', true); return;
+  }
+  var t = objetivoDesdePregunta(S.problemaGeneral);
+  if(!t){
+    toast('No se reconoce el verbo del problema general. Revisa que esté redactado como «¿De qué manera … reduce …?»', true);
     return;
   }
-  S.objetivoGeneral = pr + ' mediante ' + medio + ' ' + contextoEmpresa();
+  S.objetivoGeneral = t;
   render();
-  toast('Borrador armado con el propósito y la línea — revísalo');
+  toast('Objetivo armado invirtiendo el problema general');
 }
 
 function proponerOE(i){
   var e = S.especificos[i];
-  if(!e || !e.problema){ toast('Ese problema específico está vacío (paso 9)', true); return; }
-  e.objetivo = borradorObjetivo(e.problema);
-  render(); toast('Borrador propuesto — edítalo con tus palabras');
+  if(!e || !String(e.problema||'').trim()){
+    toast('Ese problema específico está vacío (paso 9)', true); return;
+  }
+  var t = objetivoDesdePregunta(e.problema);
+  if(!t){
+    toast('No se reconoce el verbo del problema específico. Elígelo en el desplegable del paso 9.', true);
+    return;
+  }
+  e.objetivo = t;
+  render();
+  toast('Objetivo armado invirtiendo el problema específico');
 }
 
-function borradorHipotesis(vi, vd){
-  if(!vi || !vd) return '';
-  return vi.charAt(0).toUpperCase() + vi.slice(1) +
-         ' mejora significativamente ' + vd + ' ' + contextoEmpresa();
+/* Hipótesis = Si se aplica [medio], entonces se [verbo] [efecto] [contexto].
+   Nace del problema, no de las variables: así conserva el mismo verbo. */
+function hipotesisDesdePregunta(preg){
+  var p = partirPregunta(preg);
+  if(!p) return '';
+  var c = partirContexto(p.efecto);
+  /* «Si se aplica la aplicación de…» sonaba redundante */
+  var medio = (p.medio || 'la intervención propuesta')
+                .replace(/^la\s+aplicaci[óo]n\s+de\s+/i,'');
+  /* Concordancia: «se reduce la tasa» pero «se corrigen las especificaciones» */
+  var plural = /^(las|los)\s/i.test(c.nucleo);
+  var verbo = plural ? (/e$/.test(p.verbo) ? p.verbo+'n' : p.verbo+'n') : p.verbo;
+  return 'Si se aplica ' + medio + ', entonces se ' + verbo + ' ' + c.nucleo +
+         (c.cola ? ' ' + c.cola : '') + '.';
 }
 
 function proponerHG(){
-  if(!S.varInd || !S.varDep){ toast('Declara primero las dos variables generales', true); return; }
-  S.hipotesisGeneral = borradorHipotesis(S.varInd, S.varDep);
-  render(); toast('Borrador propuesto — ajusta el verbo si no es "mejora"');
+  if(!String(S.problemaGeneral||'').trim()){
+    toast('Redacta primero el problema general (paso 8)', true); return;
+  }
+  var t = hipotesisDesdePregunta(S.problemaGeneral);
+  if(!t){ toast('No se reconoce el verbo del problema general', true); return; }
+  S.hipotesisGeneral = t;
+  render();
+  toast('Hipótesis armada desde el problema general');
 }
 
 function proponerHE(i){
   var e = S.especificos[i];
-  if(!e){ return; }
-  if(!viDe(e) || !e.vd){ toast('Faltan la variable independiente o la dependiente (paso 11)', true); return; }
-  e.hipotesis = borradorHipotesis('la aplicación de '+viDe(e), e.vd);
-  render(); toast('Borrador propuesto — ajusta el verbo si no es "mejora"');
+  if(!e || !String(e.problema||'').trim()){
+    toast('Ese problema específico está vacío (paso 9)', true); return;
+  }
+  var t = hipotesisDesdePregunta(e.problema);
+  if(!t){ toast('No se reconoce el verbo del problema específico', true); return; }
+  e.hipotesis = t;
+  render();
+  toast('Hipótesis armada desde el problema específico');
 }
 
 // Visor de solo lectura: recuerda lo que ya quedó definido en los pasos
@@ -3158,7 +3272,8 @@ function filasMatriz(){
     objetivo:S.objetivoGeneral||'',
     hipotesis:S.hipotesisGeneral||'',
     variables:(S.varInd||'—')+' → '+(S.varDep||'—'),
-    indicador:S.indicadorGeneral||''
+    indicador:S.indicadorGeneral||'',
+    formula:S.formulaGeneral||''
   }];
   S.especificos.forEach(function(e,i){
     f.push({
@@ -3167,7 +3282,8 @@ function filasMatriz(){
       objetivo:e.objetivo||'',
       hipotesis:e.hipotesis||'',
       variables:(viDe(e)||'—')+' → '+(e.vd||'—'),
-      indicador:e.indicador||''
+      indicador:e.indicador||'',
+      formula:e.formula||''
     });
   });
   return f;
@@ -3292,27 +3408,27 @@ function excelProblemas(){
 }
 
 function excelObjetivos(){
-  var filas = [['Nivel','Objetivo','VI (lo que aplicas)','VD (lo que mejora)']];
-  filas.push(['General', S.objetivoGeneral, S.varInd, S.varDep]);
+  var filas = [['Nivel','Objetivo','VI en el problema','VD en el problema','VI en el objetivo','VD en el objetivo']];
+  filas.push(['General', S.objetivoGeneral, S.varIndProb, S.varDepProb, S.varInd, S.varDep]);
   S.especificos.forEach(function(e,i){
-    filas.push(['Específico '+(i+1), e.objetivo, viDe(e), e.vd]);
+    filas.push(['Específico '+(i+1), e.objetivo, e.viProb||'', e.vdProb||'', viDe(e), e.vd]);
   });
   descargarCSV(nombreArchivo('11_objetivos-y-variables'), filas);
 }
 
 function excelHipotesis(){
-  var filas = [['Nivel','Indicador (VD)','Hipótesis']];
-  filas.push(['General', S.indicadorGeneral, S.hipotesisGeneral]);
+  var filas = [['Nivel','Indicador (VD)','Fórmula','Hipótesis']];
+  filas.push(['General', S.indicadorGeneral, S.formulaGeneral, S.hipotesisGeneral]);
   S.especificos.forEach(function(e,i){
-    filas.push(['Específico '+(i+1), e.indicador, e.hipotesis]);
+    filas.push(['Específico '+(i+1), e.indicador, e.formula||'', e.hipotesis]);
   });
   descargarCSV(nombreArchivo('12_indicadores-e-hipotesis'), filas);
 }
 
 function excelMatriz(){
-  var filas = [['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)']];
+  var filas = [['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)','Fórmula']];
   filasMatriz().forEach(function(f){
-    filas.push([f.tag, f.problema, f.objetivo, f.hipotesis, f.variables, f.indicador]);
+    filas.push([f.tag, f.problema, f.objetivo, f.hipotesis, f.variables, f.indicador, f.formula]);
   });
   descargarCSV(nombreArchivo('13_matriz-de-consistencia'), filas);
 }
@@ -3372,9 +3488,9 @@ function excelTema(){
 }
 
 function matrizTSV(){
-  var enc = ['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)'].join('\t');
+  var enc = ['','Problema','Objetivo','Hipótesis','Variables','Indicador (VD)','Fórmula'].join('\t');
   var filas = filasMatriz().map(function(f){
-    return [f.tag,f.problema,f.objetivo,f.hipotesis,f.variables,f.indicador]
+    return [f.tag,f.problema,f.objetivo,f.hipotesis,f.variables,f.indicador,f.formula]
            .map(function(x){ return String(x||'').replace(/[\t\r\n]+/g,' '); }).join('\t');
   });
   return [enc].concat(filas).join('\n');
@@ -3415,7 +3531,8 @@ function armarEspecificos(){
     var k=p.categoria+'|'+p.causa+'|'+(p.sub||'')+'|'+(p.sub2||'');
     lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub||'',
                              sub2:p.sub2||'',
-                             problema:'', herramienta:'', verbo:'', objetivo:'', vi:'', vd:'',
+                             problema:'', herramienta:'', verbo:'', objetivo:'',
+                             viProb:'', vdProb:'', vi:'', vd:'', formula:'',
                              hipotesis:'', indicador:''});
   });
   S.especificos=lista;
@@ -3482,6 +3599,7 @@ function serializarEstado(){
     problemaIdentificado:S.problemaIdentificado,
     objetivoGeneral:S.objetivoGeneral,
     varInd:S.varInd, varDep:S.varDep,
+    varIndProb:S.varIndProb, varDepProb:S.varDepProb, formulaGeneral:S.formulaGeneral,
     indicadorGeneral:S.indicadorGeneral,
     hipotesisGeneral:S.hipotesisGeneral
   });
@@ -3527,6 +3645,9 @@ function restaurarEstado(json){
   S.varInd            = d.varInd            || '';
   S.varDep            = d.varDep            || '';
   S.indicadorGeneral  = d.indicadorGeneral  || '';
+  S.varIndProb        = d.varIndProb        || '';
+  S.varDepProb        = d.varDepProb        || '';
+  S.formulaGeneral    = d.formulaGeneral    || '';
   S.hipotesisGeneral  = d.hipotesisGeneral  || '';
   return true;
 }
