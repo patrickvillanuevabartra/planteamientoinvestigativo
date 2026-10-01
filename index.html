@@ -653,7 +653,7 @@ function estadoInicial(){
     bibReporte:'', bibHallazgos:'', bibConclusiones:'',
     // Pasos 11-13: objetivos, hipótesis y matriz de consistencia
     objetivoGeneral:'', varInd:'', varDep:'', indicadorGeneral:'', hipotesisGeneral:'',
-    varIndProb:'', varDepProb:'', formulaGeneral:'',
+    formulaGeneral:'',
     estudiante:'', curso:'', recordId:null
   };
   e.categorias.forEach(function(c){ e.causas[c]=[]; });   // cada causa: {txt, subs:[]}
@@ -1948,17 +1948,12 @@ function render(){
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
           '<textarea rows="3" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
           '<div class="varBox" style="margin-top:10px;">'+
-          '<div class="varTit">Variables · en el problema y en el objetivo</div>'+
-          '<div class="varSubTit">◇ En el <b>problema específico</b></div>'+
+          '<div class="varTit">Variables de este específico</div>'+
           '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-          '<input value="'+esc(e.viProb||'')+'" oninput="S.especificos['+i+'].viProb=this.value" placeholder="Lo que va tras «De qué manera»"></div>'+
-          '<div><label>VD · lo que cambia</label>'+
-          '<input value="'+esc(e.vdProb||'')+'" oninput="S.especificos['+i+'].vdProb=this.value" placeholder="Lo que el verbo mueve en la pregunta"></div></div>'+
-          '<div class="varSubTit" style="margin-top:10px;">◇ En el <b>objetivo específico</b></div>'+
-          '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-          '<input value="'+esc(e.vi||e.herramienta||'')+'" oninput="S.especificos['+i+'].vi=this.value" placeholder="Lo que va tras «mediante»"></div>'+
+          '<input value="'+esc(e.vi||e.herramienta||'')+'" oninput="S.especificos['+i+'].vi=this.value" placeholder="Lo que va tras «mediante» en el objetivo"></div>'+
           '<div><label>VD · lo que mejora</label>'+
           '<input value="'+esc(e.vd||'')+'" oninput="S.especificos['+i+'].vd=this.value" placeholder="Lo que el objetivo se propone mover"></div></div>'+
+          contrasteVariables(e.problema, e.objetivo)+
           '</div></div>';
     });
     if(!oe) oe='<p class="note">Aún no hay problemas específicos. Vuelve al paso 9.</p>';
@@ -1981,18 +1976,12 @@ function render(){
       '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<div class="varBox" style="margin-top:12px;">'+
-      '<div class="varTit">Variables · en el problema y en el objetivo</div>'+
-      '<p class="note" style="font-size:12px;margin:0 0 8px;">Las mismas dos variables aparecen en los dos enunciados, pero redactadas distinto: en el problema como pregunta, en el objetivo como propósito. Escribirlas por separado obliga a comprobar que son la misma cosa.</p>'+
-      '<div class="varSubTit">◇ Tal como aparecen en el <b>problema general</b> (paso 8)</div>'+
+      '<div class="varTit">Variables generales</div>'+
       '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-      '<input value="'+esc(S.varIndProb)+'" oninput="S.varIndProb=this.value" placeholder="Lo que va tras «De qué manera»"></div>'+
-      '<div><label>VD · lo que cambia</label>'+
-      '<input value="'+esc(S.varDepProb)+'" oninput="S.varDepProb=this.value" placeholder="Lo que el verbo mueve en la pregunta"></div></div>'+
-      '<div class="varSubTit" style="margin-top:10px;">◇ Tal como aparecen en el <b>objetivo general</b></div>'+
-      '<div class="row2"><div><label>VI · lo que aplicas</label>'+
-      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Lo que va tras «mediante»"></div>'+
+      '<input value="'+esc(S.varInd)+'" oninput="S.varInd=this.value" placeholder="Lo que va tras «mediante» en el objetivo"></div>'+
       '<div><label>VD · lo que mejora</label>'+
       '<input value="'+esc(S.varDep)+'" oninput="S.varDep=this.value" placeholder="Lo que el objetivo se propone mover"></div></div>'+
+      contrasteVariables(S.problemaGeneral, S.objetivoGeneral)+
       '<p class="note" style="font-size:12px;margin:8px 0 0;">Léelas de tu propio objetivo: la <b>VI</b> es lo que va tras «mediante», la <b>VD</b> es lo que se reduce o incrementa. Sus indicadores se definen en el paso 12.</p>'+
       '</div>'+
 
@@ -3155,6 +3144,38 @@ function partirPregunta(preg){
   return null;
 }
 
+/* Las variables son UNA sola pareja: lo que cambia entre el problema y el
+   objetivo es cómo se redactan, no cuáles son. Pedirlas dos veces obligaba a
+   teclear lo mismo. Aquí se extraen de los dos enunciados y se muestran para
+   comparar, sin volver a escribirlas. */
+function contrasteVariables(preg, obj){
+  var p = partirPregunta(preg);
+  var o = String(obj||'').trim();
+  if(!p && !o) return '';
+
+  var filas = '';
+  if(p){
+    var c = partirContexto(p.efecto);
+    filas += '<div class="varFija"><span class="varEt">En el problema</span>'+
+             '<span class="varVal">VI: <b>'+esc(p.medio||'—')+'</b> &nbsp;·&nbsp; '+
+             'VD: <b>'+esc(c.nucleo||'—')+'</b></span></div>';
+  }
+  var mo = o.match(/^([\s\S]*?)\s+mediante\s+([\s\S]*)$/i);
+  if(mo){
+    var vdObj = mo[1].replace(/^\S+\s+/,'');          // quita el verbo inicial
+    var viObj = partirContexto(mo[2]).nucleo;
+    filas += '<div class="varFija" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">'+
+             '<span class="varEt">En el objetivo</span>'+
+             '<span class="varVal">VI: <b>'+esc(viObj||'—')+'</b> &nbsp;·&nbsp; '+
+             'VD: <b>'+esc(vdObj||'—')+'</b></span></div>';
+  }
+  if(!filas) return '';
+  return '<div class="varBox" style="margin:10px 0 0;background:#f4f6f2;border-left-color:#8a948f;">'+
+         '<div class="varTit" style="color:#6a746f;">Cómo aparecen en cada enunciado</div>'+
+         filas +
+         '<p class="note" style="font-size:12px;margin:8px 0 0;">Deben ser la misma pareja en los dos. Si no coinciden, corrige el enunciado que esté mal, no las variables.</p></div>';
+}
+
 function mayus(t){ return String(t||'').charAt(0).toUpperCase()+String(t||'').slice(1); }
 
 /* Objetivo = verbo en infinitivo + efecto + «mediante» + medio + contexto */
@@ -3408,10 +3429,10 @@ function excelProblemas(){
 }
 
 function excelObjetivos(){
-  var filas = [['Nivel','Objetivo','VI en el problema','VD en el problema','VI en el objetivo','VD en el objetivo']];
-  filas.push(['General', S.objetivoGeneral, S.varIndProb, S.varDepProb, S.varInd, S.varDep]);
+  var filas = [['Nivel','Objetivo','VI (lo que aplicas)','VD (lo que mejora)']];
+  filas.push(['General', S.objetivoGeneral, S.varInd, S.varDep]);
   S.especificos.forEach(function(e,i){
-    filas.push(['Específico '+(i+1), e.objetivo, e.viProb||'', e.vdProb||'', viDe(e), e.vd]);
+    filas.push(['Específico '+(i+1), e.objetivo, viDe(e), e.vd]);
   });
   descargarCSV(nombreArchivo('11_objetivos-y-variables'), filas);
 }
@@ -3532,7 +3553,7 @@ function armarEspecificos(){
     lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub||'',
                              sub2:p.sub2||'',
                              problema:'', herramienta:'', verbo:'', objetivo:'',
-                             viProb:'', vdProb:'', vi:'', vd:'', formula:'',
+                             vi:'', vd:'', formula:'',
                              hipotesis:'', indicador:''});
   });
   S.especificos=lista;
@@ -3599,7 +3620,7 @@ function serializarEstado(){
     problemaIdentificado:S.problemaIdentificado,
     objetivoGeneral:S.objetivoGeneral,
     varInd:S.varInd, varDep:S.varDep,
-    varIndProb:S.varIndProb, varDepProb:S.varDepProb, formulaGeneral:S.formulaGeneral,
+    formulaGeneral:S.formulaGeneral,
     indicadorGeneral:S.indicadorGeneral,
     hipotesisGeneral:S.hipotesisGeneral
   });
@@ -3645,8 +3666,6 @@ function restaurarEstado(json){
   S.varInd            = d.varInd            || '';
   S.varDep            = d.varDep            || '';
   S.indicadorGeneral  = d.indicadorGeneral  || '';
-  S.varIndProb        = d.varIndProb        || '';
-  S.varDepProb        = d.varDepProb        || '';
   S.formulaGeneral    = d.formulaGeneral    || '';
   S.hipotesisGeneral  = d.hipotesisGeneral  || '';
   return true;
