@@ -1945,6 +1945,8 @@ function render(){
           '<span class="peCat">'+esc(e.herramienta||'sin herramienta')+'</span></div>'+
           '<div class="note" style="margin:0 0 6px;">↳ PE'+(i+1)+': '+esc(e.problema||'—')+'</div>'+
           '<label>Objetivo específico</label>'+
+          '<div class="sugBox" style="margin:0 0 6px;font-size:12.5px;"><b>PE'+(i+1)+':</b> '+
+          esc(e.problema || '— sin redactar (paso 9)')+'</div>'+
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOE('+i+')">proponer borrador</button>'+
           '<textarea rows="3" oninput="S.especificos['+i+'].objetivo=this.value" placeholder="Objetivo específico…">'+esc(e.objetivo||'')+'</textarea>'+
           '<div class="varBox" style="margin-top:10px;">'+
@@ -1972,7 +1974,9 @@ function render(){
 
       visorDefinido()+
       '<div class="blockLbl" style="margin-top:20px;">◆ Objetivo general</div>'+
-      '<p class="note" style="font-size:12px;margin:0 0 6px;">Toma el verbo y el indicador de tu <b>propósito</b> (paso 3), y como medio la <b>línea de investigación</b> (paso 4) tras «mediante». Cierra con empresa, ciudad y año. Los específicos hacen lo mismo, cada uno con su propia herramienta.</p>'+
+      '<div class="sugBox" style="margin:0 0 8px;"><b>Problema general (paso 8):</b><br>'+
+      esc(S.problemaGeneral || '— todavía sin redactar')+'</div>'+
+      '<p class="note" style="font-size:12px;margin:0 0 6px;">El objetivo <b>invierte el problema general</b>: el mismo verbo pasa a infinitivo y encabeza, el efecto va delante y el medio detrás, tras «mediante». Los específicos hacen lo mismo con su propio problema.</p>'+
       '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerOG()">proponer borrador</button>'+
       '<textarea rows="3" oninput="S.objetivoGeneral=this.value" placeholder="Objetivo general…">'+esc(S.objetivoGeneral)+'</textarea>'+
       '<div class="varBox" style="margin-top:12px;">'+
