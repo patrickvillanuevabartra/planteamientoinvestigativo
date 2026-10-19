@@ -777,15 +777,67 @@ var VERBOS_PE = [
   ['La causa se atenúa',         ['mitiga','controla']]
 ];
 
+/* Verbos de la taxonomía de Bloom, por si el grupo redacta el objetivo
+   específico como una operación del investigador («Determinar en qué medida…»)
+   en vez de como un efecto de la herramienta sobre la causa. Son familias
+   distintas: Bloom describe lo que hace QUIEN INVESTIGA; los de arriba, lo que
+   hace LA HERRAMIENTA. Conviene no mezclarlas dentro de un mismo objetivo. */
+var VERBOS_BLOOM = [
+  ['Bloom · Aplicación',  ['aplica','implementa','demuestra','calcula','resuelve']],
+  ['Bloom · Análisis',    ['analiza','determina','compara','clasifica','relaciona','infiere']],
+  ['Bloom · Síntesis',    ['diseña','propone','formula','desarrolla','integra','planea']],
+  ['Bloom · Evaluación',  ['evalúa','valida','mide','contrasta','justifica','concluye']]
+];
+
+function verboEnLista(v){
+  var x = String(v||'').trim().toLowerCase();
+  if(!x) return false;
+  var dentro = false;
+  VERBOS_PE.concat(VERBOS_BLOOM).forEach(function(g){
+    if(g[1].indexOf(x) !== -1) dentro = true;
+  });
+  return dentro;
+}
+
 function opcionesVerbo(sel){
+  var propio = sel && !verboEnLista(sel);
   var h = '<option value="">— elige el verbo —</option>';
-  VERBOS_PE.forEach(function(g){
+  VERBOS_PE.concat(VERBOS_BLOOM).forEach(function(g){
     h += '<option disabled style="font-weight:700;">' + esc(g[0]) + '</option>';
     g[1].forEach(function(v){
       h += '<option value="'+v+'"'+(v===sel?' selected':'')+'>&nbsp;&nbsp;'+v+'</option>';
     });
   });
+  h += '<option disabled style="font-weight:700;">Otro</option>';
+  h += '<option value="__otro__"'+(propio?' selected':'')+'>&nbsp;&nbsp;escribir mi propio verbo…</option>';
   return h;
+}
+
+/* El desplegable no agota las posibilidades: cada campo disciplinar tiene los
+   suyos. Al elegir «escribir mi propio verbo» se abre un campo libre. */
+function elegirVerboPE(i, v){
+  var e = S.especificos[i];
+  if(!e) return;
+  if(v === '__otro__'){
+    e.verboPropio = true;
+    if(verboEnLista(e.verbo)) e.verbo = '';
+  } else {
+    e.verboPropio = false;
+    e.verbo = v;
+  }
+  render();
+  if(v === '__otro__'){
+    var el = document.getElementById('verboLibre'+i);
+    if(el) el.focus();
+  }
+}
+
+function campoVerboLibre(i, e){
+  var propio = e.verboPropio || (e.verbo && !verboEnLista(e.verbo));
+  if(!propio) return '';
+  return '<input id="verboLibre'+i+'" style="margin-top:6px;" value="'+esc(e.verbo||'')+'" '+
+         'oninput="S.especificos['+i+'].verbo=this.value.trim().toLowerCase()" '+
+         'placeholder="Escríbelo en 3.ª persona: «homologa», «trazabiliza»…">';
 }
 
 function armarProblemaEspecifico(i){
@@ -1842,9 +1894,11 @@ function render(){
           '<button type="button" class="ejBtn" style="margin:0 0 6px;" onclick="proponerPE('+i+')">armar desde la herramienta</button>'+
           '<div class="varBox" style="margin:0 0 8px;border-left-color:#2f6d6a;">'+
           '<div class="varTit" style="color:#2f6d6a;">¿Qué le hace tu herramienta a esta causa?</div>'+
-          '<select onchange="S.especificos['+i+'].verbo=this.value">'+opcionesVerbo(e.verbo)+'</select>'+
+          '<select onchange="elegirVerboPE('+i+',this.value)">'+opcionesVerbo(e.verbo)+'</select>'+
+          campoVerboLibre(i, e)+
           '<p class="note" style="font-size:12px;margin:6px 0 0;">El verbo fija la meta que tendrás que demostrar en el <b>paso 12</b>: si dices <b>elimina</b>, tu indicador tiene que llegar a cero; si dices <b>reduce</b>, basta un porcentaje de mejora. Ante la duda, el verbo más modesto es más defendible: es peor prometer eliminar y quedarse a medias que reducir y superarlo.</p>'+
           '<p class="note" style="font-size:12px;margin:5px 0 0;">Describe lo que hace <b>tu herramienta sobre esta causa</b>, no lo que quieres lograr en el proyecto: eso ya está en tu propósito.</p>'+
+          '<p class="note" style="font-size:12px;margin:5px 0 0;">Los verbos de <b>Bloom</b> son otra familia: describen lo que hace <b>quien investiga</b> («determinar», «evaluar», «diseñar»), no lo que hace la herramienta. Úsalos solo si redactas el objetivo como «Determinar en qué medida…», y no los mezcles con los de arriba en un mismo enunciado.</p>'+
           '</div>'+
           '<textarea rows="3" class="peProblem" style="font-weight:500;" oninput="S.especificos['+i+'].problema=this.value" placeholder="Problema espec\u00edfico derivado de esta causa\u2026">'+esc(e.problema)+'</textarea></div>';
     });
@@ -3557,7 +3611,7 @@ function armarEspecificos(){
     lista.push(previos[k] || {categoria:p.categoria, causa:p.causa, sub:p.sub||'',
                              sub2:p.sub2||'',
                              problema:'', herramienta:'', verbo:'', objetivo:'',
-                             vi:'', vd:'', formula:'',
+                             vi:'', vd:'', formula:'', verboPropio:false,
                              hipotesis:'', indicador:''});
   });
   S.especificos=lista;
